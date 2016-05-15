@@ -3,11 +3,15 @@ package net.torocraft.dailies.capabilities;
 import java.util.HashSet;
 import java.util.Set;
 
+import net.minecraft.client.Minecraft;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.item.Item;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
+import net.minecraft.stats.Achievement;
+import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.torocraft.dailies.quests.DailyQuest;
 
 public class DailiesCapabilityImpl implements IDailiesCapability {
@@ -93,15 +97,14 @@ public class DailiesCapabilityImpl implements IDailiesCapability {
 
 
 	private void displayAchievement(DailyQuest quest, EntityPlayer player) {
-		// need to figure out how to make this work without crashing the server
 
-		/*
-		 * Achievement achievement = new Achievement(quest.getDisplayName(),
-		 * "dailyquestcompleted", 0, 0, Item.getItemById(quest.target.type),
-		 * (Achievement) null);
-		 * Minecraft.getMinecraft().guiAchievement.displayAchievement(
-		 * achievement);
-		 */
+		if(FMLCommonHandler.instance().getSide().isClient()) {
+			 Achievement achievement = new Achievement(quest.getDisplayName(),
+			 "dailyquestcompleted", 0, 0, Item.getItemById(quest.target.type),
+			 (Achievement) null);
+				Minecraft.getMinecraft().guiAchievement.displayAchievement(
+			 achievement);
+		}
 	}
 
 	@Override
