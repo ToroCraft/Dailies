@@ -68,20 +68,29 @@ public class DailiesCommand implements ICommand {
 			d.player.addChatMessage(new TextComponentString("Invalid Command"));
 			return;
 		}
+		
+		DailyQuest quest = null;
 
 		if (command.equalsIgnoreCase("abandon")) {
-			DailyQuest quest = d.acceptedDailyQuests.get(index);
+			
+			try {
+				quest = d.acceptedDailyQuests.get(index);
+			} catch (Exception ex) {}
+			
 			if (quest == null) {
-				d.player.addChatMessage(new TextComponentString("quest not found"));
+				d.player.addChatMessage(new TextComponentString("Quest not found"));
 			} else {
 				d.playerDailiesCapability.abandonQuest(quest);
 				d.player.addChatMessage(new TextComponentString("Quest " + fromIndex(index) + " " + quest.getDisplayName() + " abandoned"));
 			}
 
 		} else if (command.equalsIgnoreCase("accept")) {
-			DailyQuest quest = d.openDailyQuests.get(index);
+			try {
+				quest = d.openDailyQuests.get(index);
+			} catch (Exception ex) {}
+			
 			if (quest == null) {
-				d.player.addChatMessage(new TextComponentString("quest not found"));
+				d.player.addChatMessage(new TextComponentString("Quest not found"));
 			} else {
 				d.playerDailiesCapability.acceptQuest(quest);
 				d.player.addChatMessage(new TextComponentString("Quest " + fromIndex(index) + " " + quest.getDisplayName() + " accepted"));
