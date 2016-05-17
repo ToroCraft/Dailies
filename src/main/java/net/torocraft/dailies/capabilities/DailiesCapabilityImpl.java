@@ -169,10 +169,8 @@ public class DailiesCapabilityImpl implements IDailiesCapability {
 		if (quests == null) {
 			return;
 		}
-		if (quests.remove(quest)) {
-			completedQuests.add(quest);
-		}
-
+		
+		quests.remove(quest);
 	}
 	/*
 	 * private void setDefaultQuests() { quests = new ArrayList<DailyQuest>();
