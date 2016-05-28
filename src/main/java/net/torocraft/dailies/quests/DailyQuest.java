@@ -72,8 +72,8 @@ public class DailyQuest {
 	}
 
 	private String entityIdToLangKey(int entityId) {
-		Class<? extends Entity> entityClass = EntityList.idToClassMapping.get(entityId);
-		String entityName = EntityList.classToStringMapping.get(entityClass);
+		Class<? extends Entity> entityClass = EntityList.ID_TO_CLASS.get(entityId);
+		String entityName = EntityList.CLASS_TO_NAME.get(entityClass);
 		
 		if (entityName == null || entityName.length() == 0) {
 			entityName = "generic";

@@ -29,8 +29,9 @@ public class DailiesWorldData extends WorldSavedData {
 	}
 
 	@Override
-	public void writeToNBT(NBTTagCompound nbt) {
+	public NBTTagCompound writeToNBT(NBTTagCompound nbt) {
 		writeQuestsList(nbt, "dailies", dailyQuests);
+		return nbt;
 	}
 
 	public Set<DailyQuest> getDailyQuests() {
