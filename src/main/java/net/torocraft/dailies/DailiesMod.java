@@ -12,7 +12,7 @@ import net.minecraftforge.fml.common.event.FMLServerStartingEvent;
 public class DailiesMod {
 
 	public static final String MODID = "dailies";
-	public static final String VERSION = "1.0";
+	public static final String VERSION = "1.9.4-2";
 	public static final String MODNAME = "DailiesMod";
 
 	// public static Achievement achievementDailyQuestComplete = new
