@@ -15,6 +15,8 @@ import net.minecraft.util.text.translation.I18n;
 
 public class DailyQuest {
 
+	public String name;
+	public String description;
 	public String type;
 	public TypedInteger target;
 	public Reward reward;
@@ -35,6 +37,9 @@ public class DailyQuest {
 	}
 
 	public String getDisplayName() {
+		if (name != null && description != null) {
+			return name + ": " + description;
+		}
 		if (isGatherQuest()) {
 			return "⇓ Gather Quest: collect " + target.quantity + " pieces of " + targetItemName();
 		} else if (isHuntQuest()) {
