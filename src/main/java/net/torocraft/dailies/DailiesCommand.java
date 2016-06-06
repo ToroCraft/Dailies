@@ -110,7 +110,7 @@ public class DailiesCommand implements ICommand {
 		d.playerDailiesCapability = d.player.getCapability(CapabilityDailiesHandler.DAILIES_CAPABILITY, null);
 		Set<DailyQuest> completedQuestSet = d.playerDailiesCapability.getCompletedQuests();
 		Set<DailyQuest> acceptedQuestSet = d.playerDailiesCapability.getAcceptedQuests();
-		Set<DailyQuest> serversDailyQuests = getDailyQuests(server);
+		Set<DailyQuest> serversDailyQuests = getDailyQuests();
 
 		if (completedQuestSet == null) {
 			completedQuestSet = new HashSet<DailyQuest>();
@@ -141,11 +141,10 @@ public class DailiesCommand implements ICommand {
 		questsData.player.addChatMessage(new TextComponentString(dailiesList));
 	}
 
-	private Set<DailyQuest> getDailyQuests(MinecraftServer server) {
-		Set<DailyQuest> dailyQuests;
-		DailiesWorldData worldData = DailiesWorldData.get(server.getEntityWorld());
-		dailyQuests = worldData.getDailyQuests();
-		return dailyQuests;
+	private Set<DailyQuest> getDailyQuests() {
+		DailiesRequester requester = new DailiesRequester();
+		Set<DailyQuest> dailies = requester.getDailies();
+		return dailies;
 	}
 
 	private int toIndex(String string) {
