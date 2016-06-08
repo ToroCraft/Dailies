@@ -16,9 +16,14 @@ import net.torocraft.dailies.quests.DailyQuest;
 
 public class DailiesRequester {
 
-	private static final String URL = "http://www.minecraftdailies.com/quests";
 
-	public Set<DailyQuest> getDailies() {
+	private static final String SERVICE_URL = "http://www.minecraftdailies.com/";
+	private static final String PATH_QUESTS = "/quests";
+	
+	private String username;
+
+	public Set<DailyQuest> getDailies(String username) {
+		this.username = username;
 		try {
 			return parseResponse(makeRequest());
 		} catch (Exception e) {
@@ -31,7 +36,7 @@ public class DailiesRequester {
 		HttpURLConnection conn = null;
 		String json = null;
 		try {
-			URL url = new URL(URL);
+			URL url = new URL(SERVICE_URL + username + PATH_QUESTS);
 			conn = (HttpURLConnection) url.openConnection();
 			json = s(conn.getInputStream());
 		} finally {

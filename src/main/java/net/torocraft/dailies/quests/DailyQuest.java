@@ -18,6 +18,7 @@ public class DailyQuest {
 	public String name;
 	public String description;
 	public String type;
+	public String status;
 	public TypedInteger target;
 	public Reward reward;
 	public int currentQuantity;
@@ -38,7 +39,11 @@ public class DailyQuest {
 
 	public String getDisplayName() {
 		if (name != null && description != null) {
-			return name + ": " + description;
+			if (isGatherQuest()) {
+				return "⇓ " + name + ": " + description;
+			} else if (isHuntQuest()){
+				return "⚔ " + name + ": " + description;
+			}
 		}
 		if (isGatherQuest()) {
 			return "⇓ Gather Quest: collect " + target.quantity + " pieces of " + targetItemName();
@@ -146,18 +151,6 @@ public class DailyQuest {
 		return true;
 	}
 
-	public String getName() {
-		return "";
-	}
-
-	public String getType() {
-		return type;
-	}
-
-	public String getId() {
-		return id;
-	}
-
 	public void reward(EntityPlayer player) {
 		if (reward != null) {
 			reward.reward(player);
@@ -172,6 +165,9 @@ public class DailyQuest {
 		c.setTag("reward", reward.writeNBT());
 		c.setLong("date", date);
 		c.setString("id", id);
+		c.setString("name", name);
+		c.setString("description", description);
+		c.setString("status", status);
 		return c;
 	}
 
@@ -183,6 +179,9 @@ public class DailyQuest {
 		currentQuantity = c.getInteger("currentQuantity");
 		date = c.getLong("date");
 		id = c.getString("id");
+		name = c.getString("name");
+		description = c.getString("description");
+		status = c.getString("status");
 
 		target = new TypedInteger();
 		reward = new Reward();

@@ -29,30 +29,6 @@ public class Events {
 	 * TextComponentString(TextFormatting.RED + "" + dailes.statusMessage())); }
 	 */
 
-	// @SideOnly(Side.SERVER)
-	@SubscribeEvent
-	public void onWorldLoad(WorldEvent.Load event) {
-
-		if (event.getWorld().isRemote) {
-			return;
-		}
-
-		DailiesRequester requester = new DailiesRequester();
-		Set<DailyQuest> dailies = requester.getDailies();
-
-		if (dailies == null) {
-			System.out.println("******************* No dailies found, lame!");
-		} else {
-			System.out.println("********************** Dailies found COUNT[" + dailies.size() + "]");
-		}
-
-		if (dailies != null) {
-			DailiesWorldData worldData = DailiesWorldData.get(event.getWorld());
-			worldData.setDailyQuests(dailies);
-		}
-
-	}
-
 	@SubscribeEvent
 	public void onGather(EntityItemPickupEvent event) {
 		IDailiesCapability dailes = getCapability(event.getEntityPlayer());

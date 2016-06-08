@@ -18,6 +18,9 @@ import net.torocraft.dailies.quests.DailyQuest;
 
 public class DailiesCommand implements ICommand {
 
+	private static final TextComponentString invalidCommand = new TextComponentString("Invalid Command");
+	private static final TextComponentString questNotFound = new TextComponentString("Quest not Found");
+	private static final TextComponentString loadingDailies = new TextComponentString("Loading Dailies...");
 	private List<String> aliases = new ArrayList<String>();
 
 	@Override
@@ -48,16 +51,21 @@ public class DailiesCommand implements ICommand {
 	}
 
 	@Override
-	public void execute(MinecraftServer server, ICommandSender sender, String[] args) throws CommandException {
-		PlayerDailyQuests questsData = setupQuestsData(server, sender);
+	public void execute(final MinecraftServer server, final ICommandSender sender, final String[] args) throws CommandException {
+		new Thread(new Runnable() {
+			@Override
+			public void run() {
+				PlayerDailyQuests questsData = setupQuestsData(server, sender);
 
-		if (args.length == 0) {
-			listDailyQuests(questsData);
-		} else if (args.length == 2) {
-			handleSubCommand(questsData, args);
-		} else {
-			sender.addChatMessage(new TextComponentString("Invalid Command"));
-		}
+				if (args.length == 0) {
+					listDailyQuests(questsData);
+				} else if (args.length == 2) {
+					handleSubCommand(questsData, args);
+				} else {
+					sender.addChatMessage(invalidCommand);
+				}
+			}
+		}).start();
 	}
 
 	private void handleSubCommand(PlayerDailyQuests d, String[] args) {
@@ -65,7 +73,7 @@ public class DailiesCommand implements ICommand {
 		int index = toIndex(args[1]);
 
 		if (!validCommand(command)) {
-			d.player.addChatMessage(new TextComponentString("Invalid Command"));
+			d.player.addChatMessage(invalidCommand);
 			return;
 		}
 		
@@ -78,7 +86,7 @@ public class DailiesCommand implements ICommand {
 			} catch (Exception ex) {}
 			
 			if (quest == null) {
-				d.player.addChatMessage(new TextComponentString("Quest not found"));
+				d.player.addChatMessage(questNotFound);
 			} else {
 				d.playerDailiesCapability.abandonQuest(quest);
 				d.player.addChatMessage(new TextComponentString("Quest " + fromIndex(index) + " " + quest.getDisplayName() + " abandoned"));
@@ -90,7 +98,7 @@ public class DailiesCommand implements ICommand {
 			} catch (Exception ex) {}
 			
 			if (quest == null) {
-				d.player.addChatMessage(new TextComponentString("Quest not found"));
+				d.player.addChatMessage(questNotFound);
 			} else {
 				d.playerDailiesCapability.acceptQuest(quest);
 				d.player.addChatMessage(new TextComponentString("Quest " + fromIndex(index) + " " + quest.getDisplayName() + " accepted"));
@@ -110,7 +118,8 @@ public class DailiesCommand implements ICommand {
 		d.playerDailiesCapability = d.player.getCapability(CapabilityDailiesHandler.DAILIES_CAPABILITY, null);
 		Set<DailyQuest> completedQuestSet = d.playerDailiesCapability.getCompletedQuests();
 		Set<DailyQuest> acceptedQuestSet = d.playerDailiesCapability.getAcceptedQuests();
-		Set<DailyQuest> serversDailyQuests = getDailyQuests();
+		
+		Set<DailyQuest> serversDailyQuests = getDailyQuests(d.player);
 
 		if (completedQuestSet == null) {
 			completedQuestSet = new HashSet<DailyQuest>();
@@ -141,9 +150,10 @@ public class DailiesCommand implements ICommand {
 		questsData.player.addChatMessage(new TextComponentString(dailiesList));
 	}
 
-	private Set<DailyQuest> getDailyQuests() {
+	private Set<DailyQuest> getDailyQuests(EntityPlayer player) {
+		player.addChatMessage(loadingDailies);
 		DailiesRequester requester = new DailiesRequester();
-		Set<DailyQuest> dailies = requester.getDailies();
+		Set<DailyQuest> dailies = requester.getDailies(player.getName());
 		return dailies;
 	}
 
