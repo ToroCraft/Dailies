@@ -38,7 +38,7 @@ public class DailyQuest {
 	}
 
 	public String getDisplayName() {
-		if (name != null && description != null) {
+		if (isSet(name) && isSet(description)) {
 			if (isGatherQuest()) {
 				return "⇓ " + name + ": " + description;
 			} else if (isHuntQuest()){
@@ -224,6 +224,10 @@ public class DailyQuest {
 		} else if (!id.equals(other.id))
 			return false;
 		return true;
+	}
+	
+	private boolean isSet(String s) {
+		return s != null && s.length() > 0;
 	}
 
 }
