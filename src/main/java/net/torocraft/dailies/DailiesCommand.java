@@ -88,7 +88,7 @@ public class DailiesCommand implements ICommand {
 			if (quest == null) {
 				d.player.addChatMessage(questNotFound);
 			} else {
-				d.playerDailiesCapability.abandonQuest(quest);
+				new DailiesRequester().abandonQuest(d.player.getName(), quest.id);
 				d.player.addChatMessage(new TextComponentString("Quest " + fromIndex(index) + " " + quest.getDisplayName() + " abandoned"));
 			}
 
@@ -100,7 +100,7 @@ public class DailiesCommand implements ICommand {
 			if (quest == null) {
 				d.player.addChatMessage(questNotFound);
 			} else {
-				d.playerDailiesCapability.acceptQuest(quest);
+				new DailiesRequester().acceptQuest(d.player.getName(), quest.id);
 				d.player.addChatMessage(new TextComponentString("Quest " + fromIndex(index) + " " + quest.getDisplayName() + " accepted"));
 			}
 		}
@@ -116,30 +116,17 @@ public class DailiesCommand implements ICommand {
 
 		d.player = (EntityPlayer) sender;
 		d.playerDailiesCapability = d.player.getCapability(CapabilityDailiesHandler.DAILIES_CAPABILITY, null);
-		Set<DailyQuest> completedQuestSet = d.playerDailiesCapability.getCompletedQuests();
-		Set<DailyQuest> acceptedQuestSet = d.playerDailiesCapability.getAcceptedQuests();
-		
 		Set<DailyQuest> serversDailyQuests = getDailyQuests(d.player);
-
-		if (completedQuestSet == null) {
-			completedQuestSet = new HashSet<DailyQuest>();
-		}
-
-		if (acceptedQuestSet == null) {
-			acceptedQuestSet = new HashSet<DailyQuest>();
-		}
 
 		d.openDailyQuests = new ArrayList<DailyQuest>();
 		d.acceptedDailyQuests = new ArrayList<DailyQuest>();
 
 		for (DailyQuest quest : serversDailyQuests) {
-			if (!acceptedQuestSet.contains(quest) && !completedQuestSet.contains(quest)) {
+			if ("available".equals(quest.status)) {
 				d.openDailyQuests.add(quest);
+			} else if ("accepted".equals(quest.status)) {
+				d.acceptedDailyQuests.add(quest);
 			}
-		}
-
-		for (DailyQuest quest : acceptedQuestSet) {
-			d.acceptedDailyQuests.add(quest);
 		}
 
 		return d;
@@ -153,7 +140,7 @@ public class DailiesCommand implements ICommand {
 	private Set<DailyQuest> getDailyQuests(EntityPlayer player) {
 		player.addChatMessage(loadingDailies);
 		DailiesRequester requester = new DailiesRequester();
-		Set<DailyQuest> dailies = requester.getDailies(player.getName());
+		Set<DailyQuest> dailies = requester.getQuestInventory(player.getName());
 		return dailies;
 	}
 

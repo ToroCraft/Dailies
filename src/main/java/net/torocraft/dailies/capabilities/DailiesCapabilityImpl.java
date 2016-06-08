@@ -12,6 +12,7 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraft.stats.Achievement;
 import net.minecraftforge.fml.common.FMLCommonHandler;
+import net.torocraft.dailies.DailiesRequester;
 import net.torocraft.dailies.quests.DailyQuest;
 
 public class DailiesCapabilityImpl implements IDailiesCapability {
@@ -34,11 +35,7 @@ public class DailiesCapabilityImpl implements IDailiesCapability {
 			} catch (Exception e) {
 
 			}
-			quests.remove(quest);
-			if (completedQuests == null) {
-				completedQuests = new HashSet<DailyQuest>();
-			}
-			completedQuests.add(quest);
+			completeQuest(quest, player);
 		}
 
 		return true;
@@ -56,6 +53,21 @@ public class DailiesCapabilityImpl implements IDailiesCapability {
 		return null;
 	}
 
+	private void completeQuest(final DailyQuest quest, final EntityPlayer player) {
+		quests.remove(quest);
+		if (completedQuests == null) {
+			completedQuests = new HashSet<DailyQuest>();
+		}
+		completedQuests.add(quest);
+		
+		new Thread(new Runnable() {
+			@Override
+			public void run() {
+				new DailiesRequester().completeQuest(player.getName(), quest.id);
+			}
+		}).start();
+	}
+	
 	@Override
 	public boolean hunt(EntityPlayer player, EntityLivingBase mob) {
 		DailyQuest quest = huntNextQuest(player, mob);
@@ -73,11 +85,7 @@ public class DailiesCapabilityImpl implements IDailiesCapability {
 			} catch (Exception e) {
 
 			}
-			quests.remove(quest);
-			if (completedQuests == null) {
-				completedQuests = new HashSet<DailyQuest>();
-			}
-			completedQuests.add(quest);
+			completeQuest(quest, player);
 		}
 
 		return true;

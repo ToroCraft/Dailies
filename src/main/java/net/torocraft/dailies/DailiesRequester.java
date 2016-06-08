@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.HashSet;
 import java.util.Set;
@@ -17,29 +18,75 @@ import net.torocraft.dailies.quests.DailyQuest;
 public class DailiesRequester {
 
 
-	private static final String SERVICE_URL = "http://www.minecraftdailies.com/";
+	private static final String SERVICE_URL = "http://www.minecraftdailies.com";
 	private static final String PATH_QUESTS = "/quests";
+	private static final String PATH_ACCEPT = "/accept";
+	private static final String PATH_ABANDON = "/abandon";
+	private static final String PATH_COMPLETE = "/complete";
 	
 	private String username;
+	private String questId;
+	private String actionPath;
+	
+	public void acceptQuest(String username, String questId) {
+		storeParams(username, questId);
+		actionPath = PATH_ACCEPT;
+		requestQuestAction();
+	}
 
-	public Set<DailyQuest> getDailies(String username) {
+	private void storeParams(String username, String questId) {
+		this.username = username;
+		this.questId = questId;
+	}
+	
+	private String requestQuestAction() {
+		HttpURLConnection conn = null;
+		String json = null;
+		try {
+			URL url = new URL(SERVICE_URL + "/" + username + PATH_QUESTS + "/" + questId + actionPath);
+			conn = (HttpURLConnection) url.openConnection();
+			conn.setRequestMethod("POST");
+			json = s(conn.getInputStream());
+		} catch(IOException e) {
+			e.printStackTrace();
+		} finally {
+			if (conn != null) {
+				conn.disconnect();
+			}
+		}
+		return json;
+	}
+	
+	public void abandonQuest(String username, String questId) {
+		storeParams(username, questId);
+		actionPath = PATH_ABANDON;
+		requestQuestAction();
+	}
+	
+	public void completeQuest(String username, String questId) {
+		storeParams(username, questId);
+		actionPath = PATH_COMPLETE;
+		requestQuestAction();
+	}
+
+	public Set<DailyQuest> getQuestInventory(String username) {
 		this.username = username;
 		try {
-			return parseResponse(makeRequest());
+			return parseResponse(requestQuestInventory());
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 		return new HashSet<DailyQuest>(0);
 	}
 
-	private String makeRequest() throws IOException {
+	private String requestQuestInventory() throws IOException {
 		HttpURLConnection conn = null;
 		String json = null;
 		try {
-			URL url = new URL(SERVICE_URL + username + PATH_QUESTS);
+			URL url = new URL(SERVICE_URL + "/" + username + PATH_QUESTS);
 			conn = (HttpURLConnection) url.openConnection();
 			json = s(conn.getInputStream());
-		} finally {
+		}finally {
 			if (conn != null) {
 				conn.disconnect();
 			}
