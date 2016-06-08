@@ -128,6 +128,9 @@ public class DailiesCommand implements ICommand {
 				d.acceptedDailyQuests.add(quest);
 			}
 		}
+		
+		d.playerDailiesCapability.setAcceptedQuests(new HashSet<DailyQuest>(d.acceptedDailyQuests));
+		d.playerDailiesCapability.writeNBT();
 
 		return d;
 	}

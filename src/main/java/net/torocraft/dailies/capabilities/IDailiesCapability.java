@@ -29,7 +29,11 @@ public interface IDailiesCapability {
 	void abandonQuest(DailyQuest quest);
 
 	Set<DailyQuest> getAcceptedQuests();
+	
+	void setAcceptedQuests(Set<DailyQuest> quests);
 
 	Set<DailyQuest> getCompletedQuests();
+	
+	void setCompletedQuests(Set<DailyQuest> quests);
 
 }

@@ -214,4 +214,14 @@ public class DailiesCapabilityImpl implements IDailiesCapability {
 		return completedQuests;
 	}
 
+	@Override
+	public void setAcceptedQuests(Set<DailyQuest> quests) {
+		this.quests = quests;
+	}
+
+	@Override
+	public void setCompletedQuests(Set<DailyQuest> quests) {
+		this.completedQuests = quests;
+	}
+
 }
