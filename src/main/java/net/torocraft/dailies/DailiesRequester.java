@@ -23,6 +23,7 @@ public class DailiesRequester {
 	private static final String PATH_ACCEPT = "/accept";
 	private static final String PATH_ABANDON = "/abandon";
 	private static final String PATH_COMPLETE = "/complete";
+	private static final String PATH_PROGRESS = "/progress";
 	
 	private String username;
 	private String questId;
@@ -67,6 +68,30 @@ public class DailiesRequester {
 		storeParams(username, questId);
 		actionPath = PATH_COMPLETE;
 		requestQuestAction();
+	}
+	
+	public void progressQuest(String username, String questId, int progress) {
+		storeParams(username, questId);
+		actionPath = PATH_PROGRESS;
+		requestProgressUpdate(progress);
+	}
+	
+	private String requestProgressUpdate(int progress) {
+		HttpURLConnection conn = null;
+		String json = null;
+		try {
+			URL url = new URL(SERVICE_URL + "/" + username + PATH_QUESTS + "/" + questId + actionPath + "/" + progress);
+			conn = (HttpURLConnection) url.openConnection();
+			conn.setRequestMethod("POST");
+			json = s(conn.getInputStream());
+		} catch(IOException e) {
+			e.printStackTrace();
+		} finally {
+			if (conn != null) {
+				conn.disconnect();
+			}
+		}
+		return json;
 	}
 
 	public Set<DailyQuest> getQuestInventory(String username) {
