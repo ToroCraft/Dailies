@@ -135,7 +135,7 @@ public class DailyQuest {
 				new DailiesRequester().progressQuest(username, questId, progress);
 			}
 			
-		});
+		}).start();
 	}
 
 	public void dropNewStack(EntityPlayer player, EntityItem item, int amount) {
