@@ -78,8 +78,8 @@ public class GuiDailyProgressIndicators extends Gui {
 			yPos += 30;
 			String formattedQuestName = mc.fontRendererObj.trimStringToWidth(quest.name, 110);
 			drawCenteredString(mc.fontRendererObj, formattedQuestName, xPos + 60, yPos - 25, 0xffffff);
-			drawCenteredString(mc.fontRendererObj, quest.currentQuantity + "/" + quest.target.quantity, xPos + 60,
-					yPos - 15, 0xffffff);
+			drawCenteredString(mc.fontRendererObj, quest.progress + "/" + quest.target.quantity, xPos + 60, yPos - 15,
+					0xffffff);
 			// drawing the string changes the bound texture, so we need to reset
 			// it to our texture
 			mc.renderEngine.bindTexture(badgeTexture);
