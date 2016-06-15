@@ -12,6 +12,7 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.text.TextComponentString;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraft.util.text.translation.I18n;
+import net.torocraft.dailies.DailiesRequester;
 
 public class DailyQuest {
 
@@ -21,14 +22,14 @@ public class DailyQuest {
 	public String status;
 	public TypedInteger target;
 	public Reward reward;
-	public int currentQuantity;
+	public int progress;
 	public String id;
 	public long date;
 
 	public transient String targetName;
 
 	public String getStatusMessage() {
-		return getDisplayName() + " (" + Math.round(100 * currentQuantity / target.quantity) + "% complete)";
+		return getDisplayName() + " (" + Math.round(100 * progress / target.quantity) + "% complete)";
 	}
 
 	public DailyQuest clone() {
@@ -109,7 +110,7 @@ public class DailyQuest {
 
 		int stackSize = item.getEntityItem().stackSize;
 
-		int remainingTarget = target.quantity - currentQuantity;
+		int remainingTarget = target.quantity - progress;
 
 		int leftOver = stackSize - remainingTarget;
 
@@ -119,11 +120,22 @@ public class DailyQuest {
 			leftOver = 0;
 		}
 
-		currentQuantity += stackSize - leftOver;
-
+		progress += stackSize - leftOver;
+		syncProgress(player.getName(), id, progress);
 		player.addChatMessage(new TextComponentString(TextFormatting.RED + "" + getStatusMessage()));
 
 		return true;
+	}
+	
+	private void syncProgress(final String username, final String questId, final int progress) {
+		new Thread(new Runnable() {
+
+			@Override
+			public void run() {
+				new DailiesRequester().progressQuest(username, questId, progress);
+			}
+			
+		}).start();
 	}
 
 	public void dropNewStack(EntityPlayer player, EntityItem item, int amount) {
@@ -139,13 +151,14 @@ public class DailyQuest {
 			return false;
 		}
 
-		int id = EntityList.getEntityID(mob);// mob.getEntityId();
+		int mobId = EntityList.getEntityID(mob);// mob.getEntityId();
 
-		if (id != target.type) {
+		if (mobId != target.type) {
 			return false;
 		}
 
-		currentQuantity++;
+		progress++;
+		syncProgress(player.getName(), id, progress);
 		player.addChatMessage(new TextComponentString(TextFormatting.RED + "" + getStatusMessage()));
 
 		return true;
@@ -160,7 +173,7 @@ public class DailyQuest {
 	public NBTTagCompound writeNBT() {
 		NBTTagCompound c = new NBTTagCompound();
 		c.setString("type", type);
-		c.setInteger("currentQuantity", currentQuantity);
+		c.setInteger("progress", progress);
 		c.setTag("target", target.writeNBT());
 		c.setTag("reward", reward.writeNBT());
 		c.setLong("date", date);
@@ -176,7 +189,7 @@ public class DailyQuest {
 			return;
 		}
 		type = c.getString("type");
-		currentQuantity = c.getInteger("currentQuantity");
+		progress = c.getInteger("progress");
 		date = c.getLong("date");
 		id = c.getString("id");
 		name = c.getString("name");
@@ -198,7 +211,7 @@ public class DailyQuest {
 	}
 
 	public boolean isComplete() {
-		return currentQuantity >= target.quantity;
+		return progress >= target.quantity;
 	}
 
 	@Override
