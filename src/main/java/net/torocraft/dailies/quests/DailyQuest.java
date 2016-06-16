@@ -9,8 +9,6 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.util.text.TextComponentString;
-import net.minecraft.util.text.TextFormatting;
 import net.minecraft.util.text.translation.I18n;
 import net.torocraft.dailies.DailiesRequester;
 
@@ -42,7 +40,7 @@ public class DailyQuest {
 		if (isSet(name) && isSet(description)) {
 			if (isGatherQuest()) {
 				return "⇓ " + name + ": " + description;
-			} else if (isHuntQuest()){
+			} else if (isHuntQuest()) {
 				return "⚔ " + name + ": " + description;
 			}
 		}
@@ -61,7 +59,7 @@ public class DailyQuest {
 	private boolean isGatherQuest() {
 		return "gather".equals(type);
 	}
-	
+
 	private String targetItemName() {
 		if (targetName == null) {
 			if (isGatherQuest()) {
@@ -72,7 +70,7 @@ public class DailyQuest {
 		}
 		return targetName;
 	}
-	
+
 	private String decodeItem(int entityId) {
 		return I18n.translateToLocal(Item.getItemById(entityId).getUnlocalizedName() + ".name");
 	}
@@ -85,11 +83,11 @@ public class DailyQuest {
 	private String entityIdToLangKey(int entityId) {
 		Class<? extends Entity> entityClass = EntityList.ID_TO_CLASS.get(entityId);
 		String entityName = EntityList.CLASS_TO_NAME.get(entityClass);
-		
+
 		if (entityName == null || entityName.length() == 0) {
 			entityName = "generic";
 		}
-		
+
 		return "entity." + entityName + ".name";
 	}
 
@@ -122,11 +120,10 @@ public class DailyQuest {
 
 		progress += stackSize - leftOver;
 		syncProgress(player.getName(), id, progress);
-		player.addChatMessage(new TextComponentString(TextFormatting.RED + "" + getStatusMessage()));
 
 		return true;
 	}
-	
+
 	private void syncProgress(final String username, final String questId, final int progress) {
 		new Thread(new Runnable() {
 
@@ -134,7 +131,7 @@ public class DailyQuest {
 			public void run() {
 				new DailiesRequester().progressQuest(username, questId, progress);
 			}
-			
+
 		}).start();
 	}
 
@@ -159,7 +156,6 @@ public class DailyQuest {
 
 		progress++;
 		syncProgress(player.getName(), id, progress);
-		player.addChatMessage(new TextComponentString(TextFormatting.RED + "" + getStatusMessage()));
 
 		return true;
 	}
@@ -238,7 +234,7 @@ public class DailyQuest {
 			return false;
 		return true;
 	}
-	
+
 	private boolean isSet(String s) {
 		return s != null && s.length() > 0;
 	}

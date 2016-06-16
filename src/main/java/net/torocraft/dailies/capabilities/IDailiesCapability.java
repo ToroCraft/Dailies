@@ -13,12 +13,12 @@ public interface IDailiesCapability {
 	/**
 	 * return true when quest target was hit
 	 */
-	boolean gather(EntityPlayer player, EntityItem item);
+	DailyQuest gather(EntityPlayer player, EntityItem item);
 
 	/**
 	 * return true when quest target was hit
 	 */
-	boolean hunt(EntityPlayer player, EntityLivingBase mob);
+	DailyQuest hunt(EntityPlayer player, EntityLivingBase mob);
 
 	NBTTagCompound writeNBT();
 
@@ -29,11 +29,11 @@ public interface IDailiesCapability {
 	void abandonQuest(DailyQuest quest);
 
 	Set<DailyQuest> getAcceptedQuests();
-	
+
 	void setAcceptedQuests(Set<DailyQuest> quests);
 
 	Set<DailyQuest> getCompletedQuests();
-	
+
 	void setCompletedQuests(Set<DailyQuest> quests);
 
 }

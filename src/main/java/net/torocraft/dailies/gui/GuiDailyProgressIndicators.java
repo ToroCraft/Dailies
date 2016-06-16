@@ -13,6 +13,8 @@ import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.client.event.GuiScreenEvent.DrawScreenEvent;
+import net.minecraftforge.client.event.RenderGameOverlayEvent;
+import net.minecraftforge.client.event.RenderGameOverlayEvent.ElementType;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
@@ -31,6 +33,10 @@ public class GuiDailyProgressIndicators extends Gui {
 	GuiButton prevBtn;
 	GuiButton nextBtn;
 
+	DailyQuest quest = null;
+	int age = 0;
+	final static int TTL = 600;
+
 	public GuiDailyProgressIndicators() {
 		this(null);
 	}
@@ -44,7 +50,7 @@ public class GuiDailyProgressIndicators extends Gui {
 	}
 
 	@SubscribeEvent
-	public void drawProgressIndicators(DrawScreenEvent.Post event) {
+	public void drawProgressIndicatorsInInventory(DrawScreenEvent.Post event) {
 		if (!(mc.currentScreen instanceof GuiInventory)) {
 			return;
 		}
@@ -53,7 +59,6 @@ public class GuiDailyProgressIndicators extends Gui {
 		IDailiesCapability cap = player.getCapability(CapabilityDailiesHandler.DAILIES_CAPABILITY, null);
 
 		if (!isSet(cap.getAcceptedQuests())) {
-			System.out.println("no accepted quests");
 			return;
 		}
 
@@ -74,16 +79,13 @@ public class GuiDailyProgressIndicators extends Gui {
 				break;
 			}
 			DailyQuest quest = (DailyQuest) cap.getAcceptedQuests().toArray()[i + offset];
-			drawTexturedModalRect(xPos, yPos, 0, 0, 120, 28);
+			new GuiDailyBadge(quest, mc, xPos, yPos, true);
 			yPos += 30;
-			String formattedQuestName = mc.fontRendererObj.trimStringToWidth(quest.name, 110);
-			drawCenteredString(mc.fontRendererObj, formattedQuestName, xPos + 60, yPos - 25, 0xffffff);
-			drawCenteredString(mc.fontRendererObj, quest.progress + "/" + quest.target.quantity, xPos + 60, yPos - 15,
-					0xffffff);
-			// drawing the string changes the bound texture, so we need to reset
-			// it to our texture
-			mc.renderEngine.bindTexture(badgeTexture);
 		}
+
+		// drawing the string changes the bound texture, so we need to reset
+		// it to our texture
+		mc.renderEngine.bindTexture(badgeTexture);
 
 		if (cap.getAcceptedQuests().size() > 5) {
 			drawButtons(viewport, inventoryHeight, xPos, cap.getAcceptedQuests().size());
@@ -133,6 +135,25 @@ public class GuiDailyProgressIndicators extends Gui {
 
 	private boolean isSet(Set<DailyQuest> set) {
 		return set != null && set.size() > 0;
+	}
+
+	@SubscribeEvent
+	public void showProgressUpdate(RenderGameOverlayEvent.Post event) {
+		if (quest == null || age > TTL) {
+			return;
+		}
+		age++;
+		if (event.isCancelable() || event.getType() != ElementType.EXPERIENCE) {
+			return;
+		}
+
+		ScaledResolution viewport = new ScaledResolution(mc);
+		new GuiDailyBadge(quest, mc, viewport.getScaledWidth() - 122, (viewport.getScaledHeight() / 4), false);
+	}
+
+	public void setQuest(DailyQuest quest) {
+		age = 0;
+		this.quest = quest;
 	}
 
 }

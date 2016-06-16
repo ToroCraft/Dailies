@@ -1,7 +1,5 @@
 package net.torocraft.dailies.capabilities;
 
-import java.util.Set;
-
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.nbt.NBTTagCompound;
@@ -11,10 +9,8 @@ import net.minecraftforge.event.AttachCapabilitiesEvent;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
 import net.minecraftforge.event.entity.player.EntityItemPickupEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
-import net.minecraftforge.event.world.WorldEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
-import net.torocraft.dailies.DailiesRequester;
-import net.torocraft.dailies.DailiesWorldData;
+import net.torocraft.dailies.DailiesMod;
 import net.torocraft.dailies.quests.DailyQuest;
 
 public class Events {
@@ -31,18 +27,19 @@ public class Events {
 
 	@SubscribeEvent
 	public void onGather(EntityItemPickupEvent event) {
-		IDailiesCapability dailes = getCapability(event.getEntityPlayer());
-		if (dailes == null) {
+		IDailiesCapability dailies = getCapability(event.getEntityPlayer());
+		if (dailies == null) {
 			return;
 		}
 
-		boolean hit = dailes.gather(event.getEntityPlayer(), event.getItem());
+		DailyQuest quest = dailies.gather(event.getEntityPlayer(), event.getItem());
 
-		if (hit) {
+		if (quest != null) {
 			event.setCanceled(true);
 			event.getItem().setDead();
 		}
 
+		DailiesMod.proxy.displayQuestProgress(quest);
 	}
 	/*
 	 * @SubscribeEvent public void onPlayerJoin(EntityJoinWorldEvent event) {
@@ -62,21 +59,23 @@ public class Events {
 
 		EntityLivingBase e = (EntityLivingBase) event.getEntity();
 		DamageSource source = event.getSource();
-		
+
 		if (source.getEntity() instanceof EntityPlayer) {
 			player = (EntityPlayer) source.getEntity();
 		}
-		
+
 		if (player == null) {
 			return;
 		}
 
-		IDailiesCapability dailes = getCapability(player);
-		if (dailes == null) {
+		IDailiesCapability dailies = getCapability(player);
+		if (dailies == null) {
 			return;
 		}
 
-		dailes.hunt(player, e);
+		DailyQuest quest = dailies.hunt(player, e);
+
+		DailiesMod.proxy.displayQuestProgress(quest);
 	}
 
 	@SubscribeEvent
@@ -85,32 +84,32 @@ public class Events {
 			return;
 		}
 
-		IDailiesCapability newDailes = getCapability(event.getEntityPlayer());
-		IDailiesCapability originalDailes = getCapability(event.getOriginal());
+		IDailiesCapability newDailies = getCapability(event.getEntityPlayer());
+		IDailiesCapability originalDailies = getCapability(event.getOriginal());
 
-		if (newDailes == null || originalDailes == null) {
+		if (newDailies == null || originalDailies == null) {
 			return;
 		}
 
-		newDailes.readNBT(originalDailes.writeNBT());
+		newDailies.readNBT(originalDailies.writeNBT());
 	}
 
 	@SubscribeEvent
 	public void onSave(PlayerEvent.SaveToFile event) {
-		IDailiesCapability dailes = getCapability(event.getEntityPlayer());
-		if (dailes == null) {
+		IDailiesCapability dailies = getCapability(event.getEntityPlayer());
+		if (dailies == null) {
 			return;
 		}
-		event.getEntityPlayer().getEntityData().setTag(CapabilityDailiesHandler.NAME, dailes.writeNBT());
+		event.getEntityPlayer().getEntityData().setTag(CapabilityDailiesHandler.NAME, dailies.writeNBT());
 	}
 
 	@SubscribeEvent
 	public void onLoad(PlayerEvent.LoadFromFile event) {
-		IDailiesCapability dailes = getCapability(event.getEntityPlayer());
-		if (dailes == null) {
+		IDailiesCapability dailies = getCapability(event.getEntityPlayer());
+		if (dailies == null) {
 			return;
 		}
-		dailes.readNBT((NBTTagCompound) event.getEntityPlayer().getEntityData().getTag(CapabilityDailiesHandler.NAME));
+		dailies.readNBT((NBTTagCompound) event.getEntityPlayer().getEntityData().getTag(CapabilityDailiesHandler.NAME));
 	}
 
 	private IDailiesCapability getCapability(EntityPlayer player) {

@@ -21,11 +21,11 @@ public class DailiesCapabilityImpl implements IDailiesCapability {
 	private Set<DailyQuest> completedQuests;
 
 	@Override
-	public boolean gather(EntityPlayer player, EntityItem item) {
+	public DailyQuest gather(EntityPlayer player, EntityItem item) {
 		DailyQuest quest = gatherNextQuest(player, item);
 
 		if (quest == null) {
-			return false;
+			return null;
 		}
 
 		if (quest.isComplete()) {
@@ -38,7 +38,7 @@ public class DailiesCapabilityImpl implements IDailiesCapability {
 			completeQuest(quest, player);
 		}
 
-		return true;
+		return quest;
 	}
 
 	private DailyQuest gatherNextQuest(EntityPlayer player, EntityItem item) {
@@ -59,7 +59,7 @@ public class DailiesCapabilityImpl implements IDailiesCapability {
 			completedQuests = new HashSet<DailyQuest>();
 		}
 		completedQuests.add(quest);
-		
+
 		new Thread(new Runnable() {
 			@Override
 			public void run() {
@@ -67,13 +67,13 @@ public class DailiesCapabilityImpl implements IDailiesCapability {
 			}
 		}).start();
 	}
-	
+
 	@Override
-	public boolean hunt(EntityPlayer player, EntityLivingBase mob) {
+	public DailyQuest hunt(EntityPlayer player, EntityLivingBase mob) {
 		DailyQuest quest = huntNextQuest(player, mob);
 
 		if (quest == null) {
-			return false;
+			return null;
 		}
 
 		if (quest.isComplete()) {
@@ -88,7 +88,7 @@ public class DailiesCapabilityImpl implements IDailiesCapability {
 			completeQuest(quest, player);
 		}
 
-		return true;
+		return quest;
 	}
 
 	private DailyQuest huntNextQuest(EntityPlayer player, EntityLivingBase mob) {
@@ -103,15 +103,12 @@ public class DailiesCapabilityImpl implements IDailiesCapability {
 		return null;
 	}
 
-
 	private void displayAchievement(DailyQuest quest, EntityPlayer player) {
 
-		if(FMLCommonHandler.instance().getSide().isClient()) {
-			 Achievement achievement = new Achievement(quest.getDisplayName(),
-			 "dailyquestcompleted", 0, 0, Item.getItemById(quest.target.type),
-			 (Achievement) null);
-				Minecraft.getMinecraft().guiAchievement.displayAchievement(
-			 achievement);
+		if (FMLCommonHandler.instance().getSide().isClient()) {
+			Achievement achievement = new Achievement(quest.getDisplayName(), "dailyquestcompleted", 0, 0,
+					Item.getItemById(quest.target.type), (Achievement) null);
+			Minecraft.getMinecraft().guiAchievement.displayAchievement(achievement);
 		}
 	}
 
@@ -177,7 +174,7 @@ public class DailiesCapabilityImpl implements IDailiesCapability {
 		if (quests == null) {
 			return;
 		}
-		
+
 		quests.remove(quest);
 	}
 	/*
