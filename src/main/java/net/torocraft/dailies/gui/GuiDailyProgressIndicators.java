@@ -34,8 +34,8 @@ public class GuiDailyProgressIndicators extends Gui {
 	GuiButton nextBtn;
 
 	DailyQuest quest = null;
-	int age = 0;
-	final static int TTL = 600;
+	long activationTime = 0;
+	final static int TTL = 1500;
 
 	public GuiDailyProgressIndicators() {
 		this(null);
@@ -139,10 +139,11 @@ public class GuiDailyProgressIndicators extends Gui {
 
 	@SubscribeEvent
 	public void showProgressUpdate(RenderGameOverlayEvent.Post event) {
-		if (quest == null || age > TTL) {
+		if (quest == null || Minecraft.getSystemTime() - activationTime > TTL) {
+			quest = null;
 			return;
 		}
-		age++;
+		
 		if (event.isCancelable() || event.getType() != ElementType.EXPERIENCE) {
 			return;
 		}
@@ -152,7 +153,7 @@ public class GuiDailyProgressIndicators extends Gui {
 	}
 
 	public void setQuest(DailyQuest quest) {
-		age = 0;
+		activationTime = Minecraft.getSystemTime();
 		this.quest = quest;
 	}
 
