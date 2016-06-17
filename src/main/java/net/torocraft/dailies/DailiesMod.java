@@ -13,7 +13,7 @@ import net.minecraftforge.fml.common.event.FMLServerStartingEvent;
 public class DailiesMod {
 
 	public static final String MODID = "dailies";
-	public static final String VERSION = "1.9.4-6";
+	public static final String VERSION = "1.9.4-7";
 	public static final String MODNAME = "DailiesMod";
 
 	@Instance(value = DailiesMod.MODID)
@@ -26,7 +26,7 @@ public class DailiesMod {
 	public void serverLoad(FMLServerStartingEvent e) {
 		e.registerServerCommand(new DailiesCommand());
 	}
-	
+
 	@EventHandler
 	public void preInit(FMLPreInitializationEvent e) {
 		proxy.preInit(e);
@@ -36,7 +36,6 @@ public class DailiesMod {
 	public void init(FMLInitializationEvent e) {
 		proxy.init(e);
 	}
-
 
 	@EventHandler
 	public void postInit(FMLPostInitializationEvent e) {
