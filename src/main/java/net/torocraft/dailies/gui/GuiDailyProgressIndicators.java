@@ -14,6 +14,7 @@ import net.minecraft.client.gui.ScaledResolution;
 import net.minecraft.client.gui.inventory.GuiInventory;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.server.MinecraftServer;
 import net.minecraftforge.client.event.GuiScreenEvent.DrawScreenEvent;
 import net.minecraftforge.client.event.RenderGameOverlayEvent;
 import net.minecraftforge.client.event.RenderGameOverlayEvent.ElementType;
@@ -32,6 +33,7 @@ public class GuiDailyProgressIndicators extends Gui {
 	private final Minecraft mc;
 	private static int offset = 0;
 	private static long mousePressed = 0;
+	private MinecraftServer server;
 
 	GuiButton prevBtn;
 	GuiButton nextBtn;
@@ -125,11 +127,11 @@ public class GuiDailyProgressIndicators extends Gui {
 		if (mouseCooldownOver() && Mouse.getEventButtonState() && Mouse.getEventButton() != -1) {
 			if (prevBtn.mousePressed(mc, mouseX, mouseY)) {
 				offset = Math.max(0, offset - 5);
-				mousePressed = Minecraft.getSystemTime();
+				mousePressed = server.getCurrentTime();
 			}
 			if (nextBtn.mousePressed(mc, mouseX, mouseY)) {
 				offset = offset + 5;
-				mousePressed = Minecraft.getSystemTime();
+				mousePressed = server.getCurrentTime();
 			}
 		}
 	}
@@ -148,7 +150,7 @@ public class GuiDailyProgressIndicators extends Gui {
 	}
 
 	private boolean mouseCooldownOver() {
-		return Minecraft.getSystemTime() - mousePressed > MOUSE_COOLDOWN;
+		return server.getCurrentTime() - mousePressed > MOUSE_COOLDOWN;
 	}
 
 	private boolean isSet(Set<DailyQuest> set) {
@@ -157,7 +159,7 @@ public class GuiDailyProgressIndicators extends Gui {
 
 	@SubscribeEvent
 	public void showProgressUpdate(RenderGameOverlayEvent.Post event) {
-		if (quest == null || Minecraft.getSystemTime() - activationTime > TTL) {
+		if (quest == null || server.getCurrentTime() - activationTime > TTL) {
 			quest = null;
 			return;
 		}
@@ -171,7 +173,7 @@ public class GuiDailyProgressIndicators extends Gui {
 	}
 
 	public void setQuest(DailyQuest quest) {
-		activationTime = Minecraft.getSystemTime();
+		activationTime = server.getCurrentTime();
 		this.quest = quest;
 	}
 
