@@ -11,6 +11,7 @@ import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.TextComponentString;
 import net.torocraft.dailies.capabilities.CapabilityDailiesHandler;
 import net.torocraft.dailies.capabilities.IDailiesCapability;
@@ -61,6 +62,8 @@ public class DailiesCommand implements ICommand {
 					listDailyQuests(questsData);
 				} else if (args.length == 2) {
 					handleSubCommand(questsData, args);
+				} else if(args.length == 1 && args[0].equals("gui")) {
+					questsData.player.openGui(DailiesMod.instance, DailiesGuiHandler.getGuiID(), questsData.player.worldObj, questsData.player.chunkCoordX, questsData.player.chunkCoordY, questsData.player.chunkCoordZ);
 				} else {
 					sender.addChatMessage(invalidCommand);
 				}
@@ -160,7 +163,7 @@ public class DailiesCommand implements ICommand {
 	}
 
 	private boolean validCommand(String command) {
-		if (command.equals("abandon") || command.equals("accept")) {
+		if (command.equals("abandon") || command.equals("accept") || command.equals("gui")) {
 			return true;
 		}
 		return false;

@@ -14,6 +14,7 @@ import net.minecraft.village.MerchantRecipeList;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.client.registry.RenderingRegistry;
 import net.minecraftforge.fml.common.registry.EntityRegistry;
+import net.torocraft.dailies.DailiesGuiHandler;
 import net.torocraft.dailies.DailiesMod;
 import net.torocraft.dailies.entities.render.RenderBailey;
 
@@ -43,7 +44,8 @@ public class EntityBailey extends EntityVillager {
 			if (!this.worldObj.isRemote && (this.buyingList == null || !this.buyingList.isEmpty())) {
 				this.setCustomer(player);
 
-				player.displayVillagerTradeGui(this);
+				//player.displayVillagerTradeGui(this);
+				player.openGui(DailiesMod.instance, DailiesGuiHandler.getGuiID(), this.worldObj, 0, 0, 0);
 			}
 
 			player.addStat(StatList.TALKED_TO_VILLAGER);
