@@ -18,7 +18,6 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraftforge.client.event.GuiScreenEvent.DrawScreenEvent;
 import net.minecraftforge.client.event.RenderGameOverlayEvent;
 import net.minecraftforge.client.event.RenderGameOverlayEvent.ElementType;
-import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
@@ -34,7 +33,7 @@ public class GuiDailyProgressIndicators extends Gui {
 	private final Minecraft mc;
 	private static int offset = 0;
 	private static long mousePressed = 0;
-	private final MinecraftServer server;
+	private MinecraftServer server;
 
 	GuiButton prevBtn;
 	GuiButton nextBtn;
@@ -57,7 +56,6 @@ public class GuiDailyProgressIndicators extends Gui {
 		} else {
 			this.mc = Minecraft.getMinecraft();
 		}
-		server = FMLCommonHandler.instance().getMinecraftServerInstance();
 	}
 
 	@SubscribeEvent
@@ -66,7 +64,7 @@ public class GuiDailyProgressIndicators extends Gui {
 			return;
 		}
 
-		EntityPlayer player = server.getPlayerList().getPlayerByUsername(mc.thePlayer.getName());
+		EntityPlayer player = mc.getIntegratedServer().getPlayerList().getPlayerByUsername(mc.thePlayer.getName());
 		IDailiesCapability cap = player.getCapability(CapabilityDailiesHandler.DAILIES_CAPABILITY, null);
 
 		if (!isSet(cap.getAcceptedQuests())) {
