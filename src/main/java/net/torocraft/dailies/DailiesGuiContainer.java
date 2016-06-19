@@ -14,7 +14,6 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
-import net.torocraft.dailies.capabilities.CapabilityDailiesHandler;
 import net.torocraft.dailies.gui.GuiDailyBadge;
 import net.torocraft.dailies.quests.DailyQuest;
 
@@ -26,7 +25,7 @@ public class DailiesGuiContainer extends GuiContainer {
 	
 	private List<DailyQuest> availableQuests;
 
-	ResourceLocation texture = new ResourceLocation("dailiesmod", "textures/gui/crafting_table.png");
+	ResourceLocation texture = new ResourceLocation("dailiesmod", "textures/gui/bailey_gui.png");
 
 	public DailiesGuiContainer() {
 		this(null, null);
@@ -79,6 +78,6 @@ public class DailiesGuiContainer extends GuiContainer {
 		super.drawGuiContainerForegroundLayer(mouseX, mouseY);
 		final int LABEL_XPOS = 5;
 		final int LABEL_YPOS = 5;
-		fontRendererObj.drawString("Dailies!", LABEL_XPOS, LABEL_YPOS, Color.darkGray.getRGB());
+		fontRendererObj.drawString("Bailey's Dailies", LABEL_XPOS, LABEL_YPOS, Color.darkGray.getRGB());
 	}
 }
