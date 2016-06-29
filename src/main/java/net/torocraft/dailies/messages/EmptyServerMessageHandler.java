@@ -7,7 +7,7 @@ import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
 public class EmptyServerMessageHandler implements IMessageHandler<StatusUpdateToClient, IMessage> {
 
 	@Override
-	public IMessage onMessage(StatusUpdateToClient message, MessageContext ctx) {
+	public IMessage onMessage(final StatusUpdateToClient message, MessageContext ctx) {
 		return null;
 	}
 

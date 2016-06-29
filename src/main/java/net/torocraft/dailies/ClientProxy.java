@@ -6,8 +6,10 @@ import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.relauncher.Side;
 import net.torocraft.dailies.gui.GuiDailyProgressIndicators;
-import net.torocraft.dailies.messages.ClientMessageHandler;
+import net.torocraft.dailies.messages.StatusRequestToServer;
 import net.torocraft.dailies.messages.StatusUpdateToClient;
+import net.torocraft.dailies.messages.StatusRequestToServer.ServerMessageHandler;
+import net.torocraft.dailies.messages.StatusUpdateToClient.ClientMessageHandler;
 import net.torocraft.dailies.quests.DailyQuest;
 
 public class ClientProxy extends CommonProxy {
@@ -17,7 +19,6 @@ public class ClientProxy extends CommonProxy {
 	@Override
 	public void preInit(FMLPreInitializationEvent e) {
 		super.preInit(e);
-		CommonProxy.simpleNetworkWrapper.registerMessage(ClientMessageHandler.class, StatusUpdateToClient.class, CommonProxy.DAILY_RESPONSE_ID, Side.CLIENT);
 	}
 
 	@Override
