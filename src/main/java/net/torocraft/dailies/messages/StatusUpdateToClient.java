@@ -1,5 +1,6 @@
 package net.torocraft.dailies.messages;
 
+import java.util.HashSet;
 import java.util.Set;
 
 import com.google.gson.Gson;
@@ -7,6 +8,7 @@ import com.google.gson.Gson;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.WorldClient;
+import net.minecraft.util.text.TextComponentString;
 import net.minecraftforge.fml.common.network.ByteBufUtils;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessageHandler;
@@ -20,7 +22,7 @@ public class StatusUpdateToClient implements IMessage {
 	private String acceptedQuestJson;
 	
 	public StatusUpdateToClient() {
-		this(null);
+		
 	}
 	
 	public StatusUpdateToClient(Set<DailyQuest > acceptedQuests) {
@@ -46,13 +48,21 @@ public class StatusUpdateToClient implements IMessage {
 		}
 	}
 	
+	private void deserializeQuests() {
+		DailyQuest[] dailyQuests = new Gson().fromJson(acceptedQuestJson, DailyQuest[].class);
+		acceptedQuests = new HashSet<DailyQuest>();
+		for(DailyQuest quest : dailyQuests) {
+			acceptedQuests.add(quest);
+		}
+	}
+	
 	public String getQuestsJson() {
 		return this.acceptedQuestJson;
 	}
 	
-	public static class ClientMessageHandler implements IMessageHandler<StatusUpdateToClient, IMessage> {
-
-		public ClientMessageHandler() {}
+	public static class Handler implements IMessageHandler<StatusUpdateToClient, IMessage> {
+		
+		public Handler() {}
 		
 		@Override
 		public IMessage onMessage(final StatusUpdateToClient message, MessageContext ctx) {
@@ -63,6 +73,7 @@ public class StatusUpdateToClient implements IMessage {
 			Minecraft minecraft = Minecraft.getMinecraft();
 			final WorldClient worldClient = minecraft.theWorld;
 			minecraft.addScheduledTask(new Runnable() {
+				@Override
 				public void run() {
 					processMessage(worldClient, message);
 				}
@@ -72,7 +83,12 @@ public class StatusUpdateToClient implements IMessage {
 		}
 		
 		void processMessage(WorldClient worldClient, StatusUpdateToClient message) {
-			System.out.println(message.getQuestsJson());
+			Minecraft.getMinecraft().thePlayer.addChatMessage(new TextComponentString(message.acceptedQuestJson));
+			message.deserializeQuests();
+			if(message.acceptedQuests != null) {
+				DailiesPacketHandler.acceptedQuests = message.acceptedQuests;
+			}
+			return;
 		}
 	}
 }

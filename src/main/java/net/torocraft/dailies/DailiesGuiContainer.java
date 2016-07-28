@@ -15,6 +15,7 @@ import net.minecraft.world.World;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import net.torocraft.dailies.gui.GuiDailyBadge;
+import net.torocraft.dailies.messages.DailiesPacketHandler;
 import net.torocraft.dailies.messages.StatusRequestToServer;
 import net.torocraft.dailies.quests.DailyQuest;
 
@@ -43,7 +44,10 @@ public class DailiesGuiContainer extends GuiContainer {
 	public DailiesGuiContainer(EntityPlayer player, World world, int x, int y, int z) {
 		this(player, world);
 		loadAvailableQuests();
-		CommonProxy.simpleNetworkWrapper.sendToServer(new StatusRequestToServer());
+		
+		DailiesPacketHandler.INSTANCE.sendToServer(new StatusRequestToServer());
+
+		
 	}
 	
 	private void loadAvailableQuests() {

@@ -23,6 +23,8 @@ import net.minecraftforge.fml.relauncher.SideOnly;
 import net.torocraft.dailies.DailiesRequester;
 import net.torocraft.dailies.capabilities.CapabilityDailiesHandler;
 import net.torocraft.dailies.capabilities.IDailiesCapability;
+import net.torocraft.dailies.messages.DailiesPacketHandler;
+import net.torocraft.dailies.messages.StatusRequestToServer;
 import net.torocraft.dailies.quests.DailyQuest;
 
 @SideOnly(Side.CLIENT)
@@ -61,11 +63,16 @@ public class GuiDailyProgressIndicators extends Gui {
 		if (!(mc.currentScreen instanceof GuiInventory)) {
 			return;
 		}
+		
+		if(DailiesPacketHandler.acceptedQuests == null) {
+			DailiesPacketHandler.INSTANCE.sendToServer(new StatusRequestToServer());
+			return;
+		}
 
-		EntityPlayer player = mc.getIntegratedServer().getPlayerList().getPlayerByUsername(mc.thePlayer.getName());
-		IDailiesCapability cap = player.getCapability(CapabilityDailiesHandler.DAILIES_CAPABILITY, null);
+////		EntityPlayer player = mc.getIntegratedServer().getPlayerList().getPlayerByUsername(mc.thePlayer.getName());
+//		IDailiesCapability cap = player.getCapability(CapabilityDailiesHandler.DAILIES_CAPABILITY, null);
 
-		if (!isSet(cap.getAcceptedQuests())) {
+		if (!isSet(DailiesPacketHandler.acceptedQuests)) {
 			return;
 		}
 
@@ -82,10 +89,10 @@ public class GuiDailyProgressIndicators extends Gui {
 		GlStateManager.disableLighting();
 		GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
 		for (int i = 0; i < 5; i++) {
-			if (cap.getAcceptedQuests().size() < i + offset + 1) {
+			if (DailiesPacketHandler.acceptedQuests.size() < i + offset + 1) {
 				break;
 			}
-			DailyQuest quest = (DailyQuest) cap.getAcceptedQuests().toArray()[i + offset];
+			DailyQuest quest = (DailyQuest) DailiesPacketHandler.acceptedQuests.toArray()[i + offset];
 			new GuiDailyBadge(quest, mc, xPos, yPos);
 			buttonMap.put(quest.id, new GuiButton(i + 10, xPos + 122, yPos, 20, 20, "X"));
 			yPos += 30;
@@ -94,8 +101,8 @@ public class GuiDailyProgressIndicators extends Gui {
 		mouseX = Mouse.getX() * viewport.getScaledWidth() / this.mc.displayWidth;
 		mouseY = viewport.getScaledHeight() - Mouse.getY() * viewport.getScaledHeight() / this.mc.displayHeight - 1;
 
-		if (cap.getAcceptedQuests().size() > 5) {
-			drawPagerButtons(viewport, inventoryHeight, xPos, cap.getAcceptedQuests().size());
+		if (DailiesPacketHandler.acceptedQuests.size() > 5) {
+			drawPagerButtons(viewport, inventoryHeight, xPos, DailiesPacketHandler.acceptedQuests.size());
 		}
 
 		drawQuestActions();

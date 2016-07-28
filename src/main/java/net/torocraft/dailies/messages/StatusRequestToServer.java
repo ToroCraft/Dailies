@@ -9,7 +9,6 @@ import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessageHandler;
 import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
 import net.minecraftforge.fml.relauncher.Side;
-import net.torocraft.dailies.CommonProxy;
 import net.torocraft.dailies.capabilities.CapabilityDailiesHandler;
 import net.torocraft.dailies.capabilities.IDailiesCapability;
 import net.torocraft.dailies.quests.DailyQuest;
@@ -22,7 +21,7 @@ public class StatusRequestToServer implements IMessage {
 	
 	@Override
 	public void fromBytes(ByteBuf buf) {
-		int x = buf.readInt();
+		buf.readInt();
 	}
 
 	@Override
@@ -30,11 +29,11 @@ public class StatusRequestToServer implements IMessage {
 		buf.writeInt(1);
 	}
 	
-	public static class ServerMessageHandler implements IMessageHandler<StatusRequestToServer, IMessage> {
+	public static class Handler implements IMessageHandler<StatusRequestToServer, IMessage> {
 
 		private StatusUpdateToClient msg;
 		
-		public ServerMessageHandler() {}
+		public Handler() {}
 		
 		@Override
 		public IMessage onMessage(final StatusRequestToServer message, MessageContext ctx) {
@@ -48,9 +47,10 @@ public class StatusRequestToServer implements IMessage {
 				return null;
 			}
 			
-			final WorldServer worldServer = (WorldServer)player.worldObj;
+			final WorldServer worldServer = player.getServerWorld();
 			
 			worldServer.addScheduledTask(new Runnable() {
+				@Override
 				public void run() {
 					processMessage(message, player);
 				}
@@ -67,7 +67,7 @@ public class StatusRequestToServer implements IMessage {
 			}
 			
 			msg = new StatusUpdateToClient(cap.getAcceptedQuests());
-			CommonProxy.simpleNetworkWrapper.sendTo(msg, player);
+			DailiesPacketHandler.INSTANCE.sendTo(msg, player);
 			
 			return;
 		}

@@ -4,12 +4,7 @@ import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
-import net.minecraftforge.fml.relauncher.Side;
 import net.torocraft.dailies.gui.GuiDailyProgressIndicators;
-import net.torocraft.dailies.messages.StatusRequestToServer;
-import net.torocraft.dailies.messages.StatusUpdateToClient;
-import net.torocraft.dailies.messages.StatusRequestToServer.ServerMessageHandler;
-import net.torocraft.dailies.messages.StatusUpdateToClient.ClientMessageHandler;
 import net.torocraft.dailies.quests.DailyQuest;
 
 public class ClientProxy extends CommonProxy {
@@ -36,5 +31,4 @@ public class ClientProxy extends CommonProxy {
 	public void displayQuestProgress(DailyQuest quest) {
 		dailyGui.setQuest(quest);
 	}
-
 }
