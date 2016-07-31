@@ -40,4 +40,20 @@ public class GuiDailyBadge extends Gui {
 		}
 		drawCenteredString(mc.fontRendererObj, barText, x + 60, y + 15, 0xffffff);
 	}
+	
+	public void drawAccept() {
+		ResourceLocation badgeTexture = new ResourceLocation("dailiesmod", "textures/gui/badge_bg.png");
+		mc.renderEngine.bindTexture(badgeTexture);
+
+		drawTexturedModalRect(x, y, 0, 0, width, height);
+		drawTexturedModalRect(x + 6, y + 14, 0, 76, 108, 10);
+		drawTexturedModalRect(x + 6, y + 14, 0, 86, 108, 10);
+
+		String formattedQuestName = mc.fontRendererObj.trimStringToWidth(quest.name, 110);
+		String questDescription = mc.fontRendererObj.trimStringToWidth(quest.description, 110);
+		String questAccept = mc.fontRendererObj.trimStringToWidth(quest.description, 110);
+		drawCenteredString(mc.fontRendererObj, formattedQuestName, x + 60, y + 5, 0xffffff);
+		drawCenteredString(mc.fontRendererObj, questDescription, x + 60, y + 15, 0xffffff);
+		drawCenteredString(mc.fontRendererObj, questAccept, x + 60, y + 30, 0xffffff);
+	}
 }

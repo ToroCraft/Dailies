@@ -1,7 +1,6 @@
 package net.torocraft.dailies.gui;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -14,17 +13,13 @@ import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.ScaledResolution;
 import net.minecraft.client.gui.inventory.GuiInventory;
 import net.minecraft.client.renderer.GlStateManager;
-import net.minecraft.entity.player.EntityPlayer;
 import net.minecraftforge.client.event.GuiScreenEvent.DrawScreenEvent;
 import net.minecraftforge.client.event.RenderGameOverlayEvent;
 import net.minecraftforge.client.event.RenderGameOverlayEvent.ElementType;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
-import net.torocraft.dailies.DailiesMod;
-import net.torocraft.dailies.DailiesRequester;
-import net.torocraft.dailies.capabilities.CapabilityDailiesHandler;
-import net.torocraft.dailies.capabilities.IDailiesCapability;
+import net.torocraft.dailies.messages.AbandonQuestRequest;
 import net.torocraft.dailies.messages.DailiesPacketHandler;
 import net.torocraft.dailies.messages.StatusRequestToServer;
 import net.torocraft.dailies.quests.DailyQuest;
@@ -71,7 +66,7 @@ public class GuiDailyProgressIndicators extends Gui {
 		}
 		
 		if(questsDataUpdateRequired) {
-			DailiesPacketHandler.sendRequestToServer();
+			DailiesPacketHandler.INSTANCE.sendToServer(new StatusRequestToServer());
 			questsDataUpdateRequired = false;
 			return;
 		}
@@ -152,7 +147,7 @@ public class GuiDailyProgressIndicators extends Gui {
 
 			if (Mouse.getEventButtonState() && Mouse.getEventButton() != -1) {
 				if (btn.mousePressed(mc, mouseX, mouseY)) {
-					new DailiesRequester().abandonQuest(mc.thePlayer.getName(), entry.getKey());
+					DailiesPacketHandler.INSTANCE.sendToServer(new AbandonQuestRequest(entry.getKey()));
 				}
 			}
 		}

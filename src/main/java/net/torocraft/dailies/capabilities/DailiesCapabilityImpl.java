@@ -160,7 +160,7 @@ public class DailiesCapabilityImpl implements IDailiesCapability {
 	}
 
 	@Override
-	public void acceptQuest(DailyQuest quest) {
+	public void acceptQuest(String playerName, DailyQuest quest) {
 		if (acceptedQuests == null) {
 			return;
 		}
@@ -169,15 +169,17 @@ public class DailiesCapabilityImpl implements IDailiesCapability {
 		playerQuest.date = System.currentTimeMillis();
 		acceptedQuests.add(playerQuest);
 		availableQuests.remove(quest);
+		new DailiesRequester().acceptQuest(playerName, quest.id);
 	}
 
 	@Override
-	public void abandonQuest(DailyQuest quest) {
+	public void abandonQuest(String playerName, DailyQuest quest) {
 		if (acceptedQuests == null) {
 			return;
 		}
 
 		acceptedQuests.remove(quest);
+		new DailiesRequester().abandonQuest(playerName, quest.id);
 	}
 	/*
 	 * private void setDefaultQuests() { quests = new ArrayList<DailyQuest>();
@@ -232,5 +234,19 @@ public class DailiesCapabilityImpl implements IDailiesCapability {
 	public void setCompletedQuests(Set<DailyQuest> quests) {
 		this.completedQuests = quests;
 	}
-
+	
+	@Override
+	public DailyQuest getQuestById(String questId) {
+		if(acceptedQuests == null) {
+			return null;
+		}
+		
+		DailyQuest quest = null;
+		for(DailyQuest q : acceptedQuests) {
+			if(q.id.equals(questId)) {
+				quest = q;
+			}
+		}
+		return quest;
+	}
 }

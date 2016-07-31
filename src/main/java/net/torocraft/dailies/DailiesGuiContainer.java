@@ -72,7 +72,7 @@ public class DailiesGuiContainer extends GuiContainer {
 		int yPos = (viewport.getScaledHeight() / 2) - (166 / 2);
 		
 		for(DailyQuest quest : availableQuests) {
-			new GuiDailyBadge(quest, mc, xPos, yPos);
+			new GuiDailyBadge(quest, mc, xPos, yPos).drawAccept();;
 			yPos += 30;
 		}
 	}

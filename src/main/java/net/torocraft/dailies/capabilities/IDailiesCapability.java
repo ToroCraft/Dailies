@@ -24,9 +24,9 @@ public interface IDailiesCapability {
 
 	void readNBT(NBTTagCompound c);
 
-	void acceptQuest(DailyQuest quest);
+	void acceptQuest(String playerName, DailyQuest quest);
 
-	void abandonQuest(DailyQuest quest);
+	void abandonQuest(String playerName, DailyQuest quest);
 
 	Set<DailyQuest> getAcceptedQuests();
 
@@ -39,5 +39,7 @@ public interface IDailiesCapability {
 	Set<DailyQuest> getAvailableQuests();
 
 	void setAvailableQuests(Set<DailyQuest> quests);
+
+	DailyQuest getQuestById(String questId);
 
 }

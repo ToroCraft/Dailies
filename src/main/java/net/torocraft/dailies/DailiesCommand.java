@@ -88,8 +88,7 @@ public class DailiesCommand implements ICommand {
 			if (quest == null) {
 				d.player.addChatMessage(questNotFound);
 			} else {
-				new DailiesRequester().abandonQuest(d.player.getName(), quest.id);
-				d.playerDailiesCapability.abandonQuest(quest);
+				d.playerDailiesCapability.abandonQuest(d.player.getName(), quest);
 				d.player.addChatMessage(new TextComponentString("Quest " + fromIndex(index) + " " + quest.getDisplayName() + " abandoned"));
 			}
 
@@ -101,8 +100,7 @@ public class DailiesCommand implements ICommand {
 			if (quest == null) {
 				d.player.addChatMessage(questNotFound);
 			} else {
-				new DailiesRequester().acceptQuest(d.player.getName(), quest.id);
-				d.playerDailiesCapability.acceptQuest(quest);
+				d.playerDailiesCapability.acceptQuest(d.player.getName(), quest);
 				d.player.addChatMessage(new TextComponentString("Quest " + fromIndex(index) + " " + quest.getDisplayName() + " accepted"));
 			}
 		}

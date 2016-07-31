@@ -26,11 +26,7 @@ public class DailiesPacketHandler {
 	public static void init() {
 		INSTANCE = NetworkRegistry.INSTANCE.newSimpleChannel("BaileysDailies");
 		INSTANCE.registerMessage(StatusRequestToServer.Handler.class, StatusRequestToServer.class, nextId(), Side.SERVER);
+		INSTANCE.registerMessage(AbandonQuestRequest.Handler.class, AbandonQuestRequest.class, nextId(), Side.SERVER);
 		INSTANCE.registerMessage(StatusUpdateToClient.Handler.class, StatusUpdateToClient.class, nextId(), Side.CLIENT);
-	}
-	
-	public static void sendRequestToServer() {
-		acceptedQuests = null;
-		INSTANCE.sendToServer(new StatusRequestToServer());
 	}
 }
