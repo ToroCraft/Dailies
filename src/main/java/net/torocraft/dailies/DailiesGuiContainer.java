@@ -46,8 +46,6 @@ public class DailiesGuiContainer extends GuiContainer {
 		loadAvailableQuests();
 		
 		DailiesPacketHandler.INSTANCE.sendToServer(new StatusRequestToServer());
-
-		
 	}
 	
 	private void loadAvailableQuests() {

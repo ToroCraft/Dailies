@@ -1,6 +1,7 @@
 package net.torocraft.dailies.gui;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -34,6 +35,7 @@ public class GuiDailyProgressIndicators extends Gui {
 	private final Minecraft mc;
 	private static int offset = 0;
 	private static long mousePressed = 0;
+	private static List<DailyQuest> acceptedDailyQuests = null;
 
 	GuiButton prevBtn;
 	GuiButton nextBtn;

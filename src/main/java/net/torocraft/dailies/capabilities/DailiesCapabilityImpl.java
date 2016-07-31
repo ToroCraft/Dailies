@@ -17,7 +17,8 @@ import net.torocraft.dailies.quests.DailyQuest;
 
 public class DailiesCapabilityImpl implements IDailiesCapability {
 
-	private Set<DailyQuest> quests;
+	private Set<DailyQuest> availableQuests;
+	private Set<DailyQuest> acceptedQuests;
 	private Set<DailyQuest> completedQuests;
 
 	@Override
@@ -42,10 +43,10 @@ public class DailiesCapabilityImpl implements IDailiesCapability {
 	}
 
 	private DailyQuest gatherNextQuest(EntityPlayer player, EntityItem item) {
-		if (quests == null) {
+		if (acceptedQuests == null) {
 			return null;
 		}
-		for (DailyQuest q : quests) {
+		for (DailyQuest q : acceptedQuests) {
 			if (q.gather(player, item)) {
 				return q;
 			}
@@ -54,7 +55,7 @@ public class DailiesCapabilityImpl implements IDailiesCapability {
 	}
 
 	private void completeQuest(final DailyQuest quest, final EntityPlayer player) {
-		quests.remove(quest);
+		acceptedQuests.remove(quest);
 		if (completedQuests == null) {
 			completedQuests = new HashSet<DailyQuest>();
 		}
@@ -92,10 +93,10 @@ public class DailiesCapabilityImpl implements IDailiesCapability {
 	}
 
 	private DailyQuest huntNextQuest(EntityPlayer player, EntityLivingBase mob) {
-		if (quests == null) {
+		if (acceptedQuests == null) {
 			return null;
 		}
-		for (DailyQuest q : quests) {
+		for (DailyQuest q : acceptedQuests) {
 			if (q.hunt(player, mob)) {
 				return q;
 			}
@@ -115,7 +116,7 @@ public class DailiesCapabilityImpl implements IDailiesCapability {
 	@Override
 	public NBTTagCompound writeNBT() {
 		NBTTagCompound c = new NBTTagCompound();
-		writeQuestsList(c, "quests", quests);
+		writeQuestsList(c, "acceptedQuests", acceptedQuests);
 		writeQuestsList(c, "completedQuests", completedQuests);
 		return c;
 	}
@@ -123,10 +124,11 @@ public class DailiesCapabilityImpl implements IDailiesCapability {
 	@Override
 	public void readNBT(NBTTagCompound b) {
 		if (b == null) {
-			quests = new HashSet<DailyQuest>();
+			acceptedQuests = new HashSet<DailyQuest>();
 			return;
 		}
-		quests = readQuestList(b, "quests");
+		
+		acceptedQuests = readQuestList(b, "acceptedQuests");
 		completedQuests = readQuestList(b, "completedQuests");
 	}
 
@@ -159,23 +161,23 @@ public class DailiesCapabilityImpl implements IDailiesCapability {
 
 	@Override
 	public void acceptQuest(DailyQuest quest) {
-		if (quests == null) {
+		if (acceptedQuests == null) {
 			return;
 		}
 
 		DailyQuest playerQuest = (DailyQuest) quest.clone();
 		playerQuest.date = System.currentTimeMillis();
-		quests.add(playerQuest);
-
+		acceptedQuests.add(playerQuest);
+		availableQuests.remove(quest);
 	}
 
 	@Override
 	public void abandonQuest(DailyQuest quest) {
-		if (quests == null) {
+		if (acceptedQuests == null) {
 			return;
 		}
 
-		quests.remove(quest);
+		acceptedQuests.remove(quest);
 	}
 	/*
 	 * private void setDefaultQuests() { quests = new ArrayList<DailyQuest>();
@@ -200,20 +202,30 @@ public class DailiesCapabilityImpl implements IDailiesCapability {
 	 * 
 	 * quests.add(quest); }
 	 */
+	
+	@Override
+	public Set<DailyQuest> getAvailableQuests() {
+		return availableQuests;
+	}
 
 	@Override
 	public Set<DailyQuest> getAcceptedQuests() {
-		return quests;
+		return acceptedQuests;
 	}
 
 	@Override
 	public Set<DailyQuest> getCompletedQuests() {
 		return completedQuests;
 	}
+	
+	@Override 
+	public void setAvailableQuests(Set<DailyQuest> quests) {
+		this.availableQuests = quests;
+	}
 
 	@Override
 	public void setAcceptedQuests(Set<DailyQuest> quests) {
-		this.quests = quests;
+		this.acceptedQuests = quests;
 	}
 
 	@Override

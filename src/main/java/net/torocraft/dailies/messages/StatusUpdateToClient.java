@@ -83,7 +83,6 @@ public class StatusUpdateToClient implements IMessage {
 		}
 		
 		void processMessage(WorldClient worldClient, StatusUpdateToClient message) {
-			Minecraft.getMinecraft().thePlayer.addChatMessage(new TextComponentString(message.acceptedQuestJson));
 			message.deserializeQuests();
 			if(message.acceptedQuests != null) {
 				DailiesPacketHandler.acceptedQuests = message.acceptedQuests;

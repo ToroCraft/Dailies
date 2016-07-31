@@ -36,4 +36,8 @@ public interface IDailiesCapability {
 
 	void setCompletedQuests(Set<DailyQuest> quests);
 
+	Set<DailyQuest> getAvailableQuests();
+
+	void setAvailableQuests(Set<DailyQuest> quests);
+
 }
