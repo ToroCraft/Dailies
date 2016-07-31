@@ -28,4 +28,9 @@ public class DailiesPacketHandler {
 		INSTANCE.registerMessage(StatusRequestToServer.Handler.class, StatusRequestToServer.class, nextId(), Side.SERVER);
 		INSTANCE.registerMessage(StatusUpdateToClient.Handler.class, StatusUpdateToClient.class, nextId(), Side.CLIENT);
 	}
+	
+	public static void sendRequestToServer() {
+		acceptedQuests = null;
+		INSTANCE.sendToServer(new StatusRequestToServer());
+	}
 }

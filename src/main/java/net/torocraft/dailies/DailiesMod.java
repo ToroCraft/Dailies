@@ -40,21 +40,5 @@ public class DailiesMod {
 	@EventHandler
 	public void postInit(FMLPostInitializationEvent e) {
 		proxy.postInit(e);
-		/*
-		 * DailiesRequester requester = new DailiesRequester(); List<DailyQuest>
-		 * dailies = requester.getDailies();
-		 * 
-		 * if (dailies == null) {
-		 * System.out.println("******************* No dailies found, lame!"); }
-		 * else {
-		 * System.out.println("********************** Dailies found COUNT[" +
-		 * dailies.size() + "]"); }
-		 * 
-		 * World world =
-		 * FMLCommonHandler.instance().getMinecraftServerInstance().
-		 * getEntityWorld(); if (dailies != null) { DailiesWorldData worldData =
-		 * DailiesWorldData.get(world); worldData.setDailies(dailies); }
-		 */
 	}
-
 }

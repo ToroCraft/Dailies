@@ -14,6 +14,7 @@ import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessageHandler;
 import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
 import net.minecraftforge.fml.relauncher.Side;
+import net.torocraft.dailies.DailiesMod;
 import net.torocraft.dailies.quests.DailyQuest;
 
 public class StatusUpdateToClient implements IMessage {

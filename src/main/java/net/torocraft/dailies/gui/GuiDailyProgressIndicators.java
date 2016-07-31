@@ -21,6 +21,7 @@ import net.minecraftforge.client.event.RenderGameOverlayEvent.ElementType;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
+import net.torocraft.dailies.DailiesMod;
 import net.torocraft.dailies.DailiesRequester;
 import net.torocraft.dailies.capabilities.CapabilityDailiesHandler;
 import net.torocraft.dailies.capabilities.IDailiesCapability;
@@ -35,12 +36,14 @@ public class GuiDailyProgressIndicators extends Gui {
 	private final Minecraft mc;
 	private static int offset = 0;
 	private static long mousePressed = 0;
-	private static List<DailyQuest> acceptedDailyQuests = null;
 
 	GuiButton prevBtn;
 	GuiButton nextBtn;
 
 	DailyQuest quest = null;
+	
+	private Boolean questsDataUpdateRequired = true;
+	
 	long activationTime = 0;
 	final static int TTL = 1500;
 
@@ -63,16 +66,15 @@ public class GuiDailyProgressIndicators extends Gui {
 	@SubscribeEvent
 	public void drawProgressIndicatorsInInventory(DrawScreenEvent.Post event) {
 		if (!(mc.currentScreen instanceof GuiInventory)) {
+			questsDataUpdateRequired = true;
 			return;
 		}
 		
-		if(DailiesPacketHandler.acceptedQuests == null) {
-			DailiesPacketHandler.INSTANCE.sendToServer(new StatusRequestToServer());
+		if(questsDataUpdateRequired) {
+			DailiesPacketHandler.sendRequestToServer();
+			questsDataUpdateRequired = false;
 			return;
 		}
-
-////		EntityPlayer player = mc.getIntegratedServer().getPlayerList().getPlayerByUsername(mc.thePlayer.getName());
-//		IDailiesCapability cap = player.getCapability(CapabilityDailiesHandler.DAILIES_CAPABILITY, null);
 
 		if (!isSet(DailiesPacketHandler.acceptedQuests)) {
 			return;
