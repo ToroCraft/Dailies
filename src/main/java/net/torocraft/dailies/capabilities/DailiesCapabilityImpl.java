@@ -116,6 +116,7 @@ public class DailiesCapabilityImpl implements IDailiesCapability {
 	@Override
 	public NBTTagCompound writeNBT() {
 		NBTTagCompound c = new NBTTagCompound();
+		writeQuestsList(c, "availableQuests", availableQuests);
 		writeQuestsList(c, "acceptedQuests", acceptedQuests);
 		writeQuestsList(c, "completedQuests", completedQuests);
 		return c;
@@ -128,6 +129,7 @@ public class DailiesCapabilityImpl implements IDailiesCapability {
 			return;
 		}
 		
+		availableQuests = readQuestList(b, "availableQuests");
 		acceptedQuests = readQuestList(b, "acceptedQuests");
 		completedQuests = readQuestList(b, "completedQuests");
 	}
@@ -236,13 +238,28 @@ public class DailiesCapabilityImpl implements IDailiesCapability {
 	}
 	
 	@Override
-	public DailyQuest getQuestById(String questId) {
+	public DailyQuest getAcceptedQuestById(String questId) {
 		if(acceptedQuests == null) {
 			return null;
 		}
 		
 		DailyQuest quest = null;
 		for(DailyQuest q : acceptedQuests) {
+			if(q.id.equals(questId)) {
+				quest = q;
+			}
+		}
+		return quest;
+	}
+	
+	@Override
+	public DailyQuest getAvailableQuestById(String questId) {
+		if(availableQuests == null) {
+			return null;
+		}
+		
+		DailyQuest quest = null;
+		for(DailyQuest q : availableQuests) {
 			if(q.id.equals(questId)) {
 				quest = q;
 			}

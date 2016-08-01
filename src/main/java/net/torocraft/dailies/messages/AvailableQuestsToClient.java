@@ -8,65 +8,66 @@ import com.google.gson.Gson;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.WorldClient;
-import net.minecraft.util.text.TextComponentString;
 import net.minecraftforge.fml.common.network.ByteBufUtils;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessageHandler;
 import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
 import net.minecraftforge.fml.relauncher.Side;
-import net.torocraft.dailies.DailiesMod;
 import net.torocraft.dailies.quests.DailyQuest;
 
-public class StatusUpdateToClient implements IMessage {
+public class AvailableQuestsToClient implements IMessage {
+
+	private Set<DailyQuest> availableQuests;
+	private String availableQuestsJson;
 	
-	private Set<DailyQuest> acceptedQuests;
-	private String acceptedQuestJson;
-	
-	public StatusUpdateToClient() {
+	public AvailableQuestsToClient() {
 		
 	}
 	
-	public StatusUpdateToClient(Set<DailyQuest > acceptedQuests) {
-		this.acceptedQuests = acceptedQuests;
+	public AvailableQuestsToClient(Set<DailyQuest > availableQuests) {
+		this.availableQuests = availableQuests;
 		serializeQuests();
 	}
 	
 	@Override
 	public void fromBytes(ByteBuf buf) {
-		acceptedQuestJson = ByteBufUtils.readUTF8String(buf);
+		availableQuestsJson = ByteBufUtils.readUTF8String(buf);
+		
 	}
 
 	@Override
 	public void toBytes(ByteBuf buf) {
-		ByteBufUtils.writeUTF8String(buf, acceptedQuestJson);
+		ByteBufUtils.writeUTF8String(buf, availableQuestsJson);
 	}
 	
+	
 	private void serializeQuests() {
-		if(acceptedQuests != null) {
-			acceptedQuestJson = new Gson().toJson(acceptedQuests);
+		if(availableQuests != null) {
+			availableQuestsJson = new Gson().toJson(availableQuests);
 		} else {
-			acceptedQuestJson = "";
+			availableQuestsJson = "";
 		}
 	}
 	
 	private void deserializeQuests() {
-		DailyQuest[] dailyQuests = new Gson().fromJson(acceptedQuestJson, DailyQuest[].class);
-		acceptedQuests = new HashSet<DailyQuest>();
+		DailyQuest[] dailyQuests = new Gson().fromJson(availableQuestsJson, DailyQuest[].class);
+		availableQuests = new HashSet<DailyQuest>();
 		for(DailyQuest quest : dailyQuests) {
-			acceptedQuests.add(quest);
+			availableQuests.add(quest);
 		}
 	}
 	
 	public String getQuestsJson() {
-		return this.acceptedQuestJson;
+		return this.availableQuestsJson;
 	}
 	
-	public static class Handler implements IMessageHandler<StatusUpdateToClient, IMessage> {
+	
+	public static class Handler implements IMessageHandler<AvailableQuestsToClient, IMessage> {
 		
 		public Handler() {}
 		
 		@Override
-		public IMessage onMessage(final StatusUpdateToClient message, MessageContext ctx) {
+		public IMessage onMessage(final AvailableQuestsToClient message, MessageContext ctx) {
 			if(ctx.side != Side.CLIENT) {
 				return null;
 			}
@@ -83,10 +84,10 @@ public class StatusUpdateToClient implements IMessage {
 			return null;
 		}
 		
-		void processMessage(WorldClient worldClient, StatusUpdateToClient message) {
+		void processMessage(WorldClient worldClient, AvailableQuestsToClient message) {
 			message.deserializeQuests();
-			if(message.acceptedQuests != null) {
-				DailiesPacketHandler.acceptedQuests = message.acceptedQuests;
+			if(message.availableQuests != null) {
+				DailiesPacketHandler.availableQuests = message.availableQuests;
 			}
 			return;
 		}

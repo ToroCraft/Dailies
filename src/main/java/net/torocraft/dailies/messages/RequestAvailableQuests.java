@@ -13,28 +13,30 @@ import net.torocraft.dailies.capabilities.CapabilityDailiesHandler;
 import net.torocraft.dailies.capabilities.IDailiesCapability;
 import net.torocraft.dailies.quests.DailyQuest;
 
-public class StatusRequestToServer implements IMessage {
+public class RequestAvailableQuests implements IMessage {
+
+	public RequestAvailableQuests() {
 	
-	public StatusRequestToServer() {
-		
 	}
 	
 	@Override
 	public void fromBytes(ByteBuf buf) {
 		buf.readInt();
+		
 	}
 
 	@Override
 	public void toBytes(ByteBuf buf) {
 		buf.writeInt(1);
+		
 	}
 	
-	public static class Handler implements IMessageHandler<StatusRequestToServer, IMessage> {
+	public static class Handler implements IMessageHandler<RequestAvailableQuests, IMessage> {
 		
 		public Handler() {}
 		
 		@Override
-		public IMessage onMessage(final StatusRequestToServer message, MessageContext ctx) {
+		public IMessage onMessage(final RequestAvailableQuests message, MessageContext ctx) {
 			if(ctx.side != Side.SERVER) {
 				return null;
 			}
@@ -57,14 +59,14 @@ public class StatusRequestToServer implements IMessage {
 			return null;
 		}
 		
-		void processMessage(StatusRequestToServer message, EntityPlayerMP player) {
+		void processMessage(RequestAvailableQuests message, EntityPlayerMP player) {
 			IDailiesCapability cap = player.getCapability(CapabilityDailiesHandler.DAILIES_CAPABILITY, null);
 			
-			if(!isSet(cap.getAcceptedQuests())) {
+			if(!isSet(cap.getAvailableQuests())) {
 				return;
 			}
 			
-			DailiesPacketHandler.INSTANCE.sendTo(new StatusUpdateToClient(cap.getAcceptedQuests()), player);
+			DailiesPacketHandler.INSTANCE.sendTo(new AvailableQuestsToClient(cap.getAvailableQuests()), player);
 			
 			return;
 		}

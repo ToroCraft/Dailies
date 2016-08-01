@@ -21,7 +21,7 @@ import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import net.torocraft.dailies.messages.AbandonQuestRequest;
 import net.torocraft.dailies.messages.DailiesPacketHandler;
-import net.torocraft.dailies.messages.StatusRequestToServer;
+import net.torocraft.dailies.messages.RequestAcceptedQuests;
 import net.torocraft.dailies.quests.DailyQuest;
 
 @SideOnly(Side.CLIENT)
@@ -66,7 +66,7 @@ public class GuiDailyProgressIndicators extends Gui {
 		}
 		
 		if(questsDataUpdateRequired) {
-			DailiesPacketHandler.INSTANCE.sendToServer(new StatusRequestToServer());
+			DailiesPacketHandler.INSTANCE.sendToServer(new RequestAcceptedQuests());
 			questsDataUpdateRequired = false;
 			return;
 		}

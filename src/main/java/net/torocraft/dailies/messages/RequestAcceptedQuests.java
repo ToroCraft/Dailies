@@ -1,9 +1,10 @@
 package net.torocraft.dailies.messages;
 
+import java.util.Set;
+
 import io.netty.buffer.ByteBuf;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.world.WorldServer;
-import net.minecraftforge.fml.common.network.ByteBufUtils;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessageHandler;
 import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
@@ -12,33 +13,28 @@ import net.torocraft.dailies.capabilities.CapabilityDailiesHandler;
 import net.torocraft.dailies.capabilities.IDailiesCapability;
 import net.torocraft.dailies.quests.DailyQuest;
 
-public class AbandonQuestRequest implements IMessage {
-
-	private String questId;
+public class RequestAcceptedQuests implements IMessage {
 	
-	public AbandonQuestRequest() {
+	public RequestAcceptedQuests() {
 		
-	}
-	
-	public AbandonQuestRequest(String questId) {
-		this.questId = questId;
 	}
 	
 	@Override
 	public void fromBytes(ByteBuf buf) {
-		questId = ByteBufUtils.readUTF8String(buf);
-		
+		buf.readInt();
 	}
 
 	@Override
 	public void toBytes(ByteBuf buf) {
-		ByteBufUtils.writeUTF8String(buf, questId);
+		buf.writeInt(1);
 	}
 	
-	public static class Handler implements IMessageHandler<AbandonQuestRequest, IMessage> {
-
+	public static class Handler implements IMessageHandler<RequestAcceptedQuests, IMessage> {
+		
+		public Handler() {}
+		
 		@Override
-		public IMessage onMessage(final AbandonQuestRequest message, MessageContext ctx) {
+		public IMessage onMessage(final RequestAcceptedQuests message, MessageContext ctx) {
 			if(ctx.side != Side.SERVER) {
 				return null;
 			}
@@ -61,19 +57,20 @@ public class AbandonQuestRequest implements IMessage {
 			return null;
 		}
 		
-		void processMessage(AbandonQuestRequest message, EntityPlayerMP player) {
+		void processMessage(RequestAcceptedQuests message, EntityPlayerMP player) {
 			IDailiesCapability cap = player.getCapability(CapabilityDailiesHandler.DAILIES_CAPABILITY, null);
-			DailyQuest quest = cap.getAcceptedQuestById(message.questId);
 			
-			if(quest == null) {
+			if(!isSet(cap.getAcceptedQuests())) {
 				return;
 			}
 			
-			cap.abandonQuest(player.getName(), quest);
-			DailiesPacketHandler.INSTANCE.sendTo(new AvailableQuestsToClient(cap.getAvailableQuests()), player);
 			DailiesPacketHandler.INSTANCE.sendTo(new AcceptedQuestsToClient(cap.getAcceptedQuests()), player);
 			
 			return;
+		}
+		
+		private boolean isSet(Set<DailyQuest> set) {
+			return set != null && set.size() > 0;
 		}
 	}
 }

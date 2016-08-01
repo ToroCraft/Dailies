@@ -12,17 +12,17 @@ public class DailiesContainer extends Container {
 	private final int HOTBAR_SLOT_COUNT = 9;
 	private final int INVENTORY_ROW_COUNT = 3;
 	private final int INVENTORY_COLUMN_COUNT = 9;
-	private final int SUBMIT_ITEM_ROW_COUNT = 3;
+	private final int SUBMIT_ITEM_ROW_COUNT = 1;
 	private final int SUBMIT_ITEM_COLUMN_COUNT = 3;
 	
 	private final int SLOT_X_SPACING = 18;
     private final int SLOT_Y_SPACING = 18;
 	
     private final int HOTBAR_XPOS = 8;
-	private final int HOTBAR_YPOS = 142;
+	private final int HOTBAR_YPOS = 106;
 	
 	private final int INVENTORY_XPOS = 8;
-	private final int INVENTORY_YPOS = 84;
+	private final int INVENTORY_YPOS = 48;;
 	
 	private final int SUBMIT_ITEM_XPOS = 30;
 	private final int SUBMIT_ITEM_YPOS = 17;

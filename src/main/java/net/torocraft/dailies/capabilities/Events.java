@@ -151,8 +151,6 @@ public class Events {
 	public void onPlayerLogin(PlayerLoggedInEvent event) {
 		final EntityPlayer player = event.player;
 		
-		player.addChatMessage(new TextComponentString("Loading Dailies..."));
-		
 		new Thread(new Runnable() {
 
 			@Override
@@ -181,6 +179,8 @@ public class Events {
 		cap.setAcceptedQuests(new HashSet<DailyQuest>(acceptedDailyQuests));
 		
 		cap.writeNBT();
+		
+		player.addChatMessage(new TextComponentString("Bailey's Dailies Loaded"));
 	}
 	
 	private Set<DailyQuest> getDailyQuests(EntityPlayer player) {

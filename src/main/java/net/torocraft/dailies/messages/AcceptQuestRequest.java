@@ -12,15 +12,15 @@ import net.torocraft.dailies.capabilities.CapabilityDailiesHandler;
 import net.torocraft.dailies.capabilities.IDailiesCapability;
 import net.torocraft.dailies.quests.DailyQuest;
 
-public class AbandonQuestRequest implements IMessage {
+public class AcceptQuestRequest implements IMessage  {
 
 	private String questId;
 	
-	public AbandonQuestRequest() {
+	public AcceptQuestRequest() {
 		
 	}
 	
-	public AbandonQuestRequest(String questId) {
+	public AcceptQuestRequest(String questId) {
 		this.questId = questId;
 	}
 	
@@ -33,12 +33,13 @@ public class AbandonQuestRequest implements IMessage {
 	@Override
 	public void toBytes(ByteBuf buf) {
 		ByteBufUtils.writeUTF8String(buf, questId);
+		
 	}
 	
-	public static class Handler implements IMessageHandler<AbandonQuestRequest, IMessage> {
+	public static class Handler implements IMessageHandler<AcceptQuestRequest, IMessage> {
 
 		@Override
-		public IMessage onMessage(final AbandonQuestRequest message, MessageContext ctx) {
+		public IMessage onMessage(final AcceptQuestRequest message, MessageContext ctx) {
 			if(ctx.side != Side.SERVER) {
 				return null;
 			}
@@ -61,19 +62,20 @@ public class AbandonQuestRequest implements IMessage {
 			return null;
 		}
 		
-		void processMessage(AbandonQuestRequest message, EntityPlayerMP player) {
+		void processMessage(AcceptQuestRequest message, EntityPlayerMP player) {
 			IDailiesCapability cap = player.getCapability(CapabilityDailiesHandler.DAILIES_CAPABILITY, null);
-			DailyQuest quest = cap.getAcceptedQuestById(message.questId);
+			DailyQuest quest = cap.getAvailableQuestById(message.questId);
 			
 			if(quest == null) {
 				return;
 			}
 			
-			cap.abandonQuest(player.getName(), quest);
+			cap.acceptQuest(player.getName(), quest);
 			DailiesPacketHandler.INSTANCE.sendTo(new AvailableQuestsToClient(cap.getAvailableQuests()), player);
 			DailiesPacketHandler.INSTANCE.sendTo(new AcceptedQuestsToClient(cap.getAcceptedQuests()), player);
 			
 			return;
 		}
 	}
+
 }

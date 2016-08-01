@@ -40,6 +40,8 @@ public interface IDailiesCapability {
 
 	void setAvailableQuests(Set<DailyQuest> quests);
 
-	DailyQuest getQuestById(String questId);
+	DailyQuest getAcceptedQuestById(String questId);
+
+	DailyQuest getAvailableQuestById(String questId);
 
 }
