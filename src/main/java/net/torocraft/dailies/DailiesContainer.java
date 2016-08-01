@@ -2,8 +2,10 @@ package net.torocraft.dailies;
 
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.Container;
+import net.minecraft.inventory.IInventory;
 import net.minecraft.world.World;
 import net.minecraft.inventory.Slot;
+import net.minecraft.item.ItemStack;
 import net.torocraft.dailies.entities.EntityBailey;
 
 
@@ -27,10 +29,14 @@ public class DailiesContainer extends Container {
 	private final int SUBMIT_ITEM_XPOS = 30;
 	private final int SUBMIT_ITEM_YPOS = 17;
 	
+	private final int OUTPUT_ITEM_XPOS = 107;
+	private final int OUTPUT_ITEM_YPOS = 17;
+	
 	private final BaileyInventory baileyInventory;
 	
 	public DailiesContainer(EntityPlayer player, EntityBailey bailey, World world) {
 		this.baileyInventory = new BaileyInventory();
+		this.baileyInventory.openInventory(player);
 		
 		for (int x = 0; x < HOTBAR_SLOT_COUNT; x++) {
 			addSlotToContainer(new Slot(player.inventory, x, HOTBAR_XPOS + SLOT_X_SPACING * x, HOTBAR_YPOS));
@@ -53,6 +59,8 @@ public class DailiesContainer extends Container {
 				addSlotToContainer(new Slot(baileyInventory, slotNumber, xPos, yPos));
 			}
 		}
+		
+		addSlotToContainer(new SlotOutput(baileyInventory, 3, OUTPUT_ITEM_XPOS,OUTPUT_ITEM_YPOS));
 	}
 	
 	@Override
@@ -65,5 +73,22 @@ public class DailiesContainer extends Container {
 		super.onContainerClosed(player);
 		this.baileyInventory.closeInventory(player);
 	}
+	
+	public class SlotOutput extends Slot {
 
+		public SlotOutput(IInventory inventoryIn, int index, int xPosition, int yPosition) {
+			super(inventoryIn, index, xPosition, yPosition);
+		}
+		
+		@Override
+		public boolean isItemValid(ItemStack stack) {
+			return false;
+		}
+	}
+	
+	@Override
+	public void detectAndSendChanges() {
+		super.detectAndSendChanges();
+		this.baileyInventory.update();
+	}
 }
