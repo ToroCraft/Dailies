@@ -20,6 +20,7 @@ public class DailyQuest {
 	public String status;
 	public TypedInteger target;
 	public Reward reward;
+	public Boolean rewardAccepted;
 	public int progress;
 	public String id;
 	public long date;
@@ -52,11 +53,11 @@ public class DailyQuest {
 		return "...";
 	}
 
-	private boolean isHuntQuest() {
+	public boolean isHuntQuest() {
 		return "hunt".equals(type);
 	}
 
-	private boolean isGatherQuest() {
+	public boolean isGatherQuest() {
 		return "gather".equals(type);
 	}
 
@@ -113,12 +114,13 @@ public class DailyQuest {
 		int leftOver = stackSize - remainingTarget;
 
 		if (leftOver > 0) {
-			dropNewStack(player, item, leftOver);
+			//dropNewStack(player, item, leftOver);
 		} else {
 			leftOver = 0;
 		}
-
+		
 		progress += stackSize - leftOver;
+		System.out.println("Sync Called In Gather Method");
 		syncProgress(player.getName(), id, progress);
 
 		return true;

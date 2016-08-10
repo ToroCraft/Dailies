@@ -44,4 +44,6 @@ public interface IDailiesCapability {
 
 	DailyQuest getAvailableQuestById(String questId);
 
+	void completeQuest(DailyQuest quest, EntityPlayer player);
+
 }

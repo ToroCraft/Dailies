@@ -30,13 +30,13 @@ public class DailiesCapabilityImpl implements IDailiesCapability {
 		}
 
 		if (quest.isComplete()) {
-			quest.reward(player);
+			//quest.reward(player);
 			try {
 				displayAchievement(quest, player);
 			} catch (Exception e) {
 
 			}
-			completeQuest(quest, player);
+			//completeQuest(quest, player);
 		}
 
 		return quest;
@@ -54,7 +54,9 @@ public class DailiesCapabilityImpl implements IDailiesCapability {
 		return null;
 	}
 
-	private void completeQuest(final DailyQuest quest, final EntityPlayer player) {
+	@Override
+	public void completeQuest(final DailyQuest quest, final EntityPlayer player) {
+		quest.rewardAccepted = true;
 		acceptedQuests.remove(quest);
 		if (completedQuests == null) {
 			completedQuests = new HashSet<DailyQuest>();
@@ -180,7 +182,9 @@ public class DailiesCapabilityImpl implements IDailiesCapability {
 			return;
 		}
 
+		quest.progress = 0;
 		acceptedQuests.remove(quest);
+		availableQuests.add(quest);
 		new DailiesRequester().abandonQuest(playerName, quest.id);
 	}
 	/*
