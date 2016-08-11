@@ -2,11 +2,7 @@ package net.torocraft.dailies;
 
 import java.util.Set;
 
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.multiplayer.WorldClient;
-import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -14,12 +10,8 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.ITickable;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.TextComponentString;
-import net.minecraft.world.WorldServer;
 import net.torocraft.dailies.capabilities.CapabilityDailiesHandler;
 import net.torocraft.dailies.capabilities.IDailiesCapability;
-import net.torocraft.dailies.messages.AcceptedQuestsToClient;
-import net.torocraft.dailies.messages.DailiesPacketHandler;
-import net.torocraft.dailies.messages.RequestAcceptedQuests;
 import net.torocraft.dailies.quests.DailyQuest;
 import net.torocraft.dailies.quests.Reward;
 import scala.actors.threadpool.Arrays;
@@ -38,14 +30,6 @@ public class BaileyInventory extends TileEntity implements IInventory, ITickable
 	private EntityPlayer player = null;
 	private IDailiesCapability playerDailiesCapability = null;
 	private Set<DailyQuest> acceptedQuests;
-	
-	private DailyQuest questWithReward;
-	
-	private boolean rewardFulfilled = false;
-	private boolean rewardTaken = false;
-	
-	private int rewardInputIndex;
-	private int rewardInputCount;
 	
 	@Override
 	public String getName() {
@@ -89,10 +73,6 @@ public class BaileyInventory extends TileEntity implements IInventory, ITickable
 			if(slotStack.stackSize == 0) {
 				setInventorySlotContents(index, null);
 			}
-		}
-		
-		if(index == REWARD_OUTPUT_INDEX) {
-			rewardTaken = true;
 		}
 		
 		markDirty();
@@ -152,18 +132,15 @@ public class BaileyInventory extends TileEntity implements IInventory, ITickable
 
 	@Override
 	public int getField(int id) {
-		// TODO Auto-generated method stub
 		return 0;
 	}
 
 	@Override
 	public void setField(int id, int value) {
-		// TODO Auto-generated method stub
 	}
 
 	@Override
 	public int getFieldCount() {
-		// TODO Auto-generated method stub
 		return 0;
 	}
 
@@ -174,14 +151,8 @@ public class BaileyInventory extends TileEntity implements IInventory, ITickable
 
 	@Override
 	public void update() {
-		checkIfRewardTaken();
-		checkForReward();
-	}
-	
-	private void checkIfRewardTaken() {
-		if(rewardTaken) {
-			completeQuest();
-			sendMessageToClient();
+		if(!rewardStackExists()) {
+			checkForReward();
 		}
 	}
 	
@@ -190,32 +161,46 @@ public class BaileyInventory extends TileEntity implements IInventory, ITickable
 			return;
 		}
 		
-		rewardFulfilled = false;
+		acceptedQuests = playerDailiesCapability.getAcceptedQuests();
+		
 		for(int x = 0; x < getSizeInventory() - 1; x++) {
-			if(itemStacks[x] != null && !rewardFulfilled) {
+			if(itemStacks[x] != null) {
 				checkForReward(itemStacks[x], x);
 			}
-		}
-		
-		if(!rewardFulfilled) {
-			removeStackFromSlot(REWARD_OUTPUT_INDEX);
 		}
 	}
 	
 	private void checkForReward(ItemStack stack, int index) {
-		acceptedQuests = playerDailiesCapability.getAcceptedQuests();
-		
-		int itemId;
+		int itemId = Item.getIdFromItem(stack.getItem());
 		for(DailyQuest quest : acceptedQuests) {
-			itemId = Item.getIdFromItem(stack.getItem());
-			if(quest.isGatherQuest() && itemId == quest.target.type && stack.stackSize >= quest.target.quantity && quest.isComplete()) { 
-				buildReward(quest.reward);
-				questWithReward = quest;
-				rewardFulfilled = true;
-				rewardInputIndex = index;
-				rewardInputCount = quest.target.quantity;
+			if(quest.isGatherQuest() && itemId == quest.target.type && !quest.rewardFulfilled) { 
+				updateQuestProgress(quest, stack, index);
 			}
 		}
+	}
+	
+	private void updateQuestProgress(DailyQuest quest, ItemStack stack, int index) {
+		int remainingTarget = quest.target.quantity - quest.progress;
+		int leftOver = stack.stackSize - remainingTarget;
+		
+		if (leftOver > 0) {
+			stack.stackSize = leftOver;
+			setInventorySlotContents(index, stack);
+		} else {
+			removeStackFromSlot(index);
+		}
+		
+		quest.progress += stack.stackSize - leftOver;
+		
+		if(quest.isComplete()) {
+			buildReward(quest.reward);
+			playerDailiesCapability.completeQuest(quest, player);
+			quest.rewardFulfilled = true;
+		} else {
+			syncProgress(player.getName(), quest.id, quest.progress);
+		}
+		
+		updateClient(player);
 	}
 	
 	private void buildReward(Reward reward) {
@@ -224,24 +209,25 @@ public class BaileyInventory extends TileEntity implements IInventory, ITickable
 		setInventorySlotContents(REWARD_OUTPUT_INDEX, rewardStack);
 	}
 	
-	private void completeQuest() {
-		if(playerDailiesCapability == null) {
-			return;
-		}
-		
-		playerDailiesCapability.completeQuest(questWithReward, player);
-		decrStackSize(rewardInputIndex, rewardInputCount);
-		questWithReward = null;
-		rewardTaken = false;
-	}
-	
-	private void sendMessageToClient() {
+	private void syncProgress(final String username, final String questId, final int progress) {
 		new Thread(new Runnable() {
 
 			@Override
 			public void run() {
-				DailiesPacketHandler.INSTANCE.sendTo(new AcceptedQuestsToClient(playerDailiesCapability.getAcceptedQuests()), (EntityPlayerMP)player);
+				new DailiesRequester().progressQuest(username, questId, progress);
 			}
+
 		}).start();
+	}
+	
+	private void updateClient(final EntityPlayer player) {
+		playerDailiesCapability.sendAcceptedQuestsToClient(player);
+	}
+	
+	private boolean rewardStackExists() {
+		if(itemStacks[REWARD_OUTPUT_INDEX] != null) {
+			return true;
+		}
+		return false;
 	}
 }

@@ -33,22 +33,22 @@ public class Events {
 	 * TextComponentString(TextFormatting.RED + "" + dailes.statusMessage())); }
 	 */
 
-	@SubscribeEvent
-	public void onGather(EntityItemPickupEvent event) {
-		IDailiesCapability dailies = getCapability(event.getEntityPlayer());
-		if (dailies == null) {
-			return;
-		}
-
-		DailyQuest quest = dailies.gather(event.getEntityPlayer(), event.getItem());
-
-		if (quest != null) {
-			event.setCanceled(true);
-			event.getItem().setDead();
-		}
-
-		DailiesMod.proxy.displayQuestProgress(quest);
-	}
+//	@SubscribeEvent
+//	public void onGather(EntityItemPickupEvent event) {
+//		IDailiesCapability dailies = getCapability(event.getEntityPlayer());
+//		if (dailies == null) {
+//			return;
+//		}
+//
+//		DailyQuest quest = dailies.gather(event.getEntityPlayer(), event.getItem());
+//
+//		if (quest != null) {
+//			event.setCanceled(true);
+//			event.getItem().setDead();
+//		}
+//
+//		DailiesMod.proxy.displayQuestProgress(quest);
+//	}
 	/*
 	 * @SubscribeEvent public void onPlayerJoin(EntityJoinWorldEvent event) {
 	 * if(!(event.getEntity() instanceof EntityPlayer)){ return; }

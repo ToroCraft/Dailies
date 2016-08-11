@@ -7,12 +7,15 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.item.Item;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraft.stats.Achievement;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.torocraft.dailies.DailiesRequester;
+import net.torocraft.dailies.messages.AcceptedQuestsToClient;
+import net.torocraft.dailies.messages.DailiesPacketHandler;
 import net.torocraft.dailies.quests.DailyQuest;
 
 public class DailiesCapabilityImpl implements IDailiesCapability {
@@ -21,42 +24,41 @@ public class DailiesCapabilityImpl implements IDailiesCapability {
 	private Set<DailyQuest> acceptedQuests;
 	private Set<DailyQuest> completedQuests;
 
-	@Override
-	public DailyQuest gather(EntityPlayer player, EntityItem item) {
-		DailyQuest quest = gatherNextQuest(player, item);
-
-		if (quest == null) {
-			return null;
-		}
-
-		if (quest.isComplete()) {
-			//quest.reward(player);
-			try {
-				displayAchievement(quest, player);
-			} catch (Exception e) {
-
-			}
-			//completeQuest(quest, player);
-		}
-
-		return quest;
-	}
-
-	private DailyQuest gatherNextQuest(EntityPlayer player, EntityItem item) {
-		if (acceptedQuests == null) {
-			return null;
-		}
-		for (DailyQuest q : acceptedQuests) {
-			if (q.gather(player, item)) {
-				return q;
-			}
-		}
-		return null;
-	}
+//	@Override
+//	public DailyQuest gather(EntityPlayer player, EntityItem item) {
+//		DailyQuest quest = gatherNextQuest(player, item);
+//
+//		if (quest == null) {
+//			return null;
+//		}
+//
+//		if (quest.isComplete()) {
+//			//quest.reward(player);
+//			try {
+//				displayAchievement(quest, player);
+//			} catch (Exception e) {
+//
+//			}
+//			//completeQuest(quest, player);
+//		}
+//
+//		return quest;
+//	}
+//
+//	private DailyQuest gatherNextQuest(EntityPlayer player, EntityItem item) {
+//		if (acceptedQuests == null) {
+//			return null;
+//		}
+//		for (DailyQuest q : acceptedQuests) {
+//			if (q.gather(player, item)) {
+//				return q;
+//			}
+//		}
+//		return null;
+//	}
 
 	@Override
 	public void completeQuest(final DailyQuest quest, final EntityPlayer player) {
-		quest.rewardAccepted = true;
 		acceptedQuests.remove(quest);
 		if (completedQuests == null) {
 			completedQuests = new HashSet<DailyQuest>();
@@ -269,5 +271,16 @@ public class DailiesCapabilityImpl implements IDailiesCapability {
 			}
 		}
 		return quest;
+	}
+	
+	@Override
+	public void sendAcceptedQuestsToClient(final EntityPlayer player) {
+		new Thread(new Runnable() {
+
+			@Override
+			public void run() {
+				DailiesPacketHandler.INSTANCE.sendTo(new AcceptedQuestsToClient(getAcceptedQuests()), (EntityPlayerMP)player);
+			}
+		}).start();
 	}
 }

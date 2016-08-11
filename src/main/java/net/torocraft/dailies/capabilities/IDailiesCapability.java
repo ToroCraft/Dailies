@@ -13,7 +13,7 @@ public interface IDailiesCapability {
 	/**
 	 * return true when quest target was hit
 	 */
-	DailyQuest gather(EntityPlayer player, EntityItem item);
+//	DailyQuest gather(EntityPlayer player, EntityItem item);
 
 	/**
 	 * return true when quest target was hit
@@ -45,5 +45,7 @@ public interface IDailiesCapability {
 	DailyQuest getAvailableQuestById(String questId);
 
 	void completeQuest(DailyQuest quest, EntityPlayer player);
+
+	void sendAcceptedQuestsToClient(EntityPlayer player);
 
 }

@@ -20,7 +20,7 @@ public class DailyQuest {
 	public String status;
 	public TypedInteger target;
 	public Reward reward;
-	public Boolean rewardAccepted;
+	public boolean rewardFulfilled;
 	public int progress;
 	public String id;
 	public long date;
@@ -92,39 +92,39 @@ public class DailyQuest {
 		return "entity." + entityName + ".name";
 	}
 
-	public boolean gather(EntityPlayer player, EntityItem item) {
-		if (!isGatherQuest()) {
-			return false;
-		}
-
-		if (item == null || item.isDead) {
-			return false;
-		}
-
-		int itemId = Item.getIdFromItem(item.getEntityItem().getItem());
-
-		if (itemId != target.type) {
-			return false;
-		}
-
-		int stackSize = item.getEntityItem().stackSize;
-
-		int remainingTarget = target.quantity - progress;
-
-		int leftOver = stackSize - remainingTarget;
-
-		if (leftOver > 0) {
-			//dropNewStack(player, item, leftOver);
-		} else {
-			leftOver = 0;
-		}
-		
-		progress += stackSize - leftOver;
-		System.out.println("Sync Called In Gather Method");
-		syncProgress(player.getName(), id, progress);
-
-		return true;
-	}
+//	public boolean gather(EntityPlayer player, EntityItem item) {
+//		if (!isGatherQuest()) {
+//			return false;
+//		}
+//
+//		if (item == null || item.isDead) {
+//			return false;
+//		}
+//
+//		int itemId = Item.getIdFromItem(item.getEntityItem().getItem());
+//
+//		if (itemId != target.type) {
+//			return false;
+//		}
+//
+//		int stackSize = item.getEntityItem().stackSize;
+//
+//		int remainingTarget = target.quantity - progress;
+//
+//		int leftOver = stackSize - remainingTarget;
+//
+//		if (leftOver > 0) {
+//			//dropNewStack(player, item, leftOver);
+//		} else {
+//			leftOver = 0;
+//		}
+//		
+//		progress += stackSize - leftOver;
+//		System.out.println("Sync Called In Gather Method");
+//		syncProgress(player.getName(), id, progress);
+//
+//		return true;
+//	}
 
 	private void syncProgress(final String username, final String questId, final int progress) {
 		new Thread(new Runnable() {
@@ -174,6 +174,7 @@ public class DailyQuest {
 		c.setInteger("progress", progress);
 		c.setTag("target", target.writeNBT());
 		c.setTag("reward", reward.writeNBT());
+		c.setBoolean("rewardFulfilled", rewardFulfilled);
 		c.setLong("date", date);
 		c.setString("id", id);
 		c.setString("name", name);
@@ -193,6 +194,7 @@ public class DailyQuest {
 		name = c.getString("name");
 		description = c.getString("description");
 		status = c.getString("status");
+		rewardFulfilled = c.getBoolean("rewardFulfilled");
 
 		target = new TypedInteger();
 		reward = new Reward();
@@ -240,5 +242,4 @@ public class DailyQuest {
 	private boolean isSet(String s) {
 		return s != null && s.length() > 0;
 	}
-
 }
