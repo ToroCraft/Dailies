@@ -14,13 +14,7 @@ import net.torocraft.dailies.entities.model.ModelBailey;
 
 @SideOnly(Side.CLIENT)
 public class RenderBailey extends RenderLiving<EntityBailey> {
-	private static final ResourceLocation villagerTextures = new ResourceLocation("textures/entity/villager/villager.png");
-	private static final ResourceLocation farmerVillagerTextures = new ResourceLocation("textures/entity/villager/farmer.png");
 	private static final ResourceLocation librarianVillagerTextures = new ResourceLocation("textures/entity/villager/librarian.png");
-	private static final ResourceLocation priestVillagerTextures = new ResourceLocation("textures/entity/villager/priest.png");
-	private static final ResourceLocation smithVillagerTextures = new ResourceLocation("textures/entity/villager/smith.png");
-	private static final ResourceLocation butcherVillagerTextures = new ResourceLocation("textures/entity/villager/butcher.png");
-
 
 	public RenderBailey(RenderManager renderManagerIn) {
 		super(renderManagerIn, new ModelBailey(0.0F), 0.5F);
@@ -38,7 +32,7 @@ public class RenderBailey extends RenderLiving<EntityBailey> {
 	@Override
 	protected ResourceLocation getEntityTexture(EntityBailey entity) {
 		// TODO Auto-generated method stub
-		return null;
+		return librarianVillagerTextures;
 	}
 
 
@@ -53,6 +47,4 @@ public class RenderBailey extends RenderLiving<EntityBailey> {
 
 		GlStateManager.scale(f, f, f);
 	}
-
-
 }

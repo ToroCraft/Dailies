@@ -6,19 +6,22 @@ import java.util.List;
 import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommand;
 import net.minecraft.command.ICommandSender;
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.TextComponentString;
+import net.minecraft.world.World;
 import net.torocraft.dailies.capabilities.CapabilityDailiesHandler;
 import net.torocraft.dailies.capabilities.IDailiesCapability;
+import net.torocraft.dailies.entities.EntityBailey;
 import net.torocraft.dailies.quests.DailyQuest;
 
 public class DailiesCommand implements ICommand {
 
 	private static final TextComponentString invalidCommand = new TextComponentString("Invalid Command");
 	private static final TextComponentString questNotFound = new TextComponentString("Quest not Found");
-	private static final TextComponentString loadingDailies = new TextComponentString("Loading Dailies...");
+	
 	private List<String> aliases = new ArrayList<String>();
 
 	@Override
@@ -60,12 +63,24 @@ public class DailiesCommand implements ICommand {
 				} else if (args.length == 2) {
 					handleSubCommand(questsData, args);
 				} else if(args.length == 1 && args[0].equals("gui")) {
-					questsData.player.openGui(DailiesMod.instance, DailiesGuiHandler.getGuiID(), questsData.player.worldObj, questsData.player.chunkCoordX, questsData.player.chunkCoordY, questsData.player.chunkCoordZ);
-				} else {
+					questsData.player.openGui(DailiesMod.instance, DailiesGuiHandler.getGuiID(), questsData.player.worldObj, sender.getPosition().getX(), sender.getPosition().getY(), sender.getPosition().getZ());
+				} else if(args.length == 1 && args[0].equals("spawn")) {
+					spawnBailey(server, sender);
+				}  else {
 					sender.addChatMessage(invalidCommand);
 				}
 			}
 		}).start();
+	}
+	
+	private void spawnBailey(MinecraftServer server, ICommandSender sender) {
+		EntityPlayer player = (EntityPlayer) sender;
+		World world = player.worldObj;
+		if(!world.isRemote) {
+			Entity entity = new EntityBailey(world);
+			entity.setPosition(player.getPosition().getX() + 2, player.getPosition().getY(), player.getPosition().getZ());
+			world.spawnEntityInWorld(entity);
+		}
 	}
 
 	private void handleSubCommand(PlayerDailyQuests d, String[] args) {

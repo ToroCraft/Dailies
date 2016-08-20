@@ -21,20 +21,16 @@ import net.torocraft.dailies.entities.render.RenderBailey;
 public class EntityBailey extends EntityVillager {
 
 	private MerchantRecipeList buyingList;
+	
+	public static String NAME = "bailey";
 
 	public EntityBailey(World world) {
 		super(world);
+		this.setSize(0.6F, 1.95F);
 	}
-
-	public static String NAME = "mage";
 
 	public static void init(int entityId) {
 		EntityRegistry.registerModEntity(EntityBailey.class, NAME, entityId, DailiesMod.instance, 60, 2, true);
-	}
-
-	public static void registerRenders() {
-		RenderManager rm = Minecraft.getMinecraft().getRenderManager();
-		RenderingRegistry.registerEntityRenderingHandler(EntityBailey.class, new RenderBailey(rm));
 	}
 
 	public boolean processInteract(EntityPlayer player, EnumHand hand, @Nullable ItemStack stack) {
@@ -42,10 +38,7 @@ public class EntityBailey extends EntityVillager {
 
 		if (!flag && this.isEntityAlive() && !this.isTrading() && !this.isChild() && !player.isSneaking()) {
 			if (!this.worldObj.isRemote && (this.buyingList == null || !this.buyingList.isEmpty())) {
-				this.setCustomer(player);
-
-				//player.displayVillagerTradeGui(this);
-				player.openGui(DailiesMod.instance, DailiesGuiHandler.getGuiID(), this.worldObj, 0, 0, 0);
+				player.openGui(DailiesMod.instance, DailiesGuiHandler.getGuiID(), this.worldObj, player.getPosition().getX(), player.getPosition().getY(), player.getPosition().getZ());
 			}
 
 			player.addStat(StatList.TALKED_TO_VILLAGER);
@@ -54,5 +47,4 @@ public class EntityBailey extends EntityVillager {
 			return super.processInteract(player, hand, stack);
 		}
 	}
-
 }

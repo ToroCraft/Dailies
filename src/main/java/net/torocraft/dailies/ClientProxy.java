@@ -4,6 +4,7 @@ import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
+import net.torocraft.dailies.entities.render.Renders;
 import net.torocraft.dailies.gui.GuiDailyProgressIndicators;
 import net.torocraft.dailies.quests.DailyQuest;
 
@@ -19,6 +20,7 @@ public class ClientProxy extends CommonProxy {
 	@Override
 	public void init(FMLInitializationEvent e) {
 		super.init(e);
+		Renders.registerRenders();
 	}
 
 	@Override

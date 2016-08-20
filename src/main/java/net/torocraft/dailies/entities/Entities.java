@@ -6,9 +6,4 @@ public class Entities {
 		int id = 50;
 		EntityBailey.init(id++);
 	}
-
-	public static void registerRenders() {
-		EntityBailey.registerRenders();
-	}
-
 }

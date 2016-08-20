@@ -6,8 +6,6 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.ITickable;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.TextComponentString;
 import net.torocraft.dailies.capabilities.CapabilityDailiesHandler;
@@ -16,14 +14,12 @@ import net.torocraft.dailies.quests.DailyQuest;
 import net.torocraft.dailies.quests.Reward;
 import scala.actors.threadpool.Arrays;
 
-public class BaileyInventory extends TileEntity implements IInventory, ITickable {
+public class BaileyInventory implements IInventory {
 
-	public static final int SUBMIT_ITEM_COUNT = 3;
-	public static final int OUTPUT_ITEM_COUNT = 1;
-	
-	public static final int REWARD_OUTPUT_INDEX = 3;
-	
-	public static final int TOTAL_SLOT_COUNT = SUBMIT_ITEM_COUNT + OUTPUT_ITEM_COUNT;
+	private static final int SUBMIT_ITEM_COUNT = 3;
+	private static final int OUTPUT_ITEM_COUNT = 1;
+	private static final int REWARD_OUTPUT_INDEX = 3;
+	private static final int TOTAL_SLOT_COUNT = SUBMIT_ITEM_COUNT + OUTPUT_ITEM_COUNT;
 	
 	private ItemStack[] itemStacks = new ItemStack[TOTAL_SLOT_COUNT];
 	
@@ -108,7 +104,7 @@ public class BaileyInventory extends TileEntity implements IInventory, ITickable
 	public boolean isUseableByPlayer(EntityPlayer player) {
 		return true;
 	}
-
+	
 	@Override
 	public void openInventory(EntityPlayer player) {
 		this.player = player;
@@ -148,8 +144,12 @@ public class BaileyInventory extends TileEntity implements IInventory, ITickable
 	public void clear() {
 		Arrays.fill(itemStacks, null);
 	}
-
+	
 	@Override
+	public void markDirty() {
+		
+	}
+
 	public void update() {
 		if(!rewardStackExists()) {
 			checkForReward();

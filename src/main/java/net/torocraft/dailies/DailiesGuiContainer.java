@@ -1,14 +1,10 @@
 package net.torocraft.dailies;
 
 import java.awt.Color;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.Map.Entry;
-
-import org.lwjgl.input.Mouse;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiButton;
@@ -34,9 +30,6 @@ public class DailiesGuiContainer extends GuiContainer {
 	private static final int MOUSE_COOLDOWN = 200;
 	private static long mousePressed = 0;
 	
-	private final EntityPlayer player;
-	private final World world;
-	
 	private Set<DailyQuest> availableQuests;
 	private Set<DailyQuest> acceptedQuests;
 	
@@ -46,20 +39,18 @@ public class DailiesGuiContainer extends GuiContainer {
 	ResourceLocation texture = new ResourceLocation("dailiesmod", "textures/gui/bailey_gui.png");
 
 	public DailiesGuiContainer() {
-		this(null, null);
+		this(null, null, null);
 	}
 	
-	public DailiesGuiContainer(EntityPlayer player, World world) {
-		super(new DailiesContainer(player, null, world));
-		this.player = player != null ? player : Minecraft.getMinecraft().thePlayer;
-		this.world = world != null ? world : Minecraft.getMinecraft().theWorld;
+	public DailiesGuiContainer(EntityPlayer player, BaileyInventory baileyInventory, World world) {
+		super(new DailiesContainer(player, baileyInventory, world));
 		xSize = 175;
 		ySize = 130;
+		
+		syncWithServer();
 	}
 	
-	public DailiesGuiContainer(EntityPlayer player, World world, int x, int y, int z) {
-		this(player, world);
-		
+	private void syncWithServer() {
 		DailiesPacketHandler.INSTANCE.sendToServer(new RequestAvailableQuests());
 		DailiesPacketHandler.INSTANCE.sendToServer(new RequestAcceptedQuests());
 	}

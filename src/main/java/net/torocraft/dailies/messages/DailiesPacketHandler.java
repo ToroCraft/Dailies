@@ -5,6 +5,7 @@ import java.util.Set;
 import net.minecraftforge.fml.common.network.NetworkRegistry;
 import net.minecraftforge.fml.common.network.simpleimpl.SimpleNetworkWrapper;
 import net.minecraftforge.fml.relauncher.Side;
+import net.torocraft.dailies.BaileyInventory;
 import net.torocraft.dailies.quests.DailyQuest;
 
 public class DailiesPacketHandler {
@@ -17,7 +18,6 @@ public class DailiesPacketHandler {
 	public static Set<DailyQuest> acceptedQuests = null;
 	
 	public DailiesPacketHandler() {
-		
 	}
 	
 	public static int nextId() {

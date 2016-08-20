@@ -6,8 +6,6 @@ import net.minecraft.inventory.IInventory;
 import net.minecraft.world.World;
 import net.minecraft.inventory.Slot;
 import net.minecraft.item.ItemStack;
-import net.torocraft.dailies.entities.EntityBailey;
-
 
 public class DailiesContainer extends Container {
 
@@ -34,8 +32,8 @@ public class DailiesContainer extends Container {
 	
 	private final BaileyInventory baileyInventory;
 	
-	public DailiesContainer(EntityPlayer player, EntityBailey bailey, World world) {
-		this.baileyInventory = new BaileyInventory();
+	public DailiesContainer(EntityPlayer player, BaileyInventory baileyInventory, World world) {
+		this.baileyInventory = baileyInventory;
 		this.baileyInventory.openInventory(player);
 		
 		for (int x = 0; x < HOTBAR_SLOT_COUNT; x++) {
@@ -74,6 +72,12 @@ public class DailiesContainer extends Container {
 		this.baileyInventory.closeInventory(player);
 	}
 	
+	@Override
+	public void detectAndSendChanges() {
+		super.detectAndSendChanges();
+		this.baileyInventory.update();
+	}
+	
 	public class SlotOutput extends Slot {
 
 		public SlotOutput(IInventory inventoryIn, int index, int xPosition, int yPosition) {
@@ -84,11 +88,5 @@ public class DailiesContainer extends Container {
 		public boolean isItemValid(ItemStack stack) {
 			return false;
 		}
-	}
-	
-	@Override
-	public void detectAndSendChanges() {
-		super.detectAndSendChanges();
-		this.baileyInventory.update();
 	}
 }

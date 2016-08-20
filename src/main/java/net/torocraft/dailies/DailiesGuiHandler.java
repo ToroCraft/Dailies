@@ -10,17 +10,17 @@ public class DailiesGuiHandler implements IGuiHandler {
 	public static int getGuiID() {return BAILEY_GUI_ID;}
 
 	@Override
-	public Object getServerGuiElement(int ID, EntityPlayer player, World world, int x, int y, int z) {
+	public Object getServerGuiElement(int ID, EntityPlayer player, World world, int entityId, int y, int z) {
 		if(ID == BAILEY_GUI_ID) {
-			return new DailiesContainer(player, null, world);
+			return new DailiesContainer(player, new BaileyInventory(), world);
 		}
 		return null;
 	}
 
 	@Override
-	public Object getClientGuiElement(int ID, EntityPlayer player, World world, int x, int y, int z) {
+	public Object getClientGuiElement(int ID, EntityPlayer player, World world, int entityId, int y, int z) {
 		if(ID == BAILEY_GUI_ID) {
-			return new DailiesGuiContainer(player, world, x, y, z);
+			return new DailiesGuiContainer(player, new BaileyInventory(), world);
 		}
 		return null;
 	}
