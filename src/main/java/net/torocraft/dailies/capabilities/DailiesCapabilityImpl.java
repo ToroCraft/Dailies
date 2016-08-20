@@ -3,16 +3,11 @@ package net.torocraft.dailies.capabilities;
 import java.util.HashSet;
 import java.util.Set;
 
-import net.minecraft.client.Minecraft;
 import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraft.item.Item;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
-import net.minecraft.stats.Achievement;
-import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.torocraft.dailies.DailiesRequester;
 import net.torocraft.dailies.messages.AcceptedQuestsToClient;
 import net.torocraft.dailies.messages.AchievementToClient;
