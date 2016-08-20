@@ -23,6 +23,9 @@ public class BaileyInventory implements IInventory {
 	
 	private ItemStack[] itemStacks = new ItemStack[TOTAL_SLOT_COUNT];
 	
+	private ItemStack lastModifiedStack = null;
+	private int lastModifiedIndex = 0;
+	
 	private EntityPlayer player = null;
 	private IDailiesCapability playerDailiesCapability = null;
 	private Set<DailyQuest> acceptedQuests;
@@ -92,6 +95,11 @@ public class BaileyInventory implements IInventory {
 		if(stack != null && stack.stackSize > getInventoryStackLimit()) {
 			stack.stackSize = getInventoryStackLimit();
 		}
+		
+		if(stack != null && index != REWARD_OUTPUT_INDEX) {
+			this.lastModifiedIndex = index;
+		}
+		
 		markDirty();
 	}
 
@@ -149,55 +157,57 @@ public class BaileyInventory implements IInventory {
 	public void markDirty() {
 		
 	}
-
-	public void update() {
-		if(!rewardStackExists()) {
-			checkForReward();
-		}
-	}
 	
-	private void checkForReward() {
+	public void checkForReward() {
 		if(playerDailiesCapability == null) {
 			return;
 		}
 		
+		lastModifiedStack = this.itemStacks[lastModifiedIndex];
 		acceptedQuests = playerDailiesCapability.getAcceptedQuests();
 		
-		for(int x = 0; x < getSizeInventory() - 1; x++) {
-			if(itemStacks[x] != null) {
-				checkForReward(itemStacks[x], x);
+		if(canSearchForReward()) {
+			int itemId = Item.getIdFromItem(lastModifiedStack.getItem());
+			DailyQuest quest = checkForMatchingQuest(itemId);
+			
+			if(quest != null) {
+				updateQuestProgress(quest, lastModifiedStack, lastModifiedIndex);
 			}
 		}
 	}
 	
-	private void checkForReward(ItemStack stack, int index) {
-		int itemId = Item.getIdFromItem(stack.getItem());
-		for(DailyQuest quest : acceptedQuests) {
-			if(quest.isGatherQuest() && itemId == quest.target.type && !quest.rewardFulfilled) { 
-				updateQuestProgress(quest, stack, index);
+	private DailyQuest checkForMatchingQuest(int itemId) {
+		DailyQuest quest = null;
+		
+		for(DailyQuest q : acceptedQuests) {
+			if(q.isGatherQuest() && itemId == q.target.type && !q.rewardFulfilled) { 
+				quest = q;
 			}
 		}
+		
+		return quest;
 	}
 	
 	private void updateQuestProgress(DailyQuest quest, ItemStack stack, int index) {
 		int remainingTarget = quest.target.quantity - quest.progress;
 		int leftOver = stack.stackSize - remainingTarget;
 		
+		quest.progress += stack.stackSize - leftOver;
+		
+		if(quest.isComplete()) {
+			quest.rewardFulfilled = true;
+			playerDailiesCapability.completeQuest(quest, player);
+			buildReward(quest.reward);
+			
+		} else {
+			syncProgress(player.getName(), quest.id, quest.progress);
+		}
+		
 		if (leftOver > 0) {
 			stack.stackSize = leftOver;
 			setInventorySlotContents(index, stack);
 		} else {
 			removeStackFromSlot(index);
-		}
-		
-		quest.progress += stack.stackSize - leftOver;
-		
-		if(quest.isComplete()) {
-			buildReward(quest.reward);
-			playerDailiesCapability.completeQuest(quest, player);
-			quest.rewardFulfilled = true;
-		} else {
-			syncProgress(player.getName(), quest.id, quest.progress);
 		}
 		
 		updateClient(player);
@@ -229,5 +239,12 @@ public class BaileyInventory implements IInventory {
 			return true;
 		}
 		return false;
+	}
+	
+	private boolean canSearchForReward() {
+		if(rewardStackExists() || lastModifiedStack == null || acceptedQuests == null || acceptedQuests.isEmpty()) {
+			return false;
+		}
+		return true;
 	}
 }

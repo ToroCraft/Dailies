@@ -62,6 +62,11 @@ public class DailiesContainer extends Container {
 	}
 	
 	@Override
+	public ItemStack transferStackInSlot(EntityPlayer player, int index) {
+		return null;
+	}
+	
+	@Override
 	public boolean canInteractWith(EntityPlayer playerIn) {
 		return true;
 	}
@@ -75,7 +80,7 @@ public class DailiesContainer extends Container {
 	@Override
 	public void detectAndSendChanges() {
 		super.detectAndSendChanges();
-		this.baileyInventory.update();
+		this.baileyInventory.checkForReward();
 	}
 	
 	public class SlotOutput extends Slot {

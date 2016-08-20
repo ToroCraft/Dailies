@@ -23,43 +23,6 @@ import net.torocraft.dailies.quests.DailyQuest;
 
 public class Events {
 
-	/*
-	 * SubscribeEvent public void harvestDrops(HarvestDropsEvent event) {
-	 * IDailiesCapability dailes = getCapability(event.getHarvester()); if
-	 * (dailes == null) { return; }
-	 * 
-	 * dailes.gather(1); System.out.println(dailes.statusMessage());
-	 * event.getHarvester().addChatMessage(new
-	 * TextComponentString(TextFormatting.RED + "" + dailes.statusMessage())); }
-	 */
-
-//	@SubscribeEvent
-//	public void onGather(EntityItemPickupEvent event) {
-//		IDailiesCapability dailies = getCapability(event.getEntityPlayer());
-//		if (dailies == null) {
-//			return;
-//		}
-//
-//		DailyQuest quest = dailies.gather(event.getEntityPlayer(), event.getItem());
-//
-//		if (quest != null) {
-//			event.setCanceled(true);
-//			event.getItem().setDead();
-//		}
-//
-//		DailiesMod.proxy.displayQuestProgress(quest);
-//	}
-	/*
-	 * @SubscribeEvent public void onPlayerJoin(EntityJoinWorldEvent event) {
-	 * if(!(event.getEntity() instanceof EntityPlayer)){ return; }
-	 * 
-	 * IDailiesCapability dailes =
-	 * getCapability((EntityPlayer)event.getEntity()); if (dailes == null) {
-	 * return; }
-	 * 
-	 * }
-	 */
-
 	@SubscribeEvent
 	public void onHunt(LivingDeathEvent event) {
 
@@ -81,9 +44,7 @@ public class Events {
 			return;
 		}
 
-		DailyQuest quest = dailies.hunt(player, e);
-
-		DailiesMod.proxy.displayQuestProgress(quest);
+		dailies.hunt(player, e);
 	}
 
 	@SubscribeEvent
