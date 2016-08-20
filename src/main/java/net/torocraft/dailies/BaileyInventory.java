@@ -192,6 +192,10 @@ public class BaileyInventory implements IInventory {
 		int remainingTarget = quest.target.quantity - quest.progress;
 		int leftOver = stack.stackSize - remainingTarget;
 		
+		if (leftOver < 0) {
+			leftOver = 0;
+		}
+		
 		quest.progress += stack.stackSize - leftOver;
 		
 		if(quest.isComplete()) {
