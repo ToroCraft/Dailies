@@ -15,12 +15,12 @@ public class ClientProxy extends CommonProxy {
 	@Override
 	public void preInit(FMLPreInitializationEvent e) {
 		super.preInit(e);
+		Renders.registerRenders();
 	}
 
 	@Override
 	public void init(FMLInitializationEvent e) {
 		super.init(e);
-		Renders.registerRenders();
 	}
 
 	@Override
