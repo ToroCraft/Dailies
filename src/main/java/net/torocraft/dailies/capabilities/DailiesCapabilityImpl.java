@@ -35,6 +35,7 @@ public class DailiesCapabilityImpl implements IDailiesCapability {
 		
 		completedQuests.add(quest);
 		
+		displayAchievement(quest, player);
 		sendAcceptedQuestsToClient(player);
 
 		new Thread(new Runnable() {
@@ -56,7 +57,6 @@ public class DailiesCapabilityImpl implements IDailiesCapability {
 		if (quest.isComplete()) {
 			quest.reward(player);
 			completeQuest(quest, player);
-			displayAchievement(quest, player);
 		}
 
 		return quest;
@@ -212,13 +212,7 @@ public class DailiesCapabilityImpl implements IDailiesCapability {
 	}
 	
 	@Override
-	public void sendAcceptedQuestsToClient(final EntityPlayer player) {
-		new Thread(new Runnable() {
-
-			@Override
-			public void run() {
-				DailiesPacketHandler.INSTANCE.sendTo(new AcceptedQuestsToClient(getAcceptedQuests()), (EntityPlayerMP)player);
-			}
-		}).start();
+	public void sendAcceptedQuestsToClient(EntityPlayer player) {
+		DailiesPacketHandler.INSTANCE.sendTo(new AcceptedQuestsToClient(getAcceptedQuests()), (EntityPlayerMP)player);
 	}
 }

@@ -130,12 +130,10 @@ public class DailiesGuiContainer extends GuiContainer {
 	}
 	
 	private void acceptQuest(String questId) {
-		System.out.println("Accept Quest Called");
 		DailiesPacketHandler.INSTANCE.sendToServer(new AcceptQuestRequest(questId));
 	}
 	
 	private void abandonQuest(String questId) {
-		System.out.println("Abandon Quest Called");
 		DailiesPacketHandler.INSTANCE.sendToServer(new AbandonQuestRequest(questId));
 	}
 	
