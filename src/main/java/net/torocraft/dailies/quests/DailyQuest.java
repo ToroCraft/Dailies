@@ -150,7 +150,7 @@ public class DailyQuest {
 			return false;
 		}
 
-		int mobId = EntityList.getEntityID(mob);// mob.getEntityId();
+		int mobId = EntityList.getEntityID(mob);
 
 		if (mobId != target.type) {
 			return false;

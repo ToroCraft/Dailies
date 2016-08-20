@@ -27,6 +27,6 @@ public class CommonProxy {
 	}
 
 	public void displayQuestProgress(DailyQuest quest) {
-
+		
 	}
 }

@@ -15,6 +15,7 @@ import net.minecraft.stats.Achievement;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.torocraft.dailies.DailiesRequester;
 import net.torocraft.dailies.messages.AcceptedQuestsToClient;
+import net.torocraft.dailies.messages.AchievementToClient;
 import net.torocraft.dailies.messages.DailiesPacketHandler;
 import net.torocraft.dailies.quests.DailyQuest;
 
@@ -24,46 +25,17 @@ public class DailiesCapabilityImpl implements IDailiesCapability {
 	private Set<DailyQuest> acceptedQuests;
 	private Set<DailyQuest> completedQuests;
 
-//	@Override
-//	public DailyQuest gather(EntityPlayer player, EntityItem item) {
-//		DailyQuest quest = gatherNextQuest(player, item);
-//
-//		if (quest == null) {
-//			return null;
-//		}
-//
-//		if (quest.isComplete()) {
-//			//quest.reward(player);
-//			try {
-//				displayAchievement(quest, player);
-//			} catch (Exception e) {
-//
-//			}
-//			//completeQuest(quest, player);
-//		}
-//
-//		return quest;
-//	}
-//
-//	private DailyQuest gatherNextQuest(EntityPlayer player, EntityItem item) {
-//		if (acceptedQuests == null) {
-//			return null;
-//		}
-//		for (DailyQuest q : acceptedQuests) {
-//			if (q.gather(player, item)) {
-//				return q;
-//			}
-//		}
-//		return null;
-//	}
-
 	@Override
 	public void completeQuest(final DailyQuest quest, final EntityPlayer player) {
 		acceptedQuests.remove(quest);
+		
 		if (completedQuests == null) {
 			completedQuests = new HashSet<DailyQuest>();
 		}
+		
 		completedQuests.add(quest);
+		
+		sendAcceptedQuestsToClient(player);
 
 		new Thread(new Runnable() {
 			@Override
@@ -83,14 +55,8 @@ public class DailiesCapabilityImpl implements IDailiesCapability {
 
 		if (quest.isComplete()) {
 			quest.reward(player);
-			try {
-				if (player.worldObj.isRemote) {
-					displayAchievement(quest, player);
-				}
-			} catch (Exception e) {
-
-			}
 			completeQuest(quest, player);
+			displayAchievement(quest, player);
 		}
 
 		return quest;
@@ -109,12 +75,7 @@ public class DailiesCapabilityImpl implements IDailiesCapability {
 	}
 
 	private void displayAchievement(DailyQuest quest, EntityPlayer player) {
-
-		if (FMLCommonHandler.instance().getSide().isClient()) {
-			Achievement achievement = new Achievement(quest.getDisplayName(), "dailyquestcompleted", 0, 0,
-					Item.getItemById(quest.target.type), (Achievement) null);
-			Minecraft.getMinecraft().guiAchievement.displayAchievement(achievement);
-		}
+		DailiesPacketHandler.INSTANCE.sendTo(new AchievementToClient(quest), (EntityPlayerMP)player);
 	}
 
 	@Override
@@ -189,29 +150,6 @@ public class DailiesCapabilityImpl implements IDailiesCapability {
 		availableQuests.add(quest);
 		new DailiesRequester().abandonQuest(playerName, quest.id);
 	}
-	/*
-	 * private void setDefaultQuests() { quests = new ArrayList<DailyQuest>();
-	 * DailyQuest quest = new DailyQuest(); Reward reward = new Reward();
-	 * reward.quantity = 20; reward.type = 384; TypedInteger target = new
-	 * TypedInteger(); target.type = 12; target.quantity = 2; quest.type =
-	 * "gather"; quest.reward = reward; quest.target = target;
-	 * 
-	 * quests.add(quest);
-	 * 
-	 * quest = new DailyQuest(); reward = new Reward(); reward.quantity = 50;
-	 * reward.type = 264; target = new TypedInteger(); target.type = 3;
-	 * target.quantity = 2; quest.type = "gather"; quest.reward = reward;
-	 * quest.target = target;
-	 * 
-	 * quests.add(quest);
-	 * 
-	 * quest = new DailyQuest(); reward = new Reward(); reward.quantity = 30;
-	 * reward.type = 384; target = new TypedInteger(); target.type = 101;
-	 * target.quantity = 2; quest.type = "hunt"; quest.reward = reward;
-	 * quest.target = target;
-	 * 
-	 * quests.add(quest); }
-	 */
 	
 	@Override
 	public Set<DailyQuest> getAvailableQuests() {
