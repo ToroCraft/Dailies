@@ -4,9 +4,10 @@ import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.common.network.NetworkRegistry;
-import net.minecraftforge.fml.common.registry.GameRegistry;
+import net.minecraftforge.fml.common.registry.VillagerRegistry;
 import net.torocraft.dailies.capabilities.CapabilityDailiesHandler;
 import net.torocraft.dailies.entities.Entities;
+import net.torocraft.dailies.generation.VillageHandlerBailey;
 import net.torocraft.dailies.messages.DailiesPacketHandler;
 import net.torocraft.dailies.quests.DailyQuest;
 
@@ -20,6 +21,7 @@ public class CommonProxy {
 
 	public void init(FMLInitializationEvent e) {
 		Entities.init();
+		VillagerRegistry.instance().registerVillageCreationHandler(new VillageHandlerBailey());
 	}
 
 	public void postInit(FMLPostInitializationEvent e) {
