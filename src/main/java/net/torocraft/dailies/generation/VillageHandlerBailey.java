@@ -15,7 +15,7 @@ public class VillageHandlerBailey implements IVillageCreationHandler  {
 
 	@Override
 	public PieceWeight getVillagePieceWeight(Random random, int i) {
-		return new PieceWeight(BaileysShopVilleagePiece.class, 0, 1);
+		return new PieceWeight(BaileysShopVilleagePiece.class, 30, 1);
 	}
 
 	@Override

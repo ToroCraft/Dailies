@@ -6,12 +6,15 @@ import java.util.Random;
 import net.minecraft.block.BlockStairs;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
+import net.minecraft.entity.IEntityLivingData;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.EnumFacing;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraft.world.gen.structure.StructureBoundingBox;
 import net.minecraft.world.gen.structure.StructureComponent;
 import net.minecraft.world.gen.structure.StructureVillagePieces;
+import net.torocraft.dailies.entities.EntityBailey;
 
 public class BaileysShopVilleagePiece extends StructureVillagePieces.Village {
 	public BaileysShopVilleagePiece() {
@@ -116,11 +119,29 @@ public class BaileysShopVilleagePiece extends StructureVillagePieces.Village {
 			}
 		}
 
-		this.spawnVillagers(worldIn, structureBoundingBoxIn, 2, 1, 2, 1);
+		//this.spawnVillagers(worldIn, structureBoundingBoxIn, 1, 1, 2, 1);
+		this.spawnBailey(worldIn, structureBoundingBoxIn, 1, 1, 2, 1);
 		return true;
 	}
 
 	protected int chooseProfession(int villagersSpawnedIn, int currentVillagerProfession) {
 		return 1;
 	}
+	
+    protected void spawnBailey(World worldIn, StructureBoundingBox structurebb, int x, int y, int z, int count)
+    {
+        int j = this.getXWithOffset(x, z);
+        int k = this.getYWithOffset(y);
+        int l = this.getZWithOffset(x, z);
+
+        if (!structurebb.isVecInside(new BlockPos(j, k, l)))
+        {
+            return;
+        }
+        
+        EntityBailey bailey = new EntityBailey(worldIn);
+        bailey.setLocationAndAngles((double)j + 0.5D, (double)k, (double)l + 0.5D, 0.0F, 0.0F);
+        bailey.onInitialSpawn(worldIn.getDifficultyForLocation(new BlockPos(bailey)), (IEntityLivingData)null);
+        worldIn.spawnEntityInWorld(bailey);
+    }
 }
