@@ -10,14 +10,11 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.DamageSource;
 import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.text.TextComponentString;
 import net.minecraftforge.event.AttachCapabilitiesEvent;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
-import net.minecraftforge.event.entity.player.EntityItemPickupEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.PlayerEvent.PlayerLoggedInEvent;
-import net.torocraft.dailies.DailiesMod;
 import net.torocraft.dailies.DailiesRequester;
 import net.torocraft.dailies.quests.DailyQuest;
 
@@ -140,8 +137,6 @@ public class Events {
 		cap.setAcceptedQuests(new HashSet<DailyQuest>(acceptedDailyQuests));
 		
 		cap.writeNBT();
-		
-		player.addChatMessage(new TextComponentString("Bailey's Dailies Loaded"));
 	}
 	
 	private Set<DailyQuest> getDailyQuests(EntityPlayer player) {
