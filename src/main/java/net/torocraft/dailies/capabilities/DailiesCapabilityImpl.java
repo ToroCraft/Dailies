@@ -8,6 +8,7 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
+import net.minecraft.util.text.TextComponentString;
 import net.torocraft.dailies.DailiesRequester;
 import net.torocraft.dailies.messages.AcceptedQuestsToClient;
 import net.torocraft.dailies.messages.AchievementToClient;
@@ -52,6 +53,8 @@ public class DailiesCapabilityImpl implements IDailiesCapability {
 		if (quest.isComplete()) {
 			quest.reward(player);
 			completeQuest(quest, player);
+		} else {
+			player.addChatMessage(new TextComponentString(quest.getStatusMessage()));
 		}
 
 		return quest;

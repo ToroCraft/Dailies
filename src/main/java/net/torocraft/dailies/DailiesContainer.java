@@ -15,6 +15,12 @@ public class DailiesContainer extends Container {
 	private final int SUBMIT_ITEM_ROW_COUNT = 1;
 	private final int SUBMIT_ITEM_COLUMN_COUNT = 3;
 	
+	private final int VANILLA_SLOT_COUNT = HOTBAR_SLOT_COUNT + (INVENTORY_COLUMN_COUNT * INVENTORY_ROW_COUNT);
+	private final int BAILEY_INVENTORY_SLOT_COUNT = 3;
+	
+	private final int VANILLA_FIRST_SLOT_INDEX = 0;
+	private final int BAILEY_INVENTORY_FIRST_SLOT_INDEX = VANILLA_FIRST_SLOT_INDEX + VANILLA_SLOT_COUNT; 
+	
 	private final int SLOT_X_SPACING = 18;
     private final int SLOT_Y_SPACING = 18;
 	
@@ -63,7 +69,34 @@ public class DailiesContainer extends Container {
 	
 	@Override
 	public ItemStack transferStackInSlot(EntityPlayer player, int index) {
-		return null;
+		Slot slot = (Slot)this.inventorySlots.get(index);
+        if(slot == null || !slot.getHasStack()) {
+        	return null;
+        }
+        
+        ItemStack sourceStack = slot.getStack();
+        ItemStack copyOfSourceStack = sourceStack.copy();
+        
+        if(index >= VANILLA_FIRST_SLOT_INDEX && index < VANILLA_FIRST_SLOT_INDEX + VANILLA_SLOT_COUNT) {
+        	if(!mergeItemStack(sourceStack, BAILEY_INVENTORY_FIRST_SLOT_INDEX, BAILEY_INVENTORY_FIRST_SLOT_INDEX + BAILEY_INVENTORY_SLOT_COUNT, false)) {
+        		return null;
+        	}
+        } else if(index >= BAILEY_INVENTORY_FIRST_SLOT_INDEX && index < BAILEY_INVENTORY_FIRST_SLOT_INDEX + BAILEY_INVENTORY_SLOT_COUNT) {
+        	if(!mergeItemStack(sourceStack, VANILLA_FIRST_SLOT_INDEX, VANILLA_FIRST_SLOT_INDEX + VANILLA_SLOT_COUNT, false)) {
+        		return null;
+        	}
+        } else {
+        	return null;
+        }
+        
+        if(sourceStack.stackSize == 0) {
+        	slot.putStack(null);
+        } else {
+        	slot.onSlotChanged();
+        }
+        
+        slot.onPickupFromSlot(player, sourceStack);
+        return copyOfSourceStack;
 	}
 	
 	@Override
