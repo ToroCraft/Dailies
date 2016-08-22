@@ -76,8 +76,8 @@ public class BaileysShopVilleagePiece extends StructureVillagePieces.Village {
 		this.fillWithBlocks(worldIn, structureBoundingBoxIn, 0, 1, 5, 8, 4, 5, Blocks.COBBLESTONE.getDefaultState(), Blocks.COBBLESTONE.getDefaultState(), false);
 
 		// side windows
-		this.fillWithBlocks(worldIn, structureBoundingBoxIn, 2, 2, 0, 6, 2, 0, Blocks.GLASS_PANE.getDefaultState(), Blocks.GLASS_PANE.getDefaultState(), false);
-		this.fillWithBlocks(worldIn, structureBoundingBoxIn, 2, 2, 5, 6, 2, 5, Blocks.GLASS_PANE.getDefaultState(), Blocks.GLASS_PANE.getDefaultState(), false);
+		this.fillWithBlocks(worldIn, structureBoundingBoxIn, 3, 2, 0, 6, 2, 0, Blocks.GLASS_PANE.getDefaultState(), Blocks.GLASS_PANE.getDefaultState(), false);
+		this.fillWithBlocks(worldIn, structureBoundingBoxIn, 3, 2, 5, 6, 2, 5, Blocks.GLASS_PANE.getDefaultState(), Blocks.GLASS_PANE.getDefaultState(), false);
 
 		// corners
 		this.fillWithBlocks(worldIn, structureBoundingBoxIn, 0, 0, 0, 0, 4, 0, Blocks.LOG.getDefaultState(), Blocks.LOG.getDefaultState(), false);
@@ -85,9 +85,13 @@ public class BaileysShopVilleagePiece extends StructureVillagePieces.Village {
 		this.fillWithBlocks(worldIn, structureBoundingBoxIn, 0, 0, 5, 0, 4, 5, Blocks.LOG.getDefaultState(), Blocks.LOG.getDefaultState(), false);
 		this.fillWithBlocks(worldIn, structureBoundingBoxIn, 8, 0, 5, 8, 4, 5, Blocks.LOG.getDefaultState(), Blocks.LOG.getDefaultState(), false);
 
-		this.placeDoorCurrentPosition(worldIn, structureBoundingBoxIn, randomIn, 0, 1, 2, EnumFacing.EAST);
-		// this.placeDoorCurrentPosition(worldIn, structureBoundingBoxIn,
-		// randomIn, 0, 1, 3, EnumFacing.EAST);
+		// front doors
+		this.placeDoorCurrentPosition(worldIn, structureBoundingBoxIn, randomIn, 0, 1, 1, EnumFacing.EAST);
+		this.placeDoorCurrentPosition(worldIn, structureBoundingBoxIn, randomIn, 0, 1, 4, EnumFacing.EAST);
+
+		// side doors
+		this.placeDoorCurrentPosition(worldIn, structureBoundingBoxIn, randomIn, 1, 1, 0, EnumFacing.NORTH);
+		this.placeDoorCurrentPosition(worldIn, structureBoundingBoxIn, randomIn, 1, 1, 5, EnumFacing.SOUTH);
 
 		// counter
 		this.fillWithBlocks(worldIn, structureBoundingBoxIn, 6, 1, 1, 6, 1, 4, Blocks.PLANKS.getDefaultState(), Blocks.PLANKS.getDefaultState(), false);
@@ -134,7 +138,7 @@ public class BaileysShopVilleagePiece extends StructureVillagePieces.Village {
         }
         
         EntityBailey bailey = new EntityBailey(worldIn);
-        bailey.setLocationAndAngles((double)j + 0.5D, (double)k, (double)l + 0.5D, 0.0F, 0.0F);
+		bailey.setLocationAndAngles((double) j + 0.5D, (double) k, (double) l + 0.5D, 180F, 0.0F);
         bailey.onInitialSpawn(worldIn.getDifficultyForLocation(new BlockPos(bailey)), (IEntityLivingData)null);
         worldIn.spawnEntityInWorld(bailey);
     }
