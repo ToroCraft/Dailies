@@ -32,7 +32,7 @@ public class AvailableQuestsToClient implements IMessage {
 	@Override
 	public void fromBytes(ByteBuf buf) {
 		availableQuestsJson = ByteBufUtils.readUTF8String(buf);
-		
+		deserializeQuests();
 	}
 
 	@Override
@@ -85,9 +85,10 @@ public class AvailableQuestsToClient implements IMessage {
 		}
 		
 		void processMessage(WorldClient worldClient, AvailableQuestsToClient message) {
-			message.deserializeQuests();
 			if(message.availableQuests != null) {
 				DailiesPacketHandler.availableQuests = message.availableQuests;
+			} else {
+				DailiesPacketHandler.availableQuests = null;
 			}
 			return;
 		}

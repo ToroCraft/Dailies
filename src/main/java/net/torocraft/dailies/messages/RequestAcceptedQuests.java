@@ -1,5 +1,6 @@
 package net.torocraft.dailies.messages;
 
+import java.util.HashSet;
 import java.util.Set;
 
 import io.netty.buffer.ByteBuf;
@@ -59,13 +60,13 @@ public class RequestAcceptedQuests implements IMessage {
 		
 		void processMessage(RequestAcceptedQuests message, EntityPlayerMP player) {
 			IDailiesCapability cap = player.getCapability(CapabilityDailiesHandler.DAILIES_CAPABILITY, null);
-			
+		
 			if(!isSet(cap.getAcceptedQuests())) {
-				return;
+				DailiesPacketHandler.INSTANCE.sendTo(new AcceptedQuestsToClient(new HashSet<DailyQuest>()), player);
+			} else {
+				DailiesPacketHandler.INSTANCE.sendTo(new AcceptedQuestsToClient(cap.getAcceptedQuests()), player);
 			}
-			
-			DailiesPacketHandler.INSTANCE.sendTo(new AcceptedQuestsToClient(cap.getAcceptedQuests()), player);
-			
+		
 			return;
 		}
 		

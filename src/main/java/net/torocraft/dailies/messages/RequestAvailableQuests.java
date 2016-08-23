@@ -1,5 +1,6 @@
 package net.torocraft.dailies.messages;
 
+import java.util.HashSet;
 import java.util.Set;
 
 import io.netty.buffer.ByteBuf;
@@ -63,10 +64,10 @@ public class RequestAvailableQuests implements IMessage {
 			IDailiesCapability cap = player.getCapability(CapabilityDailiesHandler.DAILIES_CAPABILITY, null);
 			
 			if(!isSet(cap.getAvailableQuests())) {
-				return;
+				DailiesPacketHandler.INSTANCE.sendTo(new AvailableQuestsToClient(new HashSet<DailyQuest>()), player);
+			} else {
+				DailiesPacketHandler.INSTANCE.sendTo(new AvailableQuestsToClient(cap.getAvailableQuests()), player);
 			}
-			
-			DailiesPacketHandler.INSTANCE.sendTo(new AvailableQuestsToClient(cap.getAvailableQuests()), player);
 			
 			return;
 		}

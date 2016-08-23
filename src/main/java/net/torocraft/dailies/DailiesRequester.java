@@ -16,7 +16,6 @@ import net.torocraft.dailies.quests.DailyQuest;
 
 public class DailiesRequester {
 
-
 	private static final String SERVICE_URL = "http://www.minecraftdailies.com";
 	private static final String PATH_QUESTS = "/quests";
 	private static final String PATH_ACCEPT = "/accept";
@@ -100,7 +99,8 @@ public class DailiesRequester {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		return new HashSet<DailyQuest>(0);
+		
+		return generateOfflineQuests();
 	}
 
 	private String requestQuestInventory() throws IOException {
@@ -146,6 +146,12 @@ public class DailiesRequester {
 				return dailyQuests;
 			}
 		}
+		return dailyQuests;
+	}
+	
+	private Set<DailyQuest> generateOfflineQuests() {
+		RandomQuestGenerator questGenerator = new RandomQuestGenerator();
+		Set<DailyQuest> dailyQuests = questGenerator.generateQuests();
 		return dailyQuests;
 	}
 }
