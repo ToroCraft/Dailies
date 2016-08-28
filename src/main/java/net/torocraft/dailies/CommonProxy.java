@@ -11,7 +11,6 @@ import net.torocraft.dailies.entities.Entities;
 import net.torocraft.dailies.generation.BaileysShopVilleagePiece;
 import net.torocraft.dailies.generation.VillageHandlerBailey;
 import net.torocraft.dailies.messages.DailiesPacketHandler;
-import net.torocraft.dailies.quests.DailyQuest;
 
 public class CommonProxy {
 	

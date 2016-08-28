@@ -8,8 +8,6 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
-import net.minecraft.util.text.TextComponentString;
-import net.torocraft.dailies.DailiesMod;
 import net.torocraft.dailies.DailiesRequester;
 import net.torocraft.dailies.messages.AcceptedQuestsToClient;
 import net.torocraft.dailies.messages.AchievementToClient;
@@ -45,11 +43,11 @@ public class DailiesCapabilityImpl implements IDailiesCapability {
 	}
 
 	@Override
-	public DailyQuest hunt(EntityPlayer player, EntityLivingBase mob) {
+	public void hunt(EntityPlayer player, EntityLivingBase mob) {
 		DailyQuest quest = huntNextQuest(player, mob);
 
 		if (quest == null) {
-			return null;
+			return;
 		}
 
 		if (quest.isComplete()) {
@@ -59,7 +57,7 @@ public class DailiesCapabilityImpl implements IDailiesCapability {
 			DailiesPacketHandler.INSTANCE.sendTo(new QuestProgressToClient(quest), (EntityPlayerMP)player);
 		}
 
-		return quest;
+		DailiesPacketHandler.INSTANCE.sendTo(new AcceptedQuestsToClient(getAcceptedQuests()), (EntityPlayerMP)player);
 	}
 
 	private DailyQuest huntNextQuest(EntityPlayer player, EntityLivingBase mob) {

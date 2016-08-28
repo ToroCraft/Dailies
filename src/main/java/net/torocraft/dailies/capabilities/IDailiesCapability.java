@@ -17,7 +17,7 @@ public interface IDailiesCapability {
 	/**
 	 * return true when quest target was hit
 	 */
-	DailyQuest hunt(EntityPlayer player, EntityLivingBase mob);
+	void hunt(EntityPlayer player, EntityLivingBase mob);
 
 	NBTTagCompound writeNBT();
 
