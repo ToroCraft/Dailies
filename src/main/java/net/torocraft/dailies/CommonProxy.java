@@ -25,14 +25,9 @@ public class CommonProxy {
 
 	public void init(FMLInitializationEvent e) {
 		Entities.init();
-		
 	}
 
 	public void postInit(FMLPostInitializationEvent e) {
 
-	}
-
-	public void displayQuestProgress(DailyQuest quest) {
-		
 	}
 }

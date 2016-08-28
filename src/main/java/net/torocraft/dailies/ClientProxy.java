@@ -10,7 +10,7 @@ import net.torocraft.dailies.quests.DailyQuest;
 
 public class ClientProxy extends CommonProxy {
 
-	GuiDailyProgressIndicators dailyGui = new GuiDailyProgressIndicators();
+	public static GuiDailyProgressIndicators dailyGui = new GuiDailyProgressIndicators();
 
 	@Override
 	public void preInit(FMLPreInitializationEvent e) {
@@ -29,8 +29,7 @@ public class ClientProxy extends CommonProxy {
 		MinecraftForge.EVENT_BUS.register(dailyGui);
 	}
 
-	@Override
-	public void displayQuestProgress(DailyQuest quest) {
+	public static void displayQuestProgress(DailyQuest quest) {
 		dailyGui.setQuest(quest);
 	}
 }

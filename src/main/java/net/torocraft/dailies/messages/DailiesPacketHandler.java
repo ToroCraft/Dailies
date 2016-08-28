@@ -32,5 +32,6 @@ public class DailiesPacketHandler {
 		INSTANCE.registerMessage(AvailableQuestsToClient.Handler.class, AvailableQuestsToClient.class, nextId(), Side.CLIENT);
 		INSTANCE.registerMessage(AcceptedQuestsToClient.Handler.class, AcceptedQuestsToClient.class, nextId(), Side.CLIENT);
 		INSTANCE.registerMessage(AchievementToClient.Handler.class, AchievementToClient.class, nextId(), Side.CLIENT);
+		INSTANCE.registerMessage(QuestProgressToClient.Handler.class, QuestProgressToClient.class, nextId(), Side.CLIENT);
 	}
 }

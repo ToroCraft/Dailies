@@ -182,5 +182,4 @@ public class GuiDailyProgressIndicators extends Gui {
 		activationTime = Minecraft.getSystemTime();
 		this.quest = quest;
 	}
-
 }

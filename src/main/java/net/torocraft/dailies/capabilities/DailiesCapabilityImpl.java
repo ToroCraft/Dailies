@@ -9,10 +9,12 @@ import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraft.util.text.TextComponentString;
+import net.torocraft.dailies.DailiesMod;
 import net.torocraft.dailies.DailiesRequester;
 import net.torocraft.dailies.messages.AcceptedQuestsToClient;
 import net.torocraft.dailies.messages.AchievementToClient;
 import net.torocraft.dailies.messages.DailiesPacketHandler;
+import net.torocraft.dailies.messages.QuestProgressToClient;
 import net.torocraft.dailies.quests.DailyQuest;
 
 public class DailiesCapabilityImpl implements IDailiesCapability {
@@ -54,7 +56,7 @@ public class DailiesCapabilityImpl implements IDailiesCapability {
 			quest.reward(player);
 			completeQuest(quest, player);
 		} else {
-			player.addChatMessage(new TextComponentString(quest.getStatusMessage()));
+			DailiesPacketHandler.INSTANCE.sendTo(new QuestProgressToClient(quest), (EntityPlayerMP)player);
 		}
 
 		return quest;
