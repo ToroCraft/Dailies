@@ -3,7 +3,7 @@
   "modid": "toromodpack",
   "name": "Torocraft Modpack",
   "description": "Torocraft Modpack",
-  "version": "1.9.4-10",
+  "version": "1.10.2-1",
   "mcversion": "${mcversion}",
   "url": "",
   "updateUrl": "",

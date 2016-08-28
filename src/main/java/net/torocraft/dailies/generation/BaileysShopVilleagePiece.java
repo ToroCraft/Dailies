@@ -86,12 +86,13 @@ public class BaileysShopVilleagePiece extends StructureVillagePieces.Village {
 		this.fillWithBlocks(worldIn, structureBoundingBoxIn, 8, 0, 5, 8, 4, 5, Blocks.LOG.getDefaultState(), Blocks.LOG.getDefaultState(), false);
 
 		// front doors
-		this.placeDoorCurrentPosition(worldIn, structureBoundingBoxIn, randomIn, 0, 1, 1, EnumFacing.EAST);
-		this.placeDoorCurrentPosition(worldIn, structureBoundingBoxIn, randomIn, 0, 1, 4, EnumFacing.EAST);
+		
+		this.func_189927_a(worldIn, structureBoundingBoxIn, randomIn, 0, 1, 1, EnumFacing.EAST);
+		//this.func_189927_a(worldIn, structureBoundingBoxIn, randomIn, 0, 1, 4, EnumFacing.EAST);
 
 		// side doors
-		this.placeDoorCurrentPosition(worldIn, structureBoundingBoxIn, randomIn, 1, 1, 0, EnumFacing.NORTH);
-		this.placeDoorCurrentPosition(worldIn, structureBoundingBoxIn, randomIn, 1, 1, 5, EnumFacing.SOUTH);
+		this.func_189927_a(worldIn, structureBoundingBoxIn, randomIn, 1, 1, 0, EnumFacing.NORTH);
+		this.func_189927_a(worldIn, structureBoundingBoxIn, randomIn, 1, 1, 5, EnumFacing.SOUTH);
 
 		// counter
 		this.fillWithBlocks(worldIn, structureBoundingBoxIn, 6, 1, 1, 6, 1, 4, Blocks.PLANKS.getDefaultState(), Blocks.PLANKS.getDefaultState(), false);

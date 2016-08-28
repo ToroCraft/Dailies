@@ -13,7 +13,7 @@ import net.minecraftforge.fml.common.event.FMLServerStartingEvent;
 public class DailiesMod {
 
 	public static final String MODID = "dailies";
-	public static final String VERSION = "1.9.4-10";
+	public static final String VERSION = "1.10.2-1";
 	public static final String MODNAME = "DailiesMod";
 
 	@Instance(value = DailiesMod.MODID)
