@@ -9,7 +9,6 @@ import net.minecraft.world.gen.structure.StructureVillagePieces.PieceWeight;
 import net.minecraft.world.gen.structure.StructureVillagePieces.Start;
 import net.minecraft.world.gen.structure.StructureVillagePieces.Village;
 import net.minecraftforge.fml.common.registry.VillagerRegistry.IVillageCreationHandler;
-import scala.noinline;
 
 public class VillageHandlerBailey implements IVillageCreationHandler  {
 

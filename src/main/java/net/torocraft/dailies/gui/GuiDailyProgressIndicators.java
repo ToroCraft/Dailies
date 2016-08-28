@@ -146,8 +146,10 @@ public class GuiDailyProgressIndicators extends Gui {
 			btn.drawButton(mc, mouseX, mouseY);
 
 			if (Mouse.getEventButtonState() && Mouse.getEventButton() != -1) {
-				if (btn.mousePressed(mc, mouseX, mouseY)) {
+				if (btn.mousePressed(mc, mouseX, mouseY) && mouseCooldownOver()) {
+					mousePressed = Minecraft.getSystemTime();
 					DailiesPacketHandler.INSTANCE.sendToServer(new AbandonQuestRequest(entry.getKey()));
+					break;
 				}
 			}
 		}

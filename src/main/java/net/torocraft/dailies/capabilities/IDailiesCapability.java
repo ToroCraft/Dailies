@@ -3,7 +3,6 @@ package net.torocraft.dailies.capabilities;
 import java.util.Set;
 
 import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.nbt.NBTTagCompound;
 import net.torocraft.dailies.quests.DailyQuest;
