@@ -5,6 +5,7 @@ import java.util.Random;
 
 import net.minecraft.block.BlockStairs;
 import net.minecraft.block.material.Material;
+import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.IEntityLivingData;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.EnumFacing;
@@ -45,76 +46,87 @@ public class BaileysShopVilleagePiece extends StructureVillagePieces.Village {
 
 			this.boundingBox.offset(0, this.averageGroundLvl - this.boundingBox.maxY + 9 - 1, 0);
 		}
+
+		IBlockState cobble = this.getBiomeSpecificBlockState(Blocks.COBBLESTONE.getDefaultState());
+		IBlockState carpet = this.getBiomeSpecificBlockState(Blocks.CARPET.getDefaultState());
+		IBlockState planks = this.getBiomeSpecificBlockState(Blocks.PLANKS.getDefaultState());
+		IBlockState logs = this.getBiomeSpecificBlockState(Blocks.LOG.getDefaultState());
+		IBlockState glowstone = this.getBiomeSpecificBlockState(Blocks.GLOWSTONE.getDefaultState());
+		IBlockState glassPane = this.getBiomeSpecificBlockState(Blocks.GLASS_PANE.getDefaultState());
+		IBlockState fence = this.getBiomeSpecificBlockState(Blocks.OAK_FENCE.getDefaultState());
+
+		IBlockState stairsNorth = this.getBiomeSpecificBlockState(Blocks.OAK_STAIRS.getDefaultState().withProperty(BlockStairs.FACING, EnumFacing.NORTH));
+		IBlockState stairsSouth = this.getBiomeSpecificBlockState(Blocks.OAK_STAIRS.getDefaultState().withProperty(BlockStairs.FACING, EnumFacing.SOUTH));
+		IBlockState stairsEast = this.getBiomeSpecificBlockState(Blocks.OAK_STAIRS.getDefaultState().withProperty(BlockStairs.FACING, EnumFacing.EAST));
+		IBlockState stairsWest = this.getBiomeSpecificBlockState(Blocks.OAK_STAIRS.getDefaultState().withProperty(BlockStairs.FACING, EnumFacing.WEST));
+
 		// -5599655086621954440
 
 		// clear inside
 		this.fillWithBlocks(worldIn, structureBoundingBoxIn, 1, 1, 1, 7, 5, 4, Blocks.AIR.getDefaultState(), Blocks.AIR.getDefaultState(), false);
 
 		// floor
-		this.fillWithBlocks(worldIn, structureBoundingBoxIn, 0, 0, 0, 8, 0, 5, Blocks.COBBLESTONE.getDefaultState(), Blocks.COBBLESTONE.getDefaultState(), false);
-		this.fillWithBlocks(worldIn, structureBoundingBoxIn, 0, 1, 0, 8, 1, 5, Blocks.CARPET.getDefaultState(), Blocks.CARPET.getDefaultState(), false);
+		this.fillWithBlocks(worldIn, structureBoundingBoxIn, 0, 0, 0, 8, 0, 5, cobble, cobble, false);
+		this.fillWithBlocks(worldIn, structureBoundingBoxIn, 3, 1, 0, 8, 1, 5, carpet, carpet, false);
 
 		// front and back wall
-		this.fillWithBlocks(worldIn, structureBoundingBoxIn, 0, 1, 0, 0, 4, 5, Blocks.COBBLESTONE.getDefaultState(), Blocks.COBBLESTONE.getDefaultState(), false);
-		this.fillWithBlocks(worldIn, structureBoundingBoxIn, 8, 1, 0, 8, 4, 5, Blocks.COBBLESTONE.getDefaultState(), Blocks.COBBLESTONE.getDefaultState(), false);
+		this.fillWithBlocks(worldIn, structureBoundingBoxIn, 0, 1, 0, 0, 4, 5, cobble, cobble, false);
+		this.fillWithBlocks(worldIn, structureBoundingBoxIn, 8, 1, 0, 8, 4, 5, cobble, cobble, false);
 
 		// front and back top wall area
-		this.fillWithBlocks(worldIn, structureBoundingBoxIn, 0, 4, 1, 0, 4, 4, Blocks.PLANKS.getDefaultState(), Blocks.LOG.getDefaultState(), false);
-		this.fillWithBlocks(worldIn, structureBoundingBoxIn, 8, 4, 1, 8, 4, 4, Blocks.PLANKS.getDefaultState(), Blocks.LOG.getDefaultState(), false);
+		this.fillWithBlocks(worldIn, structureBoundingBoxIn, 0, 4, 1, 0, 4, 4, planks, logs, false);
+		this.fillWithBlocks(worldIn, structureBoundingBoxIn, 8, 4, 1, 8, 4, 4, planks, logs, false);
 
-		this.fillWithBlocks(worldIn, structureBoundingBoxIn, 0, 5, 2, 0, 5, 3, Blocks.LOG.getDefaultState(), Blocks.LOG.getDefaultState(), false);
-		this.fillWithBlocks(worldIn, structureBoundingBoxIn, 8, 5, 2, 8, 5, 3, Blocks.LOG.getDefaultState(), Blocks.LOG.getDefaultState(), false);
+		this.fillWithBlocks(worldIn, structureBoundingBoxIn, 0, 5, 2, 0, 5, 3, logs, logs, false);
+		this.fillWithBlocks(worldIn, structureBoundingBoxIn, 8, 5, 2, 8, 5, 3, logs, logs, false);
 
 		// lights
-		this.fillWithBlocks(worldIn, structureBoundingBoxIn, 1, 5, 2, 1, 5, 3, Blocks.GLOWSTONE.getDefaultState(), Blocks.GLOWSTONE.getDefaultState(), false);
-		this.fillWithBlocks(worldIn, structureBoundingBoxIn, 3, 5, 2, 3, 5, 3, Blocks.GLOWSTONE.getDefaultState(), Blocks.GLOWSTONE.getDefaultState(), false);
-		this.fillWithBlocks(worldIn, structureBoundingBoxIn, 5, 5, 2, 5, 5, 3, Blocks.GLOWSTONE.getDefaultState(), Blocks.GLOWSTONE.getDefaultState(), false);
-		this.fillWithBlocks(worldIn, structureBoundingBoxIn, 7, 5, 2, 7, 5, 3, Blocks.GLOWSTONE.getDefaultState(), Blocks.GLOWSTONE.getDefaultState(), false);
+		this.fillWithBlocks(worldIn, structureBoundingBoxIn, 1, 5, 2, 1, 5, 3, glowstone, glowstone, false);
+		this.fillWithBlocks(worldIn, structureBoundingBoxIn, 3, 5, 2, 3, 5, 3, glowstone, glowstone, false);
+		this.fillWithBlocks(worldIn, structureBoundingBoxIn, 5, 5, 2, 5, 5, 3, glowstone, glowstone, false);
+		this.fillWithBlocks(worldIn, structureBoundingBoxIn, 7, 5, 2, 7, 5, 3, glowstone, glowstone, false);
 
 		// side walls
-		this.fillWithBlocks(worldIn, structureBoundingBoxIn, 0, 1, 0, 8, 4, 0, Blocks.COBBLESTONE.getDefaultState(), Blocks.COBBLESTONE.getDefaultState(), false);
-		this.fillWithBlocks(worldIn, structureBoundingBoxIn, 0, 1, 5, 8, 4, 5, Blocks.COBBLESTONE.getDefaultState(), Blocks.COBBLESTONE.getDefaultState(), false);
+		this.fillWithBlocks(worldIn, structureBoundingBoxIn, 0, 1, 0, 8, 4, 0, cobble, cobble, false);
+		this.fillWithBlocks(worldIn, structureBoundingBoxIn, 0, 1, 5, 8, 4, 5, cobble, cobble, false);
 
 		// side windows
-		this.fillWithBlocks(worldIn, structureBoundingBoxIn, 3, 2, 0, 6, 2, 0, Blocks.GLASS_PANE.getDefaultState(), Blocks.GLASS_PANE.getDefaultState(), false);
-		this.fillWithBlocks(worldIn, structureBoundingBoxIn, 3, 2, 5, 6, 2, 5, Blocks.GLASS_PANE.getDefaultState(), Blocks.GLASS_PANE.getDefaultState(), false);
+		this.fillWithBlocks(worldIn, structureBoundingBoxIn, 3, 2, 0, 6, 2, 0, glassPane, glassPane, false);
+		this.fillWithBlocks(worldIn, structureBoundingBoxIn, 3, 2, 5, 6, 2, 5, glassPane, glassPane, false);
+
+		// back window
+		this.fillWithBlocks(worldIn, structureBoundingBoxIn, 8, 2, 2, 8, 3, 3, glassPane, glassPane, false);
 
 		// corners
-		this.fillWithBlocks(worldIn, structureBoundingBoxIn, 0, 0, 0, 0, 4, 0, Blocks.LOG.getDefaultState(), Blocks.LOG.getDefaultState(), false);
-		this.fillWithBlocks(worldIn, structureBoundingBoxIn, 8, 0, 0, 8, 4, 0, Blocks.LOG.getDefaultState(), Blocks.LOG.getDefaultState(), false);
-		this.fillWithBlocks(worldIn, structureBoundingBoxIn, 0, 0, 5, 0, 4, 5, Blocks.LOG.getDefaultState(), Blocks.LOG.getDefaultState(), false);
-		this.fillWithBlocks(worldIn, structureBoundingBoxIn, 8, 0, 5, 8, 4, 5, Blocks.LOG.getDefaultState(), Blocks.LOG.getDefaultState(), false);
+		this.fillWithBlocks(worldIn, structureBoundingBoxIn, 0, 0, 0, 0, 4, 0, logs, logs, false);
+		this.fillWithBlocks(worldIn, structureBoundingBoxIn, 8, 0, 0, 8, 4, 0, logs, logs, false);
+		this.fillWithBlocks(worldIn, structureBoundingBoxIn, 0, 0, 5, 0, 4, 5, logs, logs, false);
+		this.fillWithBlocks(worldIn, structureBoundingBoxIn, 8, 0, 5, 8, 4, 5, logs, logs, false);
 
-		// front doors
-		this.placeDoorCurrentPosition(worldIn, structureBoundingBoxIn, randomIn, 0, 1, 1, EnumFacing.EAST);
-		this.placeDoorCurrentPosition(worldIn, structureBoundingBoxIn, randomIn, 0, 1, 4, EnumFacing.EAST);
-
-		// side doors
+		// door
 		this.placeDoorCurrentPosition(worldIn, structureBoundingBoxIn, randomIn, 1, 1, 0, EnumFacing.NORTH);
-		this.placeDoorCurrentPosition(worldIn, structureBoundingBoxIn, randomIn, 1, 1, 5, EnumFacing.SOUTH);
 
 		// counter
-		this.fillWithBlocks(worldIn, structureBoundingBoxIn, 6, 1, 1, 6, 1, 4, Blocks.PLANKS.getDefaultState(), Blocks.PLANKS.getDefaultState(), false);
-		this.fillWithBlocks(worldIn, structureBoundingBoxIn, 6, 3, 1, 6, 3, 4, Blocks.OAK_FENCE.getDefaultState(), Blocks.OAK_FENCE.getDefaultState(), false);
-
+		this.fillWithBlocks(worldIn, structureBoundingBoxIn, 6, 1, 1, 6, 1, 4, planks, planks, false);
+		this.fillWithBlocks(worldIn, structureBoundingBoxIn, 6, 3, 1, 6, 3, 4, fence, fence, false);
 
 		// roof
 		for (int i = -1; i <= 2; ++i) {
 			for (int j = 0; j <= 8; ++j) {
-				this.setBlockState(worldIn, Blocks.OAK_STAIRS.getDefaultState().withProperty(BlockStairs.FACING, EnumFacing.NORTH), j, 4 + i, i, structureBoundingBoxIn);
-				this.setBlockState(worldIn, Blocks.OAK_STAIRS.getDefaultState().withProperty(BlockStairs.FACING, EnumFacing.SOUTH), j, 4 + i, 5 - i, structureBoundingBoxIn);
+				this.setBlockState(worldIn, stairsNorth, j, 4 + i, i, structureBoundingBoxIn);
+				this.setBlockState(worldIn, stairsSouth, j, 4 + i, 5 - i, structureBoundingBoxIn);
 			}
 		}
 
 		// foundation
 		if (this.getBlockStateFromPos(worldIn, 1, 0, -1, structureBoundingBoxIn).getMaterial() == Material.AIR && this.getBlockStateFromPos(worldIn, 1, -1, -1, structureBoundingBoxIn).getMaterial() != Material.AIR) {
-			this.setBlockState(worldIn, Blocks.STONE_STAIRS.getDefaultState().withProperty(BlockStairs.FACING, EnumFacing.NORTH), 1, 0, -1, structureBoundingBoxIn);
+			this.setBlockState(worldIn, stairsNorth, 1, 0, -1, structureBoundingBoxIn);
 		}
 
 		for (int l = 0; l < 6; ++l) {
 			for (int k = 0; k < 9; ++k) {
 				this.clearCurrentPositionBlocksUpwards(worldIn, k, 9, l, structureBoundingBoxIn);
-				this.replaceAirAndLiquidDownwards(worldIn, Blocks.COBBLESTONE.getDefaultState(), k, -1, l, structureBoundingBoxIn);
+				this.replaceAirAndLiquidDownwards(worldIn, cobble, k, -1, l, structureBoundingBoxIn);
 			}
 		}
 
