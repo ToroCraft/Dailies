@@ -5,6 +5,7 @@ import java.util.Set;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.nbt.NBTTagCompound;
+import net.torocraft.dailies.DailiesException;
 import net.torocraft.dailies.quests.DailyQuest;
 
 public interface IDailiesCapability {
@@ -23,7 +24,7 @@ public interface IDailiesCapability {
 
 	void readNBT(NBTTagCompound c);
 
-	void acceptQuest(String playerName, DailyQuest quest);
+	void acceptQuest(String playerName, DailyQuest quest) throws DailiesException;
 
 	void abandonQuest(String playerName, DailyQuest quest);
 

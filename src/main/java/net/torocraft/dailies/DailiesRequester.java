@@ -131,9 +131,6 @@ public class DailiesRequester {
 
 	private Set<DailyQuest> parseResponse(String jsonString) {
 		Set<DailyQuest> dailyQuests = new HashSet<DailyQuest>();
-		int maxQuests = 5;
-		int i = 0;
-
 		if (jsonString == null) {
 			return dailyQuests;
 		}
@@ -141,10 +138,6 @@ public class DailiesRequester {
 		DailyQuest[] aQuests = gson.fromJson(jsonString, DailyQuest[].class);
 		for (DailyQuest quest : aQuests) {
 			dailyQuests.add(quest);
-			i++;
-			if (i >= maxQuests) {
-				return dailyQuests;
-			}
 		}
 		return dailyQuests;
 	}

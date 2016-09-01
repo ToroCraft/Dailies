@@ -8,6 +8,7 @@ import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessageHandler;
 import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
 import net.minecraftforge.fml.relauncher.Side;
+import net.torocraft.dailies.DailiesException;
 import net.torocraft.dailies.capabilities.CapabilityDailiesHandler;
 import net.torocraft.dailies.capabilities.IDailiesCapability;
 import net.torocraft.dailies.quests.DailyQuest;
@@ -70,7 +71,11 @@ public class AcceptQuestRequest implements IMessage  {
 				return;
 			}
 			
-			cap.acceptQuest(player.getName(), quest);
+			try {
+				cap.acceptQuest(player.getName(), quest);
+			} catch (DailiesException e) {
+				player.addChatMessage(e.getMessageAsTextComponent());
+			}
 			DailiesPacketHandler.INSTANCE.sendTo(new AvailableQuestsToClient(cap.getAvailableQuests()), player);
 			DailiesPacketHandler.INSTANCE.sendTo(new AcceptedQuestsToClient(cap.getAcceptedQuests()), player);
 			
