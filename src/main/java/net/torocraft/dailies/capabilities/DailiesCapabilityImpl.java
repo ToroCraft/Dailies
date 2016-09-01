@@ -8,6 +8,8 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
+import net.torocraft.dailies.DailiesException;
+import net.torocraft.dailies.DailiesMod;
 import net.torocraft.dailies.DailiesRequester;
 import net.torocraft.dailies.messages.AcceptedQuestsToClient;
 import net.torocraft.dailies.messages.AchievementToClient;
@@ -125,9 +127,13 @@ public class DailiesCapabilityImpl implements IDailiesCapability {
 	}
 
 	@Override
-	public void acceptQuest(String playerName, DailyQuest quest) {
+	public void acceptQuest(String playerName, DailyQuest quest) throws DailiesException {
 		if (acceptedQuests == null) {
 			return;
+		}
+		
+		if (acceptedQuests.size() >= DailiesMod.MAX_QUESTS_ACCEPTABLE) {
+			throw DailiesException.ACCEPTED_QUEST_LIMIT_HIT();
 		}
 
 		DailyQuest playerQuest = (DailyQuest) quest.clone();

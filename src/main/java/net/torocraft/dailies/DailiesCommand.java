@@ -61,7 +61,11 @@ public class DailiesCommand implements ICommand {
 				if (args.length == 0) {
 					listDailyQuests(questsData);
 				} else if (args.length == 2) {
-					handleSubCommand(questsData, args);
+					try {
+						handleSubCommand(questsData, args);
+					} catch (DailiesException e) {
+						questsData.player.addChatMessage(e.getMessageAsTextComponent());
+					}
 				} else if(args.length == 1 && args[0].equals("gui")) {
 					questsData.player.openGui(DailiesMod.instance, DailiesGuiHandler.getGuiID(), questsData.player.worldObj, sender.getPosition().getX(), sender.getPosition().getY(), sender.getPosition().getZ());
 				} else if(args.length == 1 && args[0].equals("spawn")) {
@@ -83,7 +87,7 @@ public class DailiesCommand implements ICommand {
 		}
 	}
 
-	private void handleSubCommand(PlayerDailyQuests d, String[] args) {
+	private void handleSubCommand(PlayerDailyQuests d, String[] args) throws DailiesException {
 		String command = args[0];
 		int index = toIndex(args[1]);
 
