@@ -1,13 +1,13 @@
 [
 {
-  "modid": "toromodpack",
-  "name": "Torocraft Modpack",
-  "description": "Torocraft Modpack",
-  "version": "1.10.2-2",
+  "modid": "baileysdailies",
+  "name": "Bailey's Dailies",
+  "description": "Daily Quests",
+  "version": "${version}",
   "mcversion": "${mcversion}",
   "url": "",
   "updateUrl": "",
-  "authorList": ["frodare", "mrprim", "pandapaul", "wing01", "zeriley"],
+  "authorList": ["torocraft"],
   "credits": "The Forge and FML guys, for making Forge and FML",
   "logoFile": "",
   "screenshots": [],
