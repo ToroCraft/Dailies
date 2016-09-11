@@ -30,7 +30,7 @@ public class EntityBailey extends EntityVillager {
 	}
 
 	public static void init(int entityId) {
-		EntityRegistry.registerModEntity(EntityBailey.class, NAME, entityId, DailiesMod.instance, 60, 2, true);
+		EntityRegistry.registerModEntity(EntityBailey.class, NAME, entityId, DailiesMod.instance, 60, 2, true, 0xeca58c, 0xba12c8);
 	}
 
 	public boolean processInteract(EntityPlayer player, EnumHand hand, @Nullable ItemStack stack) {
