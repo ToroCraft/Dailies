@@ -3,8 +3,8 @@ package net.torocraft.dailies;
 import java.util.ArrayList;
 import java.util.List;
 
+import net.minecraft.command.CommandBase;
 import net.minecraft.command.CommandException;
-import net.minecraft.command.ICommand;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
@@ -17,17 +17,12 @@ import net.torocraft.dailies.capabilities.IDailiesCapability;
 import net.torocraft.dailies.entities.EntityBailey;
 import net.torocraft.dailies.quests.DailyQuest;
 
-public class DailiesCommand implements ICommand {
+public class DailiesCommand extends CommandBase {
 
 	private static final TextComponentString invalidCommand = new TextComponentString("Invalid Command");
 	private static final TextComponentString questNotFound = new TextComponentString("Quest not Found");
 	
 	private List<String> aliases = new ArrayList<String>();
-
-	@Override
-	public int compareTo(ICommand arg0) {
-		return 0;
-	}
 
 	@Override
 	public String getCommandName() {
@@ -49,6 +44,11 @@ public class DailiesCommand implements ICommand {
 		public IDailiesCapability playerDailiesCapability;
 		public List<DailyQuest> openDailyQuests = null;
 		public List<DailyQuest> acceptedDailyQuests = null;
+	}
+	
+	@Override
+	public int getRequiredPermissionLevel() {
+		return 2;
 	}
 
 	@Override
@@ -194,11 +194,6 @@ public class DailiesCommand implements ICommand {
 	}
 
 	@Override
-	public boolean checkPermission(MinecraftServer server, ICommandSender sender) {
-		return true;
-	}
-
-	@Override
 	public List<String> getTabCompletionOptions(MinecraftServer server, ICommandSender sender, String[] args, BlockPos pos) {
 		List<String> tabOptions = new ArrayList<String>();
 
@@ -223,10 +218,5 @@ public class DailiesCommand implements ICommand {
 
 		return "";
 	}
-
-	@Override
-	public boolean isUsernameIndex(String[] args, int index) {
-		// TODO Auto-generated method stub
-		return false;
-	}
+	
 }
