@@ -3,7 +3,6 @@ package net.torocraft.dailies.entities.render;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.entity.RenderLiving;
 import net.minecraft.client.renderer.entity.RenderManager;
-import net.minecraft.client.renderer.entity.layers.LayerCustomHead;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.biome.Biome;
 import net.minecraft.world.biome.BiomeDesert;
@@ -23,7 +22,6 @@ public class RenderBailey extends RenderLiving<EntityBailey> {
 
 	public RenderBailey(RenderManager renderManagerIn) {
 		super(renderManagerIn, new ModelBailey(0.0F), 0.5F);
-		this.addLayer(new LayerCustomHead(this.getMainModel().villagerHead));
 	}
 
 	public ModelBailey getMainModel() {

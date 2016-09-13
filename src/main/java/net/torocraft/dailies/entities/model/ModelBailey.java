@@ -29,6 +29,7 @@ public class ModelBailey extends ModelBase {
 		this.villagerHead = (new ModelRenderer(this)).setTextureSize(width, height);
 		this.villagerHead.setRotationPoint(0.0F, 0.0F + rotYOffset, 0.0F);
 		this.villagerHead.setTextureOffset(0, 0).addBox(-4.0F, -10.0F, -4.0F, 8, 10, 8, scale);
+		this.villagerHead.setTextureOffset(32, 0).addBox(-4.0F, -10.0F, -4.0F, 8, 10, 8, scale + 0.5F);
 		this.villagerNose = (new ModelRenderer(this)).setTextureSize(width, height);
 		this.villagerNose.setRotationPoint(0.0F, rotYOffset - 2.0F, 0.0F);
 		this.villagerNose.setTextureOffset(24, 0).addBox(-1.0F, -2.0F, -5.0F, 2, 3, 2, scale);
