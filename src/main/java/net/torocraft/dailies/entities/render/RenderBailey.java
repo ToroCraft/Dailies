@@ -1,16 +1,16 @@
 package net.torocraft.dailies.entities.render;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.entity.RenderLiving;
 import net.minecraft.client.renderer.entity.RenderManager;
 import net.minecraft.util.ResourceLocation;
-import net.minecraft.world.biome.Biome;
-import net.minecraft.world.biome.BiomeDesert;
-import net.minecraft.world.biome.BiomePlains;
-import net.minecraft.world.biome.BiomeTaiga;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import net.torocraft.dailies.entities.EntityBailey;
+import net.torocraft.dailies.entities.EntityBailey.BaileyVariant;
 import net.torocraft.dailies.entities.model.ModelBailey;
 
 @SideOnly(Side.CLIENT)
@@ -19,6 +19,15 @@ public class RenderBailey extends RenderLiving<EntityBailey> {
 	private static final ResourceLocation baileyTextureTaiga = new ResourceLocation("dailiesmod:textures/entity/baileyTaiga.png");
 	private static final ResourceLocation baileyTextureDesert = new ResourceLocation("dailiesmod:textures/entity/baileyDesert.png");
 	private static final ResourceLocation baileyTexturePlains = new ResourceLocation("dailiesmod:textures/entity/baileyPlains.png");
+	
+	private static final Map<BaileyVariant, ResourceLocation> textures = new HashMap<BaileyVariant, ResourceLocation>();
+	
+	static {
+		textures.put(BaileyVariant.SAVANNA, baileyTextureSavanna);
+		textures.put(BaileyVariant.TAIGA, baileyTextureTaiga);
+		textures.put(BaileyVariant.DESERT, baileyTextureDesert);
+		textures.put(BaileyVariant.PLAINS, baileyTexturePlains);
+	}
 
 	public RenderBailey(RenderManager renderManagerIn) {
 		super(renderManagerIn, new ModelBailey(0.0F), 0.5F);
@@ -33,17 +42,10 @@ public class RenderBailey extends RenderLiving<EntityBailey> {
 	 * unless you call Render.bindEntityTexture.
 	 */
 	protected ResourceLocation getEntityTexture(EntityBailey entity) {
-		Biome biome = entity.worldObj.getBiome(entity.getPosition());
-		if (biome instanceof BiomeTaiga) {
-			return baileyTextureTaiga;
+		if (entity.variant == null) {
+			return baileyTextureSavanna;
 		}
-		if (biome instanceof BiomeDesert) {
-			return baileyTextureDesert;
-		}
-		if (biome instanceof BiomePlains) {
-			return baileyTexturePlains;
-		}
-		return baileyTextureSavanna;
+		return textures.get(entity.variant);
 	}
 
 	/**
