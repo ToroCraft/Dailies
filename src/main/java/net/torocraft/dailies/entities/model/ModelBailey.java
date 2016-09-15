@@ -29,6 +29,7 @@ public class ModelBailey extends ModelBase {
 		this.villagerHead = (new ModelRenderer(this)).setTextureSize(width, height);
 		this.villagerHead.setRotationPoint(0.0F, 0.0F + rotYOffset, 0.0F);
 		this.villagerHead.setTextureOffset(0, 0).addBox(-4.0F, -10.0F, -4.0F, 8, 10, 8, scale);
+		this.villagerHead.setTextureOffset(32, 0).addBox(-4.0F, -10.0F, -4.0F, 8, 10, 8, scale + 0.5F);
 		this.villagerNose = (new ModelRenderer(this)).setTextureSize(width, height);
 		this.villagerNose.setRotationPoint(0.0F, rotYOffset - 2.0F, 0.0F);
 		this.villagerNose.setTextureOffset(24, 0).addBox(-1.0F, -2.0F, -5.0F, 2, 3, 2, scale);
@@ -36,7 +37,7 @@ public class ModelBailey extends ModelBase {
 		this.villagerBody = (new ModelRenderer(this)).setTextureSize(width, height);
 		this.villagerBody.setRotationPoint(0.0F, 0.0F + rotYOffset, 0.0F);
 		this.villagerBody.setTextureOffset(16, 20).addBox(-4.0F, 0.0F, -3.0F, 8, 12, 6, scale);
-		this.villagerBody.setTextureOffset(0, 38).addBox(-4.0F, 0.0F, -3.0F, 8, 18, 6, scale + 0.5F);
+		this.villagerBody.setTextureOffset(0, 38).addBox(-4.0F, 0.0F, -3.0F, 8, 20, 6, scale + 0.5F);
 		this.villagerArms = (new ModelRenderer(this)).setTextureSize(width, height);
 		this.villagerArms.setRotationPoint(0.0F, 0.0F + rotYOffset + 2.0F, 0.0F);
 		this.villagerArms.setTextureOffset(44, 22).addBox(-8.0F, -2.0F, -1.0F, 4, 10, 4, scale);
