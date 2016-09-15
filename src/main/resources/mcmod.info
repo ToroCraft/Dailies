@@ -2,7 +2,7 @@
 {
   "modid": "baileysdailies",
   "name": "Bailey's Dailies",
-  "description": "Daily Quests",
+  "description": "Daily quests for hunting, gathering, and exploring the wonderful world of Minecraft.",
   "version": "${version}",
   "mcversion": "${mcversion}",
   "url": "",
