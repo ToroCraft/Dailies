@@ -1,4 +1,4 @@
-package net.torocraft.dailies;
+package net.torocraft.dailies.gui;
 
 import java.awt.Color;
 import java.util.HashMap;
@@ -16,7 +16,8 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
-import net.torocraft.dailies.gui.GuiDailyBadge;
+import net.torocraft.dailies.BaileyInventory;
+import net.torocraft.dailies.DailiesContainer;
 import net.torocraft.dailies.messages.AbandonQuestRequest;
 import net.torocraft.dailies.messages.AcceptQuestRequest;
 import net.torocraft.dailies.messages.DailiesPacketHandler;

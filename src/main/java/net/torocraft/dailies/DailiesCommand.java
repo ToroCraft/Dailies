@@ -15,6 +15,7 @@ import net.minecraft.world.World;
 import net.torocraft.dailies.capabilities.CapabilityDailiesHandler;
 import net.torocraft.dailies.capabilities.IDailiesCapability;
 import net.torocraft.dailies.entities.EntityBailey;
+import net.torocraft.dailies.gui.DailiesGuiHandler;
 import net.torocraft.dailies.quests.DailyQuest;
 
 public class DailiesCommand extends CommandBase {

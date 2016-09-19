@@ -10,6 +10,7 @@ import net.torocraft.dailies.capabilities.CapabilityDailiesHandler;
 import net.torocraft.dailies.entities.Entities;
 import net.torocraft.dailies.generation.BaileysShopVilleagePiece;
 import net.torocraft.dailies.generation.VillageHandlerBailey;
+import net.torocraft.dailies.gui.DailiesGuiHandler;
 import net.torocraft.dailies.messages.DailiesPacketHandler;
 
 public class CommonProxy {

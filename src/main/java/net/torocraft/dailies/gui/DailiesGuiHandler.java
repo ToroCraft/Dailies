@@ -1,8 +1,10 @@
-package net.torocraft.dailies;
+package net.torocraft.dailies.gui;
 
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.common.network.IGuiHandler;
+import net.torocraft.dailies.BaileyInventory;
+import net.torocraft.dailies.DailiesContainer;
 
 public class DailiesGuiHandler implements IGuiHandler {
 	

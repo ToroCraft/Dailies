@@ -31,8 +31,8 @@ import net.minecraft.world.biome.BiomeTaiga;
 import net.minecraftforge.fml.common.network.ByteBufUtils;
 import net.minecraftforge.fml.common.registry.EntityRegistry;
 import net.minecraftforge.fml.common.registry.IEntityAdditionalSpawnData;
-import net.torocraft.dailies.DailiesGuiHandler;
 import net.torocraft.dailies.DailiesMod;
+import net.torocraft.dailies.gui.DailiesGuiHandler;
 
 public class EntityBailey extends EntityVillager implements IEntityAdditionalSpawnData {
 	
