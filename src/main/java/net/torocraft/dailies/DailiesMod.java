@@ -9,14 +9,13 @@ import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLServerStartingEvent;
-import net.torocraft.torohealthmod.config.ConfigurationHandler;
+import net.torocraft.dailies.config.ConfigurationHandler;
 
-@Mod(modid = DailiesMod.MODID, name = DailiesMod.MODNAME, version = DailiesMod.VERSION)
+@Mod(modid = DailiesMod.MODID, name = DailiesMod.MODNAME, guiFactory = "net.torocraft.dailies.gui.GuiFactoryDailies")
 public class DailiesMod {
 
 	public static final String MODID = "dailies";
-	public static final String VERSION = "1.9.4-4";
-	public static final String MODNAME = "DailiesMod";
+	public static final String MODNAME = "Bailey's Dailies";
 	public static final Integer MAX_QUESTS_ACCEPTABLE = 10;
 
 	@Instance(value = DailiesMod.MODID)

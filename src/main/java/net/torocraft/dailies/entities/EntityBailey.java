@@ -20,7 +20,6 @@ import net.minecraft.stats.StatList;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.TextComponentString;
-import net.minecraft.village.MerchantRecipeList;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.Biome;
@@ -48,7 +47,6 @@ public class EntityBailey extends EntityVillager implements IEntityAdditionalSpa
 	
 	public static String NAME = "bailey";
 	public BaileyVariant variant;
-	private MerchantRecipeList buyingList;
 
 	public EntityBailey(World world) {
 		super(world);
@@ -63,7 +61,7 @@ public class EntityBailey extends EntityVillager implements IEntityAdditionalSpa
 		boolean flag = stack != null && stack.getItem() == Items.SPAWN_EGG;
 
 		if (!flag && this.isEntityAlive() && !this.isTrading() && !this.isChild() && !player.isSneaking()) {
-			if (!this.worldObj.isRemote && (this.buyingList == null || !this.buyingList.isEmpty())) {
+			if (!this.worldObj.isRemote) {
 				player.openGui(DailiesMod.instance, DailiesGuiHandler.getGuiID(), this.worldObj,
 						player.getPosition().getX(), player.getPosition().getY(), player.getPosition().getZ());
 			}

@@ -19,6 +19,7 @@ import net.minecraftforge.client.event.RenderGameOverlayEvent.ElementType;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
+import net.torocraft.dailies.config.ConfigurationHandler;
 import net.torocraft.dailies.messages.AbandonQuestRequest;
 import net.torocraft.dailies.messages.DailiesPacketHandler;
 import net.torocraft.dailies.messages.RequestAcceptedQuests;
@@ -60,6 +61,10 @@ public class GuiDailyProgressIndicators extends Gui {
 
 	@SubscribeEvent
 	public void drawProgressIndicatorsInInventory(DrawScreenEvent.Post event) {
+		if (!ConfigurationHandler.showQuestsInPlayerInventory) {
+			return;
+		}
+		
 		if (!(mc.currentScreen instanceof GuiInventory)) {
 			questsDataUpdateRequired = true;
 			return;
