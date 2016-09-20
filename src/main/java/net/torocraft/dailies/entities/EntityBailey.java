@@ -96,7 +96,7 @@ public class EntityBailey extends EntityVillager implements IEntityAdditionalSpa
 	}
 
 	private void setVariantByCurrentBiome() {
-		Biome biome = worldObj.getBiomeGenForCoords(getPosition());
+		Biome biome = worldObj.getBiome(getPosition());
 		if (biome instanceof BiomeTaiga) {
 			variant = BaileyVariant.TAIGA;
 		} else if (biome instanceof BiomeDesert) {
