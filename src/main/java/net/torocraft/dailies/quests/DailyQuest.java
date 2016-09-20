@@ -10,7 +10,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.text.translation.I18n;
-import net.torocraft.dailies.DailiesRequester;
+import net.torocraft.dailies.network.QuestInventoryFetcher;
 
 public class DailyQuest {
 
@@ -131,7 +131,7 @@ public class DailyQuest {
 
 			@Override
 			public void run() {
-				new DailiesRequester().progressQuest(username, questId, progress);
+				new QuestInventoryFetcher().progressQuest(username, questId, progress);
 			}
 
 		}).start();

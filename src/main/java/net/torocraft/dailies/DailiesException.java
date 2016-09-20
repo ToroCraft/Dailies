@@ -9,6 +9,10 @@ public class DailiesException extends Exception {
 		super(message);
 	}
 	
+	public static DailiesException SYSTEM_ERROR(Exception e) {
+		return new DailiesException(DailiesMod.metadata.name + " Error: " + e.getMessage());
+	}
+	
 	public static DailiesException ACCEPTED_QUEST_LIMIT_HIT() {
 		return new DailiesException("You've already accepted " + DailiesMod.MAX_QUESTS_ACCEPTABLE + " quests.");
 	}

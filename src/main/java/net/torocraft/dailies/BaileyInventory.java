@@ -10,6 +10,7 @@ import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.TextComponentString;
 import net.torocraft.dailies.capabilities.CapabilityDailiesHandler;
 import net.torocraft.dailies.capabilities.IDailiesCapability;
+import net.torocraft.dailies.network.QuestInventoryFetcher;
 import net.torocraft.dailies.quests.DailyQuest;
 import net.torocraft.dailies.quests.Reward;
 import scala.actors.threadpool.Arrays;
@@ -228,7 +229,7 @@ public class BaileyInventory implements IInventory {
 
 			@Override
 			public void run() {
-				new DailiesRequester().progressQuest(username, questId, progress);
+				new QuestInventoryFetcher().progressQuest(username, questId, progress);
 			}
 
 		}).start();

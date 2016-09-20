@@ -10,11 +10,11 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 import net.torocraft.dailies.DailiesException;
 import net.torocraft.dailies.DailiesMod;
-import net.torocraft.dailies.DailiesRequester;
 import net.torocraft.dailies.messages.AcceptedQuestsToClient;
 import net.torocraft.dailies.messages.AchievementToClient;
 import net.torocraft.dailies.messages.DailiesPacketHandler;
 import net.torocraft.dailies.messages.QuestProgressToClient;
+import net.torocraft.dailies.network.QuestInventoryFetcher;
 import net.torocraft.dailies.quests.DailyQuest;
 
 public class DailiesCapabilityImpl implements IDailiesCapability {
@@ -39,7 +39,7 @@ public class DailiesCapabilityImpl implements IDailiesCapability {
 		new Thread(new Runnable() {
 			@Override
 			public void run() {
-				new DailiesRequester().completeQuest(player.getName(), quest.id);
+				new QuestInventoryFetcher().completeQuest(player.getName(), quest.id);
 			}
 		}).start();
 	}
@@ -140,7 +140,7 @@ public class DailiesCapabilityImpl implements IDailiesCapability {
 		playerQuest.date = System.currentTimeMillis();
 		acceptedQuests.add(playerQuest);
 		availableQuests.remove(quest);
-		new DailiesRequester().acceptQuest(playerName, quest.id);
+		new QuestInventoryFetcher().acceptQuest(playerName, quest.id);
 	}
 
 	@Override
@@ -152,7 +152,7 @@ public class DailiesCapabilityImpl implements IDailiesCapability {
 		quest.progress = 0;
 		acceptedQuests.remove(quest);
 		availableQuests.add(quest);
-		new DailiesRequester().abandonQuest(playerName, quest.id);
+		new QuestInventoryFetcher().abandonQuest(playerName, quest.id);
 	}
 	
 	@Override

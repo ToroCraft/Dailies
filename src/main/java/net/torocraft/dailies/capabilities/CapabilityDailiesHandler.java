@@ -8,7 +8,7 @@ import net.torocraft.dailies.DailiesMod;
 
 public class CapabilityDailiesHandler {
 
-	public static final String NAME = DailiesMod.MODNAME + ":CapabilityDailies";
+	public static final String NAME = DailiesMod.metadata.name + ":CapabilityDailies";
 
 	@CapabilityInject(IDailiesCapability.class)
 	public static Capability<IDailiesCapability> DAILIES_CAPABILITY = null;

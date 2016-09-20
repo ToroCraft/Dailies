@@ -1,11 +1,7 @@
-package net.torocraft.dailies;
+package net.torocraft.dailies.quests;
 
 import java.util.HashSet;
 import java.util.Set;
-
-import net.torocraft.dailies.quests.DailyQuest;
-import net.torocraft.dailies.quests.Reward;
-import net.torocraft.dailies.quests.TypedInteger;
 
 public class RandomQuestGenerator {
 	

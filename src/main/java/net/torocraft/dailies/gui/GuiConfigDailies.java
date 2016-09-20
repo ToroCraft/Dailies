@@ -14,7 +14,7 @@ public class GuiConfigDailies extends GuiConfig {
 				DailiesMod.MODID,
 				false,
 				false,
-				DailiesMod.MODNAME);
+				DailiesMod.metadata.name);
 		titleLine2 = ConfigurationHandler.config.getConfigFile().getAbsolutePath();
 	}
 }
