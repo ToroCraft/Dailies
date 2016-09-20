@@ -57,10 +57,6 @@ public class BaileysShopVilleagePiece extends StructureVillagePieces.Village {
 
 		IBlockState stairsNorth = this.getBiomeSpecificBlockState(Blocks.OAK_STAIRS.getDefaultState().withProperty(BlockStairs.FACING, EnumFacing.NORTH));
 		IBlockState stairsSouth = this.getBiomeSpecificBlockState(Blocks.OAK_STAIRS.getDefaultState().withProperty(BlockStairs.FACING, EnumFacing.SOUTH));
-		IBlockState stairsEast = this.getBiomeSpecificBlockState(Blocks.OAK_STAIRS.getDefaultState().withProperty(BlockStairs.FACING, EnumFacing.EAST));
-		IBlockState stairsWest = this.getBiomeSpecificBlockState(Blocks.OAK_STAIRS.getDefaultState().withProperty(BlockStairs.FACING, EnumFacing.WEST));
-
-		// -5599655086621954440
 
 		// clear inside
 		this.fillWithBlocks(worldIn, structureBoundingBoxIn, 1, 1, 1, 7, 5, 4, Blocks.AIR.getDefaultState(), Blocks.AIR.getDefaultState(), false);
@@ -103,16 +99,8 @@ public class BaileysShopVilleagePiece extends StructureVillagePieces.Village {
 		this.fillWithBlocks(worldIn, structureBoundingBoxIn, 0, 0, 5, 0, 4, 5, logs, logs, false);
 		this.fillWithBlocks(worldIn, structureBoundingBoxIn, 8, 0, 5, 8, 4, 5, logs, logs, false);
 
-		// front doors
-		
-		// this.func_189927_a(worldIn, structureBoundingBoxIn, randomIn, 0, 1,
-		// 1, EnumFacing.EAST);
-		//this.func_189927_a(worldIn, structureBoundingBoxIn, randomIn, 0, 1, 4, EnumFacing.EAST);
-
-		// side doors
+		// door
 		this.func_189927_a(worldIn, structureBoundingBoxIn, randomIn, 1, 1, 0, EnumFacing.NORTH);
-		// this.func_189927_a(worldIn, structureBoundingBoxIn, randomIn, 1, 1,
-		// 5, EnumFacing.SOUTH);
 
 		// counter
 		this.fillWithBlocks(worldIn, structureBoundingBoxIn, 6, 1, 1, 6, 1, 4, planks, planks, false);
