@@ -3,21 +3,21 @@ package net.torocraft.dailies.network;
 import java.util.HashSet;
 import java.util.Set;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-
 import net.torocraft.dailies.DailiesException;
 import net.torocraft.dailies.quests.DailyQuest;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+
 public class QuestInventoryFetcher {
 	
-	private static final String requestMethod = "GET";
+	private static final String requestMethod = "POST";
 	private final String username;
 	private String path;
 	private DailiesRequest request;
 	private String jsonResponse;
-	private DailyQuest[] aQuests;
 	private Set<DailyQuest> quests;
+	private DailiesTransmitter transmitter;
 	
 	public QuestInventoryFetcher(String username) {
 		this.username = username;
@@ -37,10 +37,12 @@ public class QuestInventoryFetcher {
 	
 	private void buildRequest() {
 		request = new DailiesRequest();
+		System.out.println("DAILIES REQUEST modVersion = " + request.modVersion);
 	}
 	
 	private void requestQuestInventory() throws DailiesException {
-		jsonResponse = new DailiesTransmitter(path, request.serialize(), requestMethod).sendRequest();
+		transmitter = new DailiesTransmitter(path, request.serialize(), requestMethod);
+		jsonResponse = transmitter.sendRequest();
 	}
 
 	private void parseResponse() {
@@ -49,10 +51,7 @@ public class QuestInventoryFetcher {
 			return;
 		}
 		Gson gson = new GsonBuilder().create();
-		aQuests = gson.fromJson(jsonResponse, DailyQuest[].class);
-		for (DailyQuest quest : aQuests) {
-			quests.add(quest);
-		}
+		quests = gson.fromJson(jsonResponse, QuestInventoryResponse.class).quests;
 	}
 
 }

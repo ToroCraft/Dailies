@@ -31,6 +31,7 @@ public class DailiesTransmitter {
 	private DailiesResponse response;
 	private int responseCode;
 	private InputStream responseStream;
+	private boolean debugging;
 	
 	public DailiesTransmitter(String path, String jsonRequest, String requestMethod) {
 		this.path = path;
@@ -43,6 +44,14 @@ public class DailiesTransmitter {
 		transmit();
 		checkResponseForError();
 		return jsonResponse;
+	}
+	
+	public void enableDebugLogging() {
+		debugging = true;
+	}
+	
+	public void disableDebugLogging() {
+		debugging = false;
 	}
 	
 	private void buildUrl() throws DailiesException {
@@ -68,6 +77,9 @@ public class DailiesTransmitter {
 			if (conn != null) {
 				conn.disconnect();
 			}
+			if (debugging) {
+				log();
+			}
 		}
 	}
 
@@ -77,12 +89,13 @@ public class DailiesTransmitter {
 	
 	private void setConnectionProperties() throws ProtocolException {
 		conn.setRequestMethod(requestMethod);
+		conn.setRequestProperty("Content-Type", "application/json");
 	}
 	
 	private void writeRequestToConnection() throws IOException {
 		if (conn.getRequestMethod().equals("POST")) {
 			conn.setDoOutput(true);
-			IOUtils.write(jsonRequest, conn.getOutputStream());			
+			IOUtils.write(jsonRequest, conn.getOutputStream());
 		}
 	}
 	
@@ -111,6 +124,15 @@ public class DailiesTransmitter {
 		if (response != null && response.error != null && response.error.length() > 0) {
 			throw DailiesException.SERVICE_ERROR(response.error);
 		}
+	}
+
+	private void log() {
+		System.out.println("---| Logging Transmission to Service |---");
+		System.out.println("url: " + url);
+		System.out.println("requestMethod: " + requestMethod);
+		System.out.println("jsonRequest: " + jsonRequest);
+		System.out.println("responseCode: " + responseCode);
+		System.out.println("jsonResponse: " + jsonResponse);
 	}
 
 }
