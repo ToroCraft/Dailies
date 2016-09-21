@@ -72,7 +72,7 @@ public class DailiesTransmitter {
 			getJsonResponseFromStream();
 		} catch(IOException e) {
 			e.printStackTrace();
-			throw DailiesException.NETWORK_ERROR(e);
+			throw new DailiesNetworkException(e);
 		} finally {
 			if (conn != null) {
 				conn.disconnect();

@@ -139,16 +139,12 @@ public class DailiesCapabilityImpl implements IDailiesCapability {
 		if (acceptedQuests.size() >= DailiesMod.MAX_QUESTS_ACCEPTABLE) {
 			throw DailiesException.ACCEPTED_QUEST_LIMIT_HIT();
 		}
-
+		
 		DailyQuest playerQuest = (DailyQuest) quest.clone();
 		playerQuest.date = System.currentTimeMillis();
 		acceptedQuests.add(playerQuest);
 		availableQuests.remove(quest);
-		try {
-			new QuestActionHandler(player.getName(), quest.id).accept();
-		} catch (DailiesException e) {
-			player.addChatMessage(e.getMessageAsTextComponent());
-		}
+		new QuestActionHandler(player.getName(), quest.id).accept();
 	}
 
 	@Override
