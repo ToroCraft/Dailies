@@ -9,6 +9,8 @@ import net.torocraft.dailies.DailiesException;
 
 import org.apache.commons.io.IOUtils;
 
+import com.google.gson.GsonBuilder;
+
 public class Transmitter {
 
 	private static final String SERVICE_URL = "http://www.minecraftdailies.com/";
@@ -24,6 +26,7 @@ public class Transmitter {
 	private String jsonResponse;
 	private HttpURLConnection conn;
 	private URL url;
+	private DailiesResponse response;
 	
 	public Transmitter(String path, String jsonRequest, String requestMethod) {
 		this.path = path;
@@ -34,6 +37,7 @@ public class Transmitter {
 	public String sendRequest() throws DailiesException {
 		buildUrl();
 		transmit();
+		checkResponseForError();
 		return jsonResponse;
 	}
 	
@@ -58,6 +62,13 @@ public class Transmitter {
 			if (conn != null) {
 				conn.disconnect();
 			}
+		}
+	}
+	
+	private void checkResponseForError() throws DailiesException {
+		response = new GsonBuilder().create().fromJson(jsonResponse, DailiesResponse.class);
+		if (response.error != null && response.error.length() > 0) {
+			throw DailiesException.SERVICE_ERROR(response.error);
 		}
 	}
 

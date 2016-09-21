@@ -21,6 +21,10 @@ public class DailiesException extends Exception {
 		return new DailiesException("Unable to connect to the dailies service due to the following error: " + e.getMessage());
 	}
 	
+	public static DailiesException SERVICE_ERROR(String message) {
+		return new DailiesException("Error from Dailies Service: " + message);
+	}
+	
 	public TextComponentString getMessageAsTextComponent() {
 		return new TextComponentString(getMessage());
 	}
