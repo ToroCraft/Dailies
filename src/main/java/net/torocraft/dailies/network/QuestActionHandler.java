@@ -14,7 +14,7 @@ public class QuestActionHandler {
 	private Action action;
 	private String path;
 	private DailiesRequest request;
-	private Transmitter transmitter;
+	private DailiesTransmitter transmitter;
 	
 	public QuestActionHandler(String username, String questId) {
 		this.username = username;
@@ -38,8 +38,8 @@ public class QuestActionHandler {
 	
 	private void doAction() throws DailiesException {
 		request = new DailiesRequest();
-		path = username + Transmitter.PATH_QUESTS + "/" + questId + "/" + action;
-		transmitter = new Transmitter(path, request.serialize(), requestMethod);
+		path = username + DailiesTransmitter.PATH_QUESTS + "/" + questId + "/" + action;
+		transmitter = new DailiesTransmitter(path, request.serialize(), requestMethod);
 		transmitter.sendRequest();
 	}
 	

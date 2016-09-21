@@ -32,7 +32,7 @@ public class QuestInventoryFetcher {
 	}
 	
 	private void buildPath() {
-		path = username + Transmitter.PATH_QUESTS;
+		path = username + DailiesTransmitter.PATH_QUESTS;
 	}
 	
 	private void buildRequest() {
@@ -40,7 +40,7 @@ public class QuestInventoryFetcher {
 	}
 	
 	private void requestQuestInventory() throws DailiesException {
-		new Transmitter(path, request.serialize(), requestMethod).sendRequest();
+		jsonResponse = new DailiesTransmitter(path, request.serialize(), requestMethod).sendRequest();
 	}
 
 	private void parseResponse() {

@@ -11,7 +11,7 @@ public class ProgressUpdater {
 	private final int progress;
 	private String path;
 	private DailiesRequest request;
-	private Transmitter transmitter;
+	private DailiesTransmitter transmitter;
 	
 	public ProgressUpdater(String username, String questId, int progress) {
 		this.username = username;
@@ -31,11 +31,11 @@ public class ProgressUpdater {
 	}
 
 	private void buildPath() {
-		path = username + Transmitter.PATH_QUESTS + "/" + questId + path_progress + progress;
+		path = username + DailiesTransmitter.PATH_QUESTS + "/" + questId + path_progress + progress;
 	}
 
 	private void buildTransmitter() {
-		transmitter = new Transmitter(path, request.serialize(), requestMethod);
+		transmitter = new DailiesTransmitter(path, request.serialize(), requestMethod);
 	}
 
 	private void sendRequest() throws DailiesException {
