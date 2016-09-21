@@ -14,7 +14,7 @@ import net.torocraft.dailies.messages.AcceptedQuestsToClient;
 import net.torocraft.dailies.messages.AchievementToClient;
 import net.torocraft.dailies.messages.DailiesPacketHandler;
 import net.torocraft.dailies.messages.QuestProgressToClient;
-import net.torocraft.dailies.network.QuestInventoryFetcher;
+import net.torocraft.dailies.network.QuestActionHandler;
 import net.torocraft.dailies.quests.DailyQuest;
 
 public class DailiesCapabilityImpl implements IDailiesCapability {
@@ -24,7 +24,7 @@ public class DailiesCapabilityImpl implements IDailiesCapability {
 	private Set<DailyQuest> completedQuests;
 
 	@Override
-	public void completeQuest(final DailyQuest quest, final EntityPlayer player) {
+	public void completeQuest(final EntityPlayer player, final DailyQuest quest) {
 		acceptedQuests.remove(quest);
 		
 		if (completedQuests == null) {
@@ -39,7 +39,11 @@ public class DailiesCapabilityImpl implements IDailiesCapability {
 		new Thread(new Runnable() {
 			@Override
 			public void run() {
-				new QuestInventoryFetcher().completeQuest(player.getName(), quest.id);
+				try {
+					new QuestActionHandler(player.getName(), quest.id).complete();
+				} catch (DailiesException e) {
+					player.addChatMessage(e.getMessageAsTextComponent());
+				}
 			}
 		}).start();
 	}
@@ -52,9 +56,9 @@ public class DailiesCapabilityImpl implements IDailiesCapability {
 			return;
 		}
 
-		if (quest.isComplete()) {
+		if (quest.isComplete()) { 
 			quest.reward(player);
-			completeQuest(quest, player);
+			completeQuest(player, quest);
 		} else {
 			DailiesPacketHandler.INSTANCE.sendTo(new QuestProgressToClient(quest), (EntityPlayerMP)player);
 		}
@@ -127,7 +131,7 @@ public class DailiesCapabilityImpl implements IDailiesCapability {
 	}
 
 	@Override
-	public void acceptQuest(String playerName, DailyQuest quest) throws DailiesException {
+	public void acceptQuest(EntityPlayer player, DailyQuest quest) throws DailiesException {
 		if (acceptedQuests == null) {
 			return;
 		}
@@ -140,11 +144,15 @@ public class DailiesCapabilityImpl implements IDailiesCapability {
 		playerQuest.date = System.currentTimeMillis();
 		acceptedQuests.add(playerQuest);
 		availableQuests.remove(quest);
-		new QuestInventoryFetcher().acceptQuest(playerName, quest.id);
+		try {
+			new QuestActionHandler(player.getName(), quest.id).accept();
+		} catch (DailiesException e) {
+			player.addChatMessage(e.getMessageAsTextComponent());
+		}
 	}
 
 	@Override
-	public void abandonQuest(String playerName, DailyQuest quest) {
+	public void abandonQuest(EntityPlayer player, DailyQuest quest) {
 		if (acceptedQuests == null) {
 			return;
 		}
@@ -152,7 +160,11 @@ public class DailiesCapabilityImpl implements IDailiesCapability {
 		quest.progress = 0;
 		acceptedQuests.remove(quest);
 		availableQuests.add(quest);
-		new QuestInventoryFetcher().abandonQuest(playerName, quest.id);
+		try {
+			new QuestActionHandler(player.getName(), quest.id).abandon();
+		} catch (DailiesException e) {
+			player.addChatMessage(e.getMessageAsTextComponent());
+		}
 	}
 	
 	@Override

@@ -10,7 +10,7 @@ import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.TextComponentString;
 import net.torocraft.dailies.capabilities.CapabilityDailiesHandler;
 import net.torocraft.dailies.capabilities.IDailiesCapability;
-import net.torocraft.dailies.network.QuestInventoryFetcher;
+import net.torocraft.dailies.network.ProgressUpdater;
 import net.torocraft.dailies.quests.DailyQuest;
 import net.torocraft.dailies.quests.Reward;
 import scala.actors.threadpool.Arrays;
@@ -201,11 +201,10 @@ public class BaileyInventory implements IInventory {
 		
 		if(quest.isComplete()) {
 			quest.rewardFulfilled = true;
-			playerDailiesCapability.completeQuest(quest, player);
+			playerDailiesCapability.completeQuest(player, quest);
 			buildReward(quest.reward);
-			
 		} else {
-			syncProgress(player.getName(), quest.id, quest.progress);
+			syncProgress(quest.id, quest.progress);
 		}
 		
 		if (leftOver > 0) {
@@ -224,12 +223,16 @@ public class BaileyInventory implements IInventory {
 		setInventorySlotContents(REWARD_OUTPUT_INDEX, rewardStack);
 	}
 	
-	private void syncProgress(final String username, final String questId, final int progress) {
+	private void syncProgress(final String questId, final int progress) {
 		new Thread(new Runnable() {
 
 			@Override
 			public void run() {
-				new QuestInventoryFetcher().progressQuest(username, questId, progress);
+				try {
+					new ProgressUpdater(player.getName(), questId, progress).update();
+				} catch (DailiesException e) {
+					player.addChatMessage(e.getMessageAsTextComponent());
+				}
 			}
 
 		}).start();

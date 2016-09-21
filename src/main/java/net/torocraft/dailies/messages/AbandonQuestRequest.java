@@ -69,7 +69,7 @@ public class AbandonQuestRequest implements IMessage {
 				return;
 			}
 			
-			cap.abandonQuest(player.getName(), quest);
+			cap.abandonQuest(player, quest);
 			DailiesPacketHandler.INSTANCE.sendTo(new AvailableQuestsToClient(cap.getAvailableQuests()), player);
 			DailiesPacketHandler.INSTANCE.sendTo(new AcceptedQuestsToClient(cap.getAcceptedQuests()), player);
 			

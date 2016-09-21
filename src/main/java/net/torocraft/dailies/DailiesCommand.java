@@ -108,7 +108,7 @@ public class DailiesCommand extends CommandBase {
 			if (quest == null) {
 				d.player.addChatMessage(questNotFound);
 			} else {
-				d.playerDailiesCapability.abandonQuest(d.player.getName(), quest);
+				d.playerDailiesCapability.abandonQuest(d.player, quest);
 				d.player.addChatMessage(new TextComponentString("Quest " + fromIndex(index) + " " + quest.getDisplayName() + " abandoned"));
 			}
 
@@ -120,7 +120,7 @@ public class DailiesCommand extends CommandBase {
 			if (quest == null) {
 				d.player.addChatMessage(questNotFound);
 			} else {
-				d.playerDailiesCapability.acceptQuest(d.player.getName(), quest);
+				d.playerDailiesCapability.acceptQuest(d.player, quest);
 				d.player.addChatMessage(new TextComponentString("Quest " + fromIndex(index) + " " + quest.getDisplayName() + " accepted"));
 			}
 		}

@@ -15,6 +15,7 @@ import net.minecraftforge.event.entity.living.LivingDeathEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.PlayerEvent.PlayerLoggedInEvent;
+import net.torocraft.dailies.DailiesException;
 import net.torocraft.dailies.network.QuestInventoryFetcher;
 import net.torocraft.dailies.quests.DailyQuest;
 
@@ -140,8 +141,12 @@ public class Events {
 	}
 	
 	private Set<DailyQuest> getDailyQuests(EntityPlayer player) {
-		QuestInventoryFetcher requester = new QuestInventoryFetcher();
-		Set<DailyQuest> dailies = requester.getQuestInventory(player.getName());
-		return dailies;
+		Set<DailyQuest> quests = new HashSet<DailyQuest>();
+		try {
+			quests = new QuestInventoryFetcher(player.getName()).getQuestInventory();
+		} catch (DailiesException e) {
+			player.addChatMessage(e.getMessageAsTextComponent());
+		}
+		return quests;
 	}
 }
