@@ -1,66 +1,53 @@
 package net.torocraft.dailies.network;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.apache.commons.io.IOUtils;
-
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.sun.org.apache.xerces.internal.util.URI.MalformedURIException;
 
+import net.torocraft.dailies.DailiesException;
 import net.torocraft.dailies.quests.DailyQuest;
-import net.torocraft.dailies.quests.RandomQuestGenerator;
 
 public class QuestInventoryFetcher {
-
-	private static final String SERVICE_URL = "http://www.minecraftdailies.com";
-	private static final String PATH_QUESTS = "/quests";
 	
+	private static final String requestMethod = "GET";
 	private final String username;
+	private String path;
+	private DailiesRequest request;
 	private String jsonResponse;
 	private DailyQuest[] aQuests;
+	private Set<DailyQuest> quests;
 	
 	public QuestInventoryFetcher(String username) {
 		this.username = username;
 	}
 
-	public Set<DailyQuest> getQuestInventory() {
-		
-		
-		
-		try {
-			return parseResponse(requestQuestInventory());
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		
-		return generateOfflineQuests();
-	}
-
-	private Set<DailyQuest> parseResponse() {
-		Set<DailyQuest> dailyQuests = new HashSet<DailyQuest>();
-		if (jsonString == null) {
-			return dailyQuests;
-		}
-		Gson gson = new GsonBuilder().create();
-		aQuests = gson.fromJson(jsonString, DailyQuest[].class);
-		for (DailyQuest quest : aQuests) {
-			dailyQuests.add(quest);
-		}
-		return dailyQuests;
+	public Set<DailyQuest> getQuestInventory() throws DailiesException {
+		buildPath();
+		requestQuestInventory();
+		parseResponse();
+		return quests;
 	}
 	
-	private Set<DailyQuest> generateOfflineQuests() {
-		RandomQuestGenerator questGenerator = new RandomQuestGenerator();
-		Set<DailyQuest> dailyQuests = questGenerator.generateQuests();
-		return dailyQuests;
+	private void buildPath() {
+		path = username + Transmitter.PATH_QUESTS;
 	}
+	
+	private void requestQuestInventory() throws DailiesException {
+		new Transmitter(path, request.serialize(), requestMethod).sendRequest();
+	}
+
+	private void parseResponse() {
+		quests = new HashSet<DailyQuest>();
+		if (jsonResponse == null) {
+			return;
+		}
+		Gson gson = new GsonBuilder().create();
+		aQuests = gson.fromJson(jsonResponse, DailyQuest[].class);
+		for (DailyQuest quest : aQuests) {
+			quests.add(quest);
+		}
+	}
+
 }

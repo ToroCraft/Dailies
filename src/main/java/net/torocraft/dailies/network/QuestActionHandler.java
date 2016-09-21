@@ -21,7 +21,7 @@ public class QuestActionHandler {
 	public void update() throws DailiesException {
 		request = new DailiesRequest();
 		path = username + Transmitter.PATH_QUESTS + "/" + questId + "/" + action;
-		transmitter = new Transmitter(path, request, requestMethod);
+		transmitter = new Transmitter(path, request.serialize(), requestMethod);
 		transmitter.sendRequest();
 	}
 	

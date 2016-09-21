@@ -35,7 +35,7 @@ public class ProgressUpdater {
 	}
 
 	private void buildTransmitter() {
-		transmitter = new Transmitter(path, request, requestMethod);
+		transmitter = new Transmitter(path, request.serialize(), requestMethod);
 	}
 
 	private void sendRequest() throws DailiesException {
