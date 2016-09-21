@@ -57,6 +57,7 @@ public class Transmitter {
 			IOUtils.write(jsonRequest, conn.getOutputStream());
 			jsonResponse = IOUtils.toString(conn.getInputStream());
 		} catch(IOException e) {
+			e.printStackTrace();
 			throw DailiesException.NETWORK_ERROR(e);
 		} finally {
 			if (conn != null) {

@@ -25,6 +25,7 @@ public class QuestInventoryFetcher {
 
 	public Set<DailyQuest> getQuestInventory() throws DailiesException {
 		buildPath();
+		buildRequest();
 		requestQuestInventory();
 		parseResponse();
 		return quests;
@@ -32,6 +33,10 @@ public class QuestInventoryFetcher {
 	
 	private void buildPath() {
 		path = username + Transmitter.PATH_QUESTS;
+	}
+	
+	private void buildRequest() {
+		request = new DailiesRequest();
 	}
 	
 	private void requestQuestInventory() throws DailiesException {
