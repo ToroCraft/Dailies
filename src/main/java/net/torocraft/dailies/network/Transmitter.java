@@ -45,7 +45,7 @@ public class Transmitter {
 		}
 	}
 
-	private void transmit() {
+	private void transmit() throws DailiesException {
 		try {
 			conn = (HttpURLConnection) url.openConnection();
 			conn.setRequestMethod(requestMethod);
@@ -53,7 +53,7 @@ public class Transmitter {
 			IOUtils.write(jsonRequest, conn.getOutputStream());
 			jsonResponse = IOUtils.toString(conn.getInputStream());
 		} catch(IOException e) {
-			e.printStackTrace();
+			throw DailiesException.NETWORK_ERROR(e);
 		} finally {
 			if (conn != null) {
 				conn.disconnect();
