@@ -18,7 +18,6 @@ public class DailiesRequest {
 		Session session = Minecraft.getMinecraft().getSession();
 		accessToken = session.getToken();
 		playerId = session.getPlayerID();
-		System.out.println("playerId = " + playerId);
 	}
 	
 	public String serialize() {
