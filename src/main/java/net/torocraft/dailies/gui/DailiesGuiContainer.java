@@ -75,7 +75,7 @@ public class DailiesGuiContainer extends GuiContainer {
 			GuiButton button;
 			
 			for(DailyQuest quest : availableQuests) {
-				new GuiDailyBadge(quest, mc, xPos, yPos).drawAccept();
+				new GuiDailyBadge(quest, mc, xPos, yPos, mouseX, mouseY).drawAccept();
 				button = new GuiButton(buttonId++, xPos + ((122 / 2) - 25), yPos + 30, 50, 20, "Accept");
 				this.buttonList.add(button);
 				acceptButtonMap.put(button.id, quest.id);
@@ -91,7 +91,7 @@ public class DailiesGuiContainer extends GuiContainer {
 			this.acceptedQuests = DailiesPacketHandler.acceptedQuests;
 			GuiButton button;
 			for(DailyQuest quest : acceptedQuests) {
-				new GuiDailyBadge(quest, mc, xPos, yPos);
+				new GuiDailyBadge(quest, mc, xPos, yPos, mouseX, mouseY);
 				button = new GuiButton(buttonId++, xPos + ((122 / 2) - 25), yPos + 30, 50, 20, "Abandon");
 				this.buttonList.add(button);
 				abandonButtonMap.put(button.id, quest.id);

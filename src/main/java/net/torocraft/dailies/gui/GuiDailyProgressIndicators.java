@@ -92,18 +92,19 @@ public class GuiDailyProgressIndicators extends Gui {
 
 		GlStateManager.disableLighting();
 		GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
+		
+		mouseX = Mouse.getX() * viewport.getScaledWidth() / this.mc.displayWidth;
+		mouseY = viewport.getScaledHeight() - Mouse.getY() * viewport.getScaledHeight() / this.mc.displayHeight - 1;
+		
 		for (int i = 0; i < 5; i++) {
 			if (DailiesPacketHandler.acceptedQuests.size() < i + offset + 1) {
 				break;
 			}
 			DailyQuest quest = (DailyQuest) DailiesPacketHandler.acceptedQuests.toArray()[i + offset];
-			new GuiDailyBadge(quest, mc, xPos, yPos);
+			new GuiDailyBadge(quest, mc, xPos, yPos, mouseX, mouseY);
 			buttonMap.put(quest.id, new GuiButton(i + 10, xPos + 122, yPos, 20, 20, "X"));
 			yPos += 30;
 		}
-
-		mouseX = Mouse.getX() * viewport.getScaledWidth() / this.mc.displayWidth;
-		mouseY = viewport.getScaledHeight() - Mouse.getY() * viewport.getScaledHeight() / this.mc.displayHeight - 1;
 
 		if (DailiesPacketHandler.acceptedQuests.size() > 5) {
 			drawPagerButtons(viewport, inventoryHeight, xPos, DailiesPacketHandler.acceptedQuests.size());
@@ -180,7 +181,7 @@ public class GuiDailyProgressIndicators extends Gui {
 		}
 
 		ScaledResolution viewport = new ScaledResolution(mc);
-		new GuiDailyBadge(quest, mc, viewport.getScaledWidth() - 122, (viewport.getScaledHeight() / 4));
+		new GuiDailyBadge(quest, mc, viewport.getScaledWidth() - 122, (viewport.getScaledHeight() / 4), 0, 0);
 	}
 
 	public void setQuest(DailyQuest quest) {
