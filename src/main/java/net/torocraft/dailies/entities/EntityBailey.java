@@ -60,7 +60,7 @@ public class EntityBailey extends EntityVillager implements IEntityAdditionalSpa
 	public boolean processInteract(EntityPlayer player, EnumHand hand, @Nullable ItemStack stack) {
 		boolean flag = stack != null && stack.getItem() == Items.SPAWN_EGG;
 
-		if (!flag && this.isEntityAlive() && !this.isTrading() && !this.isChild() && !player.isSneaking()) {
+		if (!flag && this.isEntityAlive() && !this.isTrading() && !this.isChild()) {
 			if (!this.worldObj.isRemote) {
 				player.openGui(DailiesMod.instance, DailiesGuiHandler.getGuiID(), this.worldObj,
 						player.getPosition().getX(), player.getPosition().getY(), player.getPosition().getZ());
