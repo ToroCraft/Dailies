@@ -15,13 +15,11 @@ public class DailiesContainer extends Container {
 	private final int SUBMIT_ITEM_ROW_COUNT = 1;
 	private final int SUBMIT_ITEM_COLUMN_COUNT = 3;
 	
-	private final int BAILEY_OUTPUT_SLOT_INDEX = 3;
-	
 	private final int VANILLA_SLOT_COUNT = HOTBAR_SLOT_COUNT + (INVENTORY_COLUMN_COUNT * INVENTORY_ROW_COUNT);
 	private final int BAILEY_INVENTORY_SLOT_COUNT = 3;
 	
 	private final int VANILLA_FIRST_SLOT_INDEX = 0;
-	private final int BAILEY_INVENTORY_FIRST_SLOT_INDEX = VANILLA_FIRST_SLOT_INDEX + VANILLA_SLOT_COUNT; 
+	private final int BAILEY_INVENTORY_FIRST_SLOT_INDEX = VANILLA_FIRST_SLOT_INDEX + VANILLA_SLOT_COUNT;
 	
 	private final int SLOT_X_SPACING = 18;
     private final int SLOT_Y_SPACING = 18;
@@ -44,31 +42,29 @@ public class DailiesContainer extends Container {
 		this.baileyInventory = baileyInventory;
 		this.baileyInventory.openInventory(player);
 		
-		int index = 0;
-		
 		for (int x = 0; x < HOTBAR_SLOT_COUNT; x++) {
-			addSlotToContainer(new Slot(player.inventory, index, HOTBAR_XPOS + SLOT_X_SPACING * x, HOTBAR_YPOS));
-			index++;
+			addSlotToContainer(new Slot(player.inventory, x, HOTBAR_XPOS + SLOT_X_SPACING * x, HOTBAR_YPOS));
 		}
 		
 		for (int x = 0; x < INVENTORY_ROW_COUNT; x++) {
 			for (int y = 0; y < INVENTORY_COLUMN_COUNT; y++) {
+				int slotNumber = HOTBAR_SLOT_COUNT + x * INVENTORY_COLUMN_COUNT + y;
 				int xPos = INVENTORY_XPOS + y * SLOT_X_SPACING;
 				int yPos = INVENTORY_YPOS + x * SLOT_Y_SPACING;
-				addSlotToContainer(new Slot(player.inventory, index,  xPos, yPos));
-				index++;
+				addSlotToContainer(new Slot(player.inventory, slotNumber,  xPos, yPos));
 			}
 		}
 		
 		for (int x = 0; x < SUBMIT_ITEM_ROW_COUNT; x++) {
 			for(int y = 0; y < SUBMIT_ITEM_COLUMN_COUNT; y++) {
+				int slotNumber = x * SUBMIT_ITEM_COLUMN_COUNT + y;
 				int xPos = SUBMIT_ITEM_XPOS + y * SLOT_X_SPACING;
 				int yPos = SUBMIT_ITEM_YPOS + x * SLOT_Y_SPACING;
-				addSlotToContainer(new Slot(baileyInventory, index, xPos, yPos));
+				addSlotToContainer(new Slot(baileyInventory, slotNumber, xPos, yPos));
 			}
 		}
 		
-		addSlotToContainer(new SlotOutput(baileyInventory, BAILEY_OUTPUT_SLOT_INDEX, OUTPUT_ITEM_XPOS, OUTPUT_ITEM_YPOS));
+		addSlotToContainer(new SlotOutput(baileyInventory, 3, OUTPUT_ITEM_XPOS, OUTPUT_ITEM_YPOS));
 	}
 	
 	@Override
@@ -85,11 +81,7 @@ public class DailiesContainer extends Container {
         	if(!mergeItemStack(sourceStack, BAILEY_INVENTORY_FIRST_SLOT_INDEX, BAILEY_INVENTORY_FIRST_SLOT_INDEX + BAILEY_INVENTORY_SLOT_COUNT, false)) {
         		return null;
         	}
-        } else if(indexIsForABaileyInventorySlot(index)) {
-        	if(!mergeStackFromBaileyToPlayer(sourceStack)) {
-        		return null;
-        	}
-        } else if(indexIsForBaileyOutputSlot(index)) {
+        } else if(indexIsForABaileyInventorySlot(index) || indexIsForBaileyOutputSlot(index)) {
         	if(!mergeStackFromBaileyToPlayer(sourceStack)) {
         		return null;
         	}
@@ -120,7 +112,7 @@ public class DailiesContainer extends Container {
 	}
 	
 	private boolean indexIsForBaileyOutputSlot(int index) {
-		return index == BAILEY_OUTPUT_SLOT_INDEX;
+		return index == BAILEY_INVENTORY_FIRST_SLOT_INDEX + BAILEY_INVENTORY_SLOT_COUNT;
 	}
 	
 	@Override
