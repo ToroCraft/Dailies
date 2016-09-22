@@ -14,7 +14,6 @@ public class DailiesRequest {
 	public DailiesRequest() {
 		modVersion = DailiesMod.metadata.version;
 		accessToken = Minecraft.getMinecraft().getSession().getToken();
-		System.out.println("accessToken = " + accessToken);
 	}
 	
 	public String serialize() {
