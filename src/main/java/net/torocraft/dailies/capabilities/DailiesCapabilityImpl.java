@@ -1,5 +1,6 @@
 package net.torocraft.dailies.capabilities;
 
+import java.util.Calendar;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -155,12 +156,23 @@ public class DailiesCapabilityImpl implements IDailiesCapability {
 
 		quest.progress = 0;
 		acceptedQuests.remove(quest);
-		availableQuests.add(quest);
+		
+		if (questWasAcceptedToday(quest)) {
+			availableQuests.add(quest);
+		}
+		
 		try {
 			new QuestActionHandler(player.getName(), quest.id).abandon();
 		} catch (DailiesException e) {
 			player.addChatMessage(e.getMessageAsTextComponent());
 		}
+	}
+	
+	private boolean questWasAcceptedToday(DailyQuest quest) {
+		Calendar cal = Calendar.getInstance();
+		cal.set(Calendar.HOUR_OF_DAY, 0);
+		long timeAtTheStartOfToday = cal.getTimeInMillis();
+		return quest.date >= timeAtTheStartOfToday;
 	}
 	
 	@Override
