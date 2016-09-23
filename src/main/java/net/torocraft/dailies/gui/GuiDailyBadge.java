@@ -4,11 +4,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiScreen;
+import net.minecraft.client.gui.Gui;
+import net.minecraft.client.gui.ScaledResolution;
 import net.minecraft.util.ResourceLocation;
+import net.minecraftforge.fml.client.config.GuiUtils;
 import net.torocraft.dailies.quests.DailyQuest;
 
-public class GuiDailyBadge extends GuiScreen {
+public class GuiDailyBadge extends Gui {
 	
 	private static ResourceLocation badgeTexture = new ResourceLocation("dailiesmod", "textures/gui/badge_bg.png");
 
@@ -22,6 +24,9 @@ public class GuiDailyBadge extends GuiScreen {
 
 	private int width = 120;
 	private int height = 28;
+	
+	private int screenWidth;
+	private int screenHeight;
 
 	public GuiDailyBadge(final DailyQuest quest, final Minecraft mc, int x, int y, int mouseX, int mouseY) {
 		this.quest = quest;
@@ -30,10 +35,16 @@ public class GuiDailyBadge extends GuiScreen {
 		this.y = y;
 		this.mouseX = mouseX;
 		this.mouseY = mouseY;
-		this.fontRendererObj = mc.fontRendererObj;
 		
+		getScreenDimensions();
 		buildHoverLines();
 		draw();
+	}
+	
+	private void getScreenDimensions() {
+		ScaledResolution res = new ScaledResolution(mc);
+		screenWidth = res.getScaledWidth();
+		screenHeight = res.getScaledHeight();
 	}
 
 	private void buildHoverLines() {
@@ -50,17 +61,17 @@ public class GuiDailyBadge extends GuiScreen {
 		int progress = (int) Math.ceil(108 * ((double) quest.progress / (double) quest.target.quantity));
 		drawTexturedModalRect(x + 6, y + 14, 0, 86, progress, 10);
 
-		String formattedQuestName = fontRendererObj.trimStringToWidth(quest.name, 110);
-		drawCenteredString(fontRendererObj, formattedQuestName, x + 60, y + 5, 0xffffff);
+		String formattedQuestName = mc.fontRendererObj.trimStringToWidth(quest.name, 110);
+		drawCenteredString(mc.fontRendererObj, formattedQuestName, x + 60, y + 5, 0xffffff);
 		String barText = buildQuestProgressRatioString();
 		if (Minecraft.getSystemTime() % 6000 < 3000) {
-			barText = fontRendererObj.trimStringToWidth(quest.description, 110);
+			barText = mc.fontRendererObj.trimStringToWidth(quest.description, 110);
 		}
-		drawCenteredString(fontRendererObj, barText, x + 60, y + 15, 0xffffff);
+		drawCenteredString(mc.fontRendererObj, barText, x + 60, y + 15, 0xffffff);
 		
 		if (mouseX >= x && mouseX <= x + width && mouseY >= y && mouseY <= y + height) {
 			System.out.println("manual hover check is true");
-			drawHoveringText(hoverLines, mouseX, mouseY);
+			GuiUtils.drawHoveringText(hoverLines, mouseX, mouseY, screenWidth, screenHeight, 110, mc.fontRendererObj);
 		}
 	}
 
@@ -78,9 +89,9 @@ public class GuiDailyBadge extends GuiScreen {
 		drawTexturedModalRect(x, y, 0, 0, width, height);
 		drawTexturedModalRect(x + 6, y + 14, 0, 76, 108, 10);
 
-		String formattedQuestName = fontRendererObj.trimStringToWidth(quest.name, 110);
-		String questDescription = fontRendererObj.trimStringToWidth(quest.description, 110);
-		drawCenteredString(fontRendererObj, formattedQuestName, x + 60, y + 5, 0xffffff);
-		drawCenteredString(fontRendererObj, questDescription, x + 60, y + 15, 0xffffff);
+		String formattedQuestName = mc.fontRendererObj.trimStringToWidth(quest.name, 110);
+		String questDescription = mc.fontRendererObj.trimStringToWidth(quest.description, 110);
+		drawCenteredString(mc.fontRendererObj, formattedQuestName, x + 60, y + 5, 0xffffff);
+		drawCenteredString(mc.fontRendererObj, questDescription, x + 60, y + 15, 0xffffff);
 	}
 }
