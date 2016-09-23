@@ -37,33 +37,25 @@ public class GuiDailyProgressIndicators extends Gui {
 	private static final int buttonWidth = 59;
 	private static final int buttonHeight = 16;
 	private static final int TTL = 1500;
+	private static final List<GuiDailyBadge> availableBadgeList = new ArrayList<GuiDailyBadge>();
+	private static final List<GuiDailyBadge> acceptedBadgeList = new ArrayList<GuiDailyBadge>();
+	private static final Map<String, GuiButton> acceptButtonMap = new HashMap<String, GuiButton>();
+	private static final Map<String, GuiButton> abandonButtonMap = new HashMap<String, GuiButton>();
 	
+	private static GuiButton prevBtn;
+	private static GuiButton nextBtn;
 	private static int offset = 0;
 	private static long mousePressed = 0;
 	
 	private final Minecraft mc;
-
-	private GuiButton prevBtn;
-	private GuiButton nextBtn;
-	private DailyQuest quest = null;
 	
+	private DailyQuest quest = null;
 	private long activationTime = 0;
-
-	List<GuiDailyBadge> badgeList;
-	private Map<String, GuiButton> buttonMap;
-	int mouseX;
-	int mouseY;
+	private int mouseX;
+	private int mouseY;
 
 	public GuiDailyProgressIndicators() {
-		this(null);
-	}
-
-	public GuiDailyProgressIndicators(Minecraft mc) {
-		if (mc != null) {
-			this.mc = mc;
-		} else {
-			this.mc = Minecraft.getMinecraft();
-		}
+		mc = Minecraft.getMinecraft();
 	}
 
 	@SubscribeEvent
@@ -81,23 +73,31 @@ public class GuiDailyProgressIndicators extends Gui {
 			return;
 		}
 
+		buildAcceptedQuestGui(event);
+	}
+	
+	public void buildAvailableQuestGui() {
+		
+	}
+
+	public void buildAcceptedQuestGui(BackgroundDrawnEvent event) {
 		ScaledResolution viewport = new ScaledResolution(mc);
 
 		int xPos = (viewport.getScaledWidth() / 2) + (inventoryWidth / 2) + 4;
 		int yPos = (viewport.getScaledHeight() / 2) - (inventoryHeight / 2);
 
-		initializeButtonMap();
-		initializeBadgeList();
 		adjustGlStateManager();
 		setMouseCoords(event);
+		acceptedBadgeList.clear();
+		abandonButtonMap.clear();
 		
 		for (int i = 0; i < 5; i++) {
 			if (DailiesPacketHandler.acceptedQuests.size() < i + offset + 1) {
 				break;
 			}
 			DailyQuest quest = (DailyQuest) DailiesPacketHandler.acceptedQuests.toArray()[i + offset];
-			badgeList.add(new GuiDailyBadge(quest, mc, xPos, yPos));
-			buttonMap.put(quest.id, new GuiButton(i + 10, xPos + 122, yPos, 20, 20, "X"));
+			acceptedBadgeList.add(new GuiDailyBadge(quest, mc, xPos, yPos));
+			abandonButtonMap.put(quest.id, new GuiButton(i + 10, xPos + 122, yPos, 20, 20, "X"));
 			yPos += 30;
 		}
 
@@ -105,7 +105,7 @@ public class GuiDailyProgressIndicators extends Gui {
 			drawPagerButtons(viewport, inventoryHeight, xPos, DailiesPacketHandler.acceptedQuests.size());
 		}
 
-		drawQuestActions();
+		drawQuestAbandonButtons();
 	}
 
 	private void setMouseCoords(BackgroundDrawnEvent event) {
@@ -116,14 +116,6 @@ public class GuiDailyProgressIndicators extends Gui {
 	private void adjustGlStateManager() {
 		GlStateManager.disableLighting();
 		GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
-	}
-
-	private void initializeButtonMap() {
-		buttonMap = new HashMap<String, GuiButton>();
-	}
-	
-	private void initializeBadgeList() {
-		badgeList = new ArrayList<GuiDailyBadge>();
 	}
 
 	private void drawPagerButtons(ScaledResolution viewport, int inventoryHeight, int xPos, int numAcceptedQuests) {
@@ -157,8 +149,8 @@ public class GuiDailyProgressIndicators extends Gui {
 		}
 	}
 
-	private void drawQuestActions() {
-		for (Entry<String, GuiButton> entry : buttonMap.entrySet()) {
+	private void drawQuestAbandonButtons() {
+		for (Entry<String, GuiButton> entry : abandonButtonMap.entrySet()) {
 			GuiButton btn = entry.getValue();
 			btn.drawButton(mc, mouseX, mouseY);
 
@@ -174,10 +166,10 @@ public class GuiDailyProgressIndicators extends Gui {
 	
 	@SubscribeEvent
 	public void checkForHovering(DrawScreenEvent.Post event) {
-		if (badgeList == null || badgeList.isEmpty()) {
-			return;
+		for (GuiDailyBadge badge : acceptedBadgeList) {
+			badge.checkForHover(mouseX, mouseY);
 		}
-		for (GuiDailyBadge badge : badgeList) {
+		for (GuiDailyBadge badge : availableBadgeList) {
 			badge.checkForHover(mouseX, mouseY);
 		}
 	}
