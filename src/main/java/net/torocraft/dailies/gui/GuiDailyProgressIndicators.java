@@ -29,19 +29,22 @@ import org.lwjgl.input.Mouse;
 public class GuiDailyProgressIndicators extends Gui {
 
 	private static final int MOUSE_COOLDOWN = 200;
-	private final Minecraft mc;
+	private static final int inventoryHeight = 166;
+	private static final int inventoryWidth = 176;
+	private static final int buttonWidth = 59;
+	private static final int buttonHeight = 16;
+	private static final int TTL = 1500;
+	
 	private static int offset = 0;
 	private static long mousePressed = 0;
-
-	GuiButton prevBtn;
-	GuiButton nextBtn;
-
-	DailyQuest quest = null;
 	
-	private Boolean questsDataUpdateRequired = true;
+	private final Minecraft mc;
+
+	private GuiButton prevBtn;
+	private GuiButton nextBtn;
+	private DailyQuest quest = null;
 	
-	long activationTime = 0;
-	final static int TTL = 1500;
+	private long activationTime = 0;
 
 	Map<String, GuiButton> buttonMap;
 	int mouseX;
@@ -66,24 +69,15 @@ public class GuiDailyProgressIndicators extends Gui {
 		}
 		
 		if (!(mc.currentScreen instanceof GuiInventory)) {
-			questsDataUpdateRequired = true;
 			return;
 		}
 		
-		if(questsDataUpdateRequired) {
-			DailiesPacketHandler.INSTANCE.sendToServer(new RequestAcceptedQuests());
-			questsDataUpdateRequired = false;
-			return;
-		}
-
 		if (!isSet(DailiesPacketHandler.acceptedQuests)) {
+			DailiesPacketHandler.INSTANCE.sendToServer(new RequestAcceptedQuests());
 			return;
 		}
 
 		ScaledResolution viewport = new ScaledResolution(mc);
-
-		int inventoryHeight = 166;
-		int inventoryWidth = 176;
 
 		int xPos = (viewport.getScaledWidth() / 2) + (inventoryWidth / 2) + 4;
 		int yPos = (viewport.getScaledHeight() / 2) - (inventoryHeight / 2);
@@ -93,8 +87,8 @@ public class GuiDailyProgressIndicators extends Gui {
 		GlStateManager.disableLighting();
 		GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
 		
-		mouseX = Mouse.getX() * viewport.getScaledWidth() / this.mc.displayWidth;
-		mouseY = viewport.getScaledHeight() - Mouse.getY() * viewport.getScaledHeight() / this.mc.displayHeight - 1;
+		mouseX = event.getMouseX();
+		mouseY = event.getMouseY();
 		
 		for (int i = 0; i < 5; i++) {
 			if (DailiesPacketHandler.acceptedQuests.size() < i + offset + 1) {
@@ -114,8 +108,6 @@ public class GuiDailyProgressIndicators extends Gui {
 	}
 
 	private void drawPagerButtons(ScaledResolution viewport, int inventoryHeight, int xPos, int numAcceptedQuests) {
-		int buttonWidth = 59;
-		int buttonHeight = 16;
 		int buttonY = (viewport.getScaledHeight() / 2) + (inventoryHeight / 2) - buttonHeight - 1;
 
 		prevBtn = new GuiButton(0, xPos, buttonY, buttonWidth, buttonHeight, "Previous");
