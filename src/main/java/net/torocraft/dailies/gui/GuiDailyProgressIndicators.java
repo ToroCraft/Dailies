@@ -5,15 +5,13 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import org.lwjgl.input.Mouse;
-
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Gui;
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.ScaledResolution;
 import net.minecraft.client.gui.inventory.GuiInventory;
 import net.minecraft.client.renderer.GlStateManager;
-import net.minecraftforge.client.event.GuiScreenEvent.DrawScreenEvent;
+import net.minecraftforge.client.event.GuiScreenEvent.BackgroundDrawnEvent;
 import net.minecraftforge.client.event.RenderGameOverlayEvent;
 import net.minecraftforge.client.event.RenderGameOverlayEvent.ElementType;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
@@ -24,6 +22,8 @@ import net.torocraft.dailies.messages.AbandonQuestRequest;
 import net.torocraft.dailies.messages.DailiesPacketHandler;
 import net.torocraft.dailies.messages.RequestAcceptedQuests;
 import net.torocraft.dailies.quests.DailyQuest;
+
+import org.lwjgl.input.Mouse;
 
 @SideOnly(Side.CLIENT)
 public class GuiDailyProgressIndicators extends Gui {
@@ -60,7 +60,7 @@ public class GuiDailyProgressIndicators extends Gui {
 	}
 
 	@SubscribeEvent
-	public void drawProgressIndicatorsInInventory(DrawScreenEvent.Post event) {
+	public void drawProgressIndicatorsInInventory(BackgroundDrawnEvent event) {
 		if (!ConfigurationHandler.showQuestsInPlayerInventory) {
 			return;
 		}
