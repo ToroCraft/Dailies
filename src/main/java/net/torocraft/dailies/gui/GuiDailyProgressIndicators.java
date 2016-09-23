@@ -1,6 +1,8 @@
 package net.torocraft.dailies.gui;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -12,6 +14,7 @@ import net.minecraft.client.gui.ScaledResolution;
 import net.minecraft.client.gui.inventory.GuiInventory;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraftforge.client.event.GuiScreenEvent.BackgroundDrawnEvent;
+import net.minecraftforge.client.event.GuiScreenEvent.DrawScreenEvent;
 import net.minecraftforge.client.event.RenderGameOverlayEvent;
 import net.minecraftforge.client.event.RenderGameOverlayEvent.ElementType;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
@@ -46,7 +49,8 @@ public class GuiDailyProgressIndicators extends Gui {
 	
 	private long activationTime = 0;
 
-	Map<String, GuiButton> buttonMap;
+	List<GuiDailyBadge> badgeList;
+	private Map<String, GuiButton> buttonMap;
 	int mouseX;
 	int mouseY;
 
@@ -82,20 +86,17 @@ public class GuiDailyProgressIndicators extends Gui {
 		int xPos = (viewport.getScaledWidth() / 2) + (inventoryWidth / 2) + 4;
 		int yPos = (viewport.getScaledHeight() / 2) - (inventoryHeight / 2);
 
-		buttonMap = new HashMap<String, GuiButton>();
-
-		GlStateManager.disableLighting();
-		GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
-		
-		mouseX = event.getMouseX();
-		mouseY = event.getMouseY();
+		initializeButtonMap();
+		initializeBadgeList();
+		adjustGlStateManager();
+		setMouseCoords(event);
 		
 		for (int i = 0; i < 5; i++) {
 			if (DailiesPacketHandler.acceptedQuests.size() < i + offset + 1) {
 				break;
 			}
 			DailyQuest quest = (DailyQuest) DailiesPacketHandler.acceptedQuests.toArray()[i + offset];
-			new GuiDailyBadge(quest, mc, xPos, yPos, mouseX, mouseY);
+			badgeList.add(new GuiDailyBadge(quest, mc, xPos, yPos));
 			buttonMap.put(quest.id, new GuiButton(i + 10, xPos + 122, yPos, 20, 20, "X"));
 			yPos += 30;
 		}
@@ -105,6 +106,24 @@ public class GuiDailyProgressIndicators extends Gui {
 		}
 
 		drawQuestActions();
+	}
+
+	private void setMouseCoords(BackgroundDrawnEvent event) {
+		mouseX = event.getMouseX();
+		mouseY = event.getMouseY();
+	}
+
+	private void adjustGlStateManager() {
+		GlStateManager.disableLighting();
+		GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
+	}
+
+	private void initializeButtonMap() {
+		buttonMap = new HashMap<String, GuiButton>();
+	}
+	
+	private void initializeBadgeList() {
+		badgeList = new ArrayList<GuiDailyBadge>();
 	}
 
 	private void drawPagerButtons(ScaledResolution viewport, int inventoryHeight, int xPos, int numAcceptedQuests) {
@@ -152,6 +171,16 @@ public class GuiDailyProgressIndicators extends Gui {
 			}
 		}
 	}
+	
+	@SubscribeEvent
+	public void checkForHovering(DrawScreenEvent.Post event) {
+		if (badgeList == null || badgeList.isEmpty()) {
+			return;
+		}
+		for (GuiDailyBadge badge : badgeList) {
+			badge.checkForHover(mouseX, mouseY);
+		}
+	}
 
 	private boolean mouseCooldownOver() {
 		return Minecraft.getSystemTime() - mousePressed > MOUSE_COOLDOWN;
@@ -173,7 +202,7 @@ public class GuiDailyProgressIndicators extends Gui {
 		}
 
 		ScaledResolution viewport = new ScaledResolution(mc);
-		new GuiDailyBadge(quest, mc, viewport.getScaledWidth() - 122, (viewport.getScaledHeight() / 4), 0, 0);
+		new GuiDailyBadge(quest, mc, viewport.getScaledWidth() - 122, (viewport.getScaledHeight() / 4));
 	}
 
 	public void setQuest(DailyQuest quest) {

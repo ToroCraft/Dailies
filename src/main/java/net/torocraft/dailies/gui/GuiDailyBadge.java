@@ -18,34 +18,30 @@ public class GuiDailyBadge extends Gui {
 	private final Minecraft mc;
 	private final int x;
 	private final int y;
-	private final int mouseX;
-	private final int mouseY;
 	private List<String> hoverLines;
 
 	private int width = 120;
 	private int height = 28;
-	
 	private int screenWidth;
 	private int screenHeight;
 
-	public GuiDailyBadge(final DailyQuest quest, final Minecraft mc, int x, int y, int mouseX, int mouseY) {
+	public GuiDailyBadge(final DailyQuest quest, final Minecraft mc, int x, int y) {
 		this.quest = quest;
 		this.mc = mc;
 		this.x = x;
 		this.y = y;
-		this.mouseX = mouseX;
-		this.mouseY = mouseY;
 		
 		getScreenDimensions();
 		buildHoverLines();
 		draw();
 	}
 	
-	private void getScreenDimensions() {
-		ScaledResolution res = new ScaledResolution(mc);
-		screenWidth = res.getScaledWidth();
-		screenHeight = res.getScaledHeight();
-	}
+	 private void getScreenDimensions() {
+	 	ScaledResolution res = new ScaledResolution(mc);
+	 	screenWidth = res.getScaledWidth();
+	 	screenHeight = res.getScaledHeight();
+	 }
+
 
 	private void buildHoverLines() {
 		hoverLines = new ArrayList<String>();
@@ -68,11 +64,16 @@ public class GuiDailyBadge extends Gui {
 			barText = mc.fontRendererObj.trimStringToWidth(quest.description, 110);
 		}
 		drawCenteredString(mc.fontRendererObj, barText, x + 60, y + 15, 0xffffff);
-		
+	}
+	
+	public void checkForHover(int mouseX, int mouseY) {
 		if (mouseX >= x && mouseX <= x + width && mouseY >= y && mouseY <= y + height) {
-			System.out.println("manual hover check is true");
-			GuiUtils.drawHoveringText(hoverLines, mouseX, mouseY, screenWidth, screenHeight, 110, mc.fontRendererObj);
+			drawHoverText(mouseX, mouseY);
 		}
+	}
+
+	private void drawHoverText(int mouseX, int mouseY) {
+		GuiUtils.drawHoveringText(hoverLines, mouseX, mouseY, screenWidth, screenHeight, 110, mc.fontRendererObj);
 	}
 
 	private String buildQuestProgressRatioString() {
