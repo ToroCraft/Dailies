@@ -34,7 +34,6 @@ public class GuiDailyProgressIndicators {
 
 	private static final int MOUSE_COOLDOWN = 200;
 	private static final int inventoryHeight = 166;
-	private static final int inventoryWidth = 176;
 	private static final int buttonWidth = 59;
 	private static final int buttonHeight = 16;
 	private static final int TTL = 1500;
