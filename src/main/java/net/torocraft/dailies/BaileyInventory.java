@@ -6,6 +6,7 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.JsonToNBT;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.TextComponentString;
 import net.torocraft.dailies.capabilities.CapabilityDailiesHandler;
@@ -219,8 +220,21 @@ public class BaileyInventory implements IInventory {
 	}
 	
 	private void buildReward(Reward reward) {
-		ItemStack rewardStack = new ItemStack(Item.getItemById(reward.type));
-		rewardStack.stackSize = reward.quantity;
+		Item rewardItem = Item.getItemById(reward.type);
+		ItemStack rewardStack = new ItemStack(rewardItem, reward.quantity);
+		
+		if (reward.subType > 0) {
+			rewardStack.setItemDamage(reward.subType);
+		}
+		
+		if (reward.nbt != null) {
+			try {
+				rewardStack.setTagCompound(JsonToNBT.getTagFromJson(reward.nbt));
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
+		
 		setInventorySlotContents(REWARD_OUTPUT_INDEX, rewardStack);
 	}
 	

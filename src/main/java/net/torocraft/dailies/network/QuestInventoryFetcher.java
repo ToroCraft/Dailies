@@ -3,11 +3,10 @@ package net.torocraft.dailies.network;
 import java.util.HashSet;
 import java.util.Set;
 
+import com.google.gson.GsonBuilder;
+
 import net.torocraft.dailies.DailiesException;
 import net.torocraft.dailies.quests.DailyQuest;
-
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 
 public class QuestInventoryFetcher {
 	
@@ -45,13 +44,18 @@ public class QuestInventoryFetcher {
 		jsonResponse = transmitter.sendRequest();
 	}
 
-	private void parseResponse() {
+	private void parseResponse() throws DailiesException {
 		quests = new HashSet<DailyQuest>();
 		if (jsonResponse == null) {
 			return;
 		}
-		Gson gson = new GsonBuilder().create();
-		quests = gson.fromJson(jsonResponse, QuestInventoryResponse.class).quests;
+		GsonBuilder gson = new GsonBuilder();
+		try {
+			quests = gson.create().fromJson(jsonResponse, QuestInventoryResponse.class).quests;
+		} catch (Exception e) {
+			throw DailiesException.SYSTEM_ERROR(e);
+		}
+		
 	}
 
 }
