@@ -19,7 +19,7 @@ public class DailiesContainer extends Container {
 	private final int BAILEY_INVENTORY_SLOT_COUNT = 3;
 	
 	private final int VANILLA_FIRST_SLOT_INDEX = 0;
-	private final int BAILEY_INVENTORY_FIRST_SLOT_INDEX = VANILLA_FIRST_SLOT_INDEX + VANILLA_SLOT_COUNT; 
+	private final int BAILEY_INVENTORY_FIRST_SLOT_INDEX = VANILLA_FIRST_SLOT_INDEX + VANILLA_SLOT_COUNT;
 	
 	private final int SLOT_X_SPACING = 18;
     private final int SLOT_Y_SPACING = 18;
@@ -57,14 +57,14 @@ public class DailiesContainer extends Container {
 		
 		for (int x = 0; x < SUBMIT_ITEM_ROW_COUNT; x++) {
 			for(int y = 0; y < SUBMIT_ITEM_COLUMN_COUNT; y++) {
-				int slotNumber = x * SUBMIT_ITEM_COLUMN_COUNT + y; 
+				int slotNumber = x * SUBMIT_ITEM_COLUMN_COUNT + y;
 				int xPos = SUBMIT_ITEM_XPOS + y * SLOT_X_SPACING;
 				int yPos = SUBMIT_ITEM_YPOS + x * SLOT_Y_SPACING;
 				addSlotToContainer(new Slot(baileyInventory, slotNumber, xPos, yPos));
 			}
 		}
 		
-		addSlotToContainer(new SlotOutput(baileyInventory, 3, OUTPUT_ITEM_XPOS,OUTPUT_ITEM_YPOS));
+		addSlotToContainer(new SlotOutput(baileyInventory, 3, OUTPUT_ITEM_XPOS, OUTPUT_ITEM_YPOS));
 	}
 	
 	@Override
@@ -77,12 +77,12 @@ public class DailiesContainer extends Container {
         ItemStack sourceStack = slot.getStack();
         ItemStack copyOfSourceStack = sourceStack.copy();
         
-        if(index >= VANILLA_FIRST_SLOT_INDEX && index < VANILLA_FIRST_SLOT_INDEX + VANILLA_SLOT_COUNT) {
+        if(indexIsForAVanillaSlot(index)) {
         	if(!mergeItemStack(sourceStack, BAILEY_INVENTORY_FIRST_SLOT_INDEX, BAILEY_INVENTORY_FIRST_SLOT_INDEX + BAILEY_INVENTORY_SLOT_COUNT, false)) {
         		return null;
         	}
-        } else if(index >= BAILEY_INVENTORY_FIRST_SLOT_INDEX && index < BAILEY_INVENTORY_FIRST_SLOT_INDEX + BAILEY_INVENTORY_SLOT_COUNT) {
-        	if(!mergeItemStack(sourceStack, VANILLA_FIRST_SLOT_INDEX, VANILLA_FIRST_SLOT_INDEX + VANILLA_SLOT_COUNT, false)) {
+        } else if(indexIsForABaileyInventorySlot(index) || indexIsForBaileyOutputSlot(index)) {
+        	if(!mergeStackFromBaileyToPlayer(sourceStack)) {
         		return null;
         	}
         } else {
@@ -97,6 +97,22 @@ public class DailiesContainer extends Container {
         
         slot.onPickupFromSlot(player, sourceStack);
         return copyOfSourceStack;
+	}
+
+	private boolean mergeStackFromBaileyToPlayer(ItemStack sourceStack) {
+		return mergeItemStack(sourceStack, VANILLA_FIRST_SLOT_INDEX, VANILLA_FIRST_SLOT_INDEX + VANILLA_SLOT_COUNT, false);
+	}
+
+	private boolean indexIsForAVanillaSlot(int index) {
+		return index >= VANILLA_FIRST_SLOT_INDEX && index < VANILLA_FIRST_SLOT_INDEX + VANILLA_SLOT_COUNT;
+	}
+	
+	private boolean indexIsForABaileyInventorySlot(int index) {
+		return index >= BAILEY_INVENTORY_FIRST_SLOT_INDEX && index < BAILEY_INVENTORY_FIRST_SLOT_INDEX + BAILEY_INVENTORY_SLOT_COUNT;
+	}
+	
+	private boolean indexIsForBaileyOutputSlot(int index) {
+		return index == BAILEY_INVENTORY_FIRST_SLOT_INDEX + BAILEY_INVENTORY_SLOT_COUNT;
 	}
 	
 	@Override

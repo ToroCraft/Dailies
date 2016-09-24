@@ -72,7 +72,7 @@ public class AcceptQuestRequest implements IMessage  {
 			}
 			
 			try {
-				cap.acceptQuest(player.getName(), quest);
+				cap.acceptQuest(player, quest);
 			} catch (DailiesException e) {
 				player.addChatMessage(e.getMessageAsTextComponent());
 			}

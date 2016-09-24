@@ -6,10 +6,12 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.JsonToNBT;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.TextComponentString;
 import net.torocraft.dailies.capabilities.CapabilityDailiesHandler;
 import net.torocraft.dailies.capabilities.IDailiesCapability;
+import net.torocraft.dailies.network.ProgressUpdater;
 import net.torocraft.dailies.quests.DailyQuest;
 import net.torocraft.dailies.quests.Reward;
 import scala.actors.threadpool.Arrays;
@@ -166,9 +168,14 @@ public class BaileyInventory implements IInventory {
 		lastModifiedStack = this.itemStacks[lastModifiedIndex];
 		acceptedQuests = playerDailiesCapability.getAcceptedQuests();
 		
+		if (DailiesMod.devMode) {
+			logItemStack(lastModifiedStack);
+		}
+		
 		if(canSearchForReward()) {
 			int itemId = Item.getIdFromItem(lastModifiedStack.getItem());
-			DailyQuest quest = checkForMatchingQuest(itemId);
+			int subType = lastModifiedStack.getMetadata();
+			DailyQuest quest = checkForMatchingQuest(itemId, subType);
 			
 			if(quest != null) {
 				updateQuestProgress(quest, lastModifiedStack, lastModifiedIndex);
@@ -176,11 +183,21 @@ public class BaileyInventory implements IInventory {
 		}
 	}
 	
-	private DailyQuest checkForMatchingQuest(int itemId) {
+	public static void logItemStack(ItemStack stack) {
+		if (stack == null) {
+			return;
+		}
+		System.out.println("LOGGING ITEM STACK");
+		System.out.println("type:" + Item.getIdFromItem(stack.getItem()));
+		System.out.println("subType:" + stack.getMetadata());
+		System.out.println("NBT: " + String.valueOf(stack.getTagCompound()));
+	}
+	
+	private DailyQuest checkForMatchingQuest(int itemId, int itemSubType) {
 		DailyQuest quest = null;
 		
 		for(DailyQuest q : acceptedQuests) {
-			if(q.isGatherQuest() && itemId == q.target.type && !q.rewardFulfilled) { 
+			if(q.isGatherQuest() && itemId == q.target.type && !q.rewardFulfilled && q.target.subType == itemSubType) {
 				quest = q;
 			}
 		}
@@ -200,11 +217,10 @@ public class BaileyInventory implements IInventory {
 		
 		if(quest.isComplete()) {
 			quest.rewardFulfilled = true;
-			playerDailiesCapability.completeQuest(quest, player);
+			playerDailiesCapability.completeQuest(player, quest);
 			buildReward(quest.reward);
-			
 		} else {
-			syncProgress(player.getName(), quest.id, quest.progress);
+			syncProgress(quest.id, quest.progress);
 		}
 		
 		if (leftOver > 0) {
@@ -218,17 +234,34 @@ public class BaileyInventory implements IInventory {
 	}
 	
 	private void buildReward(Reward reward) {
-		ItemStack rewardStack = new ItemStack(Item.getItemById(reward.type));
-		rewardStack.stackSize = reward.quantity;
+		Item rewardItem = Item.getItemById(reward.type);
+		ItemStack rewardStack = new ItemStack(rewardItem, reward.quantity);
+		
+		if (reward.subType > 0) {
+			rewardStack.setItemDamage(reward.subType);
+		}
+		
+		if (reward.nbt != null) {
+			try {
+				rewardStack.setTagCompound(JsonToNBT.getTagFromJson(reward.nbt));
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
+		
 		setInventorySlotContents(REWARD_OUTPUT_INDEX, rewardStack);
 	}
 	
-	private void syncProgress(final String username, final String questId, final int progress) {
+	private void syncProgress(final String questId, final int progress) {
 		new Thread(new Runnable() {
 
 			@Override
 			public void run() {
-				new DailiesRequester().progressQuest(username, questId, progress);
+				try {
+					new ProgressUpdater(player.getName(), questId, progress).update();
+				} catch (DailiesException e) {
+					player.addChatMessage(e.getMessageAsTextComponent());
+				}
 			}
 
 		}).start();

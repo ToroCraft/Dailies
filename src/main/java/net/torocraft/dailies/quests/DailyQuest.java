@@ -10,7 +10,8 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.text.translation.I18n;
-import net.torocraft.dailies.DailiesRequester;
+import net.torocraft.dailies.DailiesException;
+import net.torocraft.dailies.network.ProgressUpdater;
 
 public class DailyQuest {
 
@@ -92,46 +93,16 @@ public class DailyQuest {
 		return "entity." + entityName + ".name";
 	}
 
-//	public boolean gather(EntityPlayer player, EntityItem item) {
-//		if (!isGatherQuest()) {
-//			return false;
-//		}
-//
-//		if (item == null || item.isDead) {
-//			return false;
-//		}
-//
-//		int itemId = Item.getIdFromItem(item.getEntityItem().getItem());
-//
-//		if (itemId != target.type) {
-//			return false;
-//		}
-//
-//		int stackSize = item.getEntityItem().stackSize;
-//
-//		int remainingTarget = target.quantity - progress;
-//
-//		int leftOver = stackSize - remainingTarget;
-//
-//		if (leftOver > 0) {
-//			//dropNewStack(player, item, leftOver);
-//		} else {
-//			leftOver = 0;
-//		}
-//		
-//		progress += stackSize - leftOver;
-//		System.out.println("Sync Called In Gather Method");
-//		syncProgress(player.getName(), id, progress);
-//
-//		return true;
-//	}
-
-	private void syncProgress(final String username, final String questId, final int progress) {
+	private void syncProgress(final EntityPlayer player, final String questId, final int progress) {
 		new Thread(new Runnable() {
 
 			@Override
 			public void run() {
-				new DailiesRequester().progressQuest(username, questId, progress);
+				try {
+					new ProgressUpdater(player.getName(), questId, progress).update();
+				} catch (DailiesException e) {
+					player.addChatMessage(e.getMessageAsTextComponent());
+				}
 			}
 
 		}).start();
@@ -157,7 +128,7 @@ public class DailyQuest {
 		}
 
 		progress++;
-		syncProgress(player.getName(), id, progress);
+		syncProgress(player, id, progress);
 
 		return true;
 	}

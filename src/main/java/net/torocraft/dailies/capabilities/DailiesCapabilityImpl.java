@@ -1,5 +1,6 @@
 package net.torocraft.dailies.capabilities;
 
+import java.util.Calendar;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -10,11 +11,11 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 import net.torocraft.dailies.DailiesException;
 import net.torocraft.dailies.DailiesMod;
-import net.torocraft.dailies.DailiesRequester;
 import net.torocraft.dailies.messages.AcceptedQuestsToClient;
 import net.torocraft.dailies.messages.AchievementToClient;
 import net.torocraft.dailies.messages.DailiesPacketHandler;
 import net.torocraft.dailies.messages.QuestProgressToClient;
+import net.torocraft.dailies.network.QuestActionHandler;
 import net.torocraft.dailies.quests.DailyQuest;
 
 public class DailiesCapabilityImpl implements IDailiesCapability {
@@ -24,7 +25,7 @@ public class DailiesCapabilityImpl implements IDailiesCapability {
 	private Set<DailyQuest> completedQuests;
 
 	@Override
-	public void completeQuest(final DailyQuest quest, final EntityPlayer player) {
+	public void completeQuest(final EntityPlayer player, final DailyQuest quest) {
 		acceptedQuests.remove(quest);
 		
 		if (completedQuests == null) {
@@ -39,7 +40,11 @@ public class DailiesCapabilityImpl implements IDailiesCapability {
 		new Thread(new Runnable() {
 			@Override
 			public void run() {
-				new DailiesRequester().completeQuest(player.getName(), quest.id);
+				try {
+					new QuestActionHandler(player.getName(), quest.id).complete();
+				} catch (DailiesException e) {
+					player.addChatMessage(e.getMessageAsTextComponent());
+				}
 			}
 		}).start();
 	}
@@ -52,9 +57,9 @@ public class DailiesCapabilityImpl implements IDailiesCapability {
 			return;
 		}
 
-		if (quest.isComplete()) {
+		if (quest.isComplete()) { 
 			quest.reward(player);
-			completeQuest(quest, player);
+			completeQuest(player, quest);
 		} else {
 			DailiesPacketHandler.INSTANCE.sendTo(new QuestProgressToClient(quest), (EntityPlayerMP)player);
 		}
@@ -127,7 +132,7 @@ public class DailiesCapabilityImpl implements IDailiesCapability {
 	}
 
 	@Override
-	public void acceptQuest(String playerName, DailyQuest quest) throws DailiesException {
+	public void acceptQuest(EntityPlayer player, DailyQuest quest) throws DailiesException {
 		if (acceptedQuests == null) {
 			return;
 		}
@@ -135,24 +140,39 @@ public class DailiesCapabilityImpl implements IDailiesCapability {
 		if (acceptedQuests.size() >= DailiesMod.MAX_QUESTS_ACCEPTABLE) {
 			throw DailiesException.ACCEPTED_QUEST_LIMIT_HIT();
 		}
-
+		
 		DailyQuest playerQuest = (DailyQuest) quest.clone();
 		playerQuest.date = System.currentTimeMillis();
 		acceptedQuests.add(playerQuest);
 		availableQuests.remove(quest);
-		new DailiesRequester().acceptQuest(playerName, quest.id);
+		new QuestActionHandler(player.getName(), quest.id).accept();
 	}
 
 	@Override
-	public void abandonQuest(String playerName, DailyQuest quest) {
+	public void abandonQuest(EntityPlayer player, DailyQuest quest) {
 		if (acceptedQuests == null) {
 			return;
 		}
 
 		quest.progress = 0;
 		acceptedQuests.remove(quest);
-		availableQuests.add(quest);
-		new DailiesRequester().abandonQuest(playerName, quest.id);
+		
+		if (questWasAcceptedToday(quest)) {
+			availableQuests.add(quest);
+		}
+		
+		try {
+			new QuestActionHandler(player.getName(), quest.id).abandon();
+		} catch (DailiesException e) {
+			player.addChatMessage(e.getMessageAsTextComponent());
+		}
+	}
+	
+	private boolean questWasAcceptedToday(DailyQuest quest) {
+		Calendar cal = Calendar.getInstance();
+		cal.set(Calendar.HOUR_OF_DAY, 0);
+		long timeAtTheStartOfToday = cal.getTimeInMillis();
+		return quest.date >= timeAtTheStartOfToday;
 	}
 	
 	@Override

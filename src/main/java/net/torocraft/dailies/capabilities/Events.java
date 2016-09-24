@@ -10,13 +10,17 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.DamageSource;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.text.TextComponentString;
 import net.minecraftforge.event.AttachCapabilitiesEvent;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.PlayerEvent.PlayerLoggedInEvent;
-import net.torocraft.dailies.DailiesRequester;
+import net.torocraft.dailies.DailiesException;
+import net.torocraft.dailies.network.DailiesNetworkException;
+import net.torocraft.dailies.network.QuestInventoryFetcher;
 import net.torocraft.dailies.quests.DailyQuest;
+import net.torocraft.dailies.quests.RandomQuestGenerator;
 
 public class Events {
 
@@ -96,12 +100,6 @@ public class Events {
 			return;
 		}
 
-		try {
-			System.out.println("loading cap to player: " + ((EntityPlayer) event.getEntity()).getName());
-		} catch (Exception e) {
-			System.out.println("loading cap to player [" + event.getEntity().getClass().getName() + "]");
-		}
-
 		event.addCapability(new ResourceLocation(CapabilityDailiesHandler.NAME), new Provider());
 	}
 	
@@ -140,8 +138,16 @@ public class Events {
 	}
 	
 	private Set<DailyQuest> getDailyQuests(EntityPlayer player) {
-		DailiesRequester requester = new DailiesRequester();
-		Set<DailyQuest> dailies = requester.getQuestInventory(player.getName());
-		return dailies;
+		Set<DailyQuest> quests = new HashSet<DailyQuest>();
+		try {
+			quests = new QuestInventoryFetcher(player.getName()).getQuestInventory();
+		} catch (DailiesNetworkException e) {
+			player.addChatMessage(e.getMessageAsTextComponent());
+			player.addChatMessage(new TextComponentString("Randomly generating quests instead."));
+			quests = new RandomQuestGenerator().generateQuests();
+		} catch (DailiesException e) {
+			player.addChatMessage(e.getMessageAsTextComponent());
+		}
+		return quests;
 	}
 }

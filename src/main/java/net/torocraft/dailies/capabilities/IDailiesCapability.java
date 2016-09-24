@@ -24,9 +24,11 @@ public interface IDailiesCapability {
 
 	void readNBT(NBTTagCompound c);
 
-	void acceptQuest(String playerName, DailyQuest quest) throws DailiesException;
+	void acceptQuest(EntityPlayer player, DailyQuest quest) throws DailiesException;
 
-	void abandonQuest(String playerName, DailyQuest quest);
+	void abandonQuest(EntityPlayer player, DailyQuest quest);
+	
+	void completeQuest(EntityPlayer player, DailyQuest quest);
 
 	Set<DailyQuest> getAcceptedQuests();
 
@@ -43,8 +45,6 @@ public interface IDailiesCapability {
 	DailyQuest getAcceptedQuestById(String questId);
 
 	DailyQuest getAvailableQuestById(String questId);
-
-	void completeQuest(DailyQuest quest, EntityPlayer player);
 
 	void sendAcceptedQuestsToClient(EntityPlayer player);
 
