@@ -169,7 +169,8 @@ public class BaileyInventory implements IInventory {
 		
 		if(canSearchForReward()) {
 			int itemId = Item.getIdFromItem(lastModifiedStack.getItem());
-			DailyQuest quest = checkForMatchingQuest(itemId);
+			int subType = lastModifiedStack.getMetadata();
+			DailyQuest quest = checkForMatchingQuest(itemId, subType);
 			
 			if(quest != null) {
 				updateQuestProgress(quest, lastModifiedStack, lastModifiedIndex);
@@ -177,11 +178,11 @@ public class BaileyInventory implements IInventory {
 		}
 	}
 	
-	private DailyQuest checkForMatchingQuest(int itemId) {
+	private DailyQuest checkForMatchingQuest(int itemId, int itemSubType) {
 		DailyQuest quest = null;
 		
 		for(DailyQuest q : acceptedQuests) {
-			if(q.isGatherQuest() && itemId == q.target.type && !q.rewardFulfilled) { 
+			if(q.isGatherQuest() && itemId == q.target.type && !q.rewardFulfilled && q.target.subType == itemSubType) {
 				quest = q;
 			}
 		}
