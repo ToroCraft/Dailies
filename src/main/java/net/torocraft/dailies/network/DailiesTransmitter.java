@@ -8,6 +8,7 @@ import java.net.ProtocolException;
 import java.net.URL;
 
 import net.torocraft.dailies.DailiesException;
+import net.torocraft.dailies.DailiesMod;
 
 import org.apache.commons.io.IOUtils;
 
@@ -16,6 +17,7 @@ import com.google.gson.GsonBuilder;
 public class DailiesTransmitter {
 
 	private static final String SERVICE_URL = "http://www.minecraftdailies.com/";
+	private static final String SERVICE_URL_LOCAL = "http://localhost:5000/";
 	public static final String PATH_QUESTS = "/quests";
 	public static final String PATH_ACCEPT = "/accept";
 	public static final String PATH_ABANDON = "/abandon";
@@ -56,7 +58,11 @@ public class DailiesTransmitter {
 	
 	private void buildUrl() throws DailiesException {
 		try {
-			url = new URL(SERVICE_URL + path);
+			if (DailiesMod.devMode) {
+				url = new URL(SERVICE_URL_LOCAL + path);
+			} else {
+				url = new URL(SERVICE_URL + path);
+			}
 		} catch (MalformedURLException e) {
 			throw DailiesException.SYSTEM_ERROR(e);
 		}

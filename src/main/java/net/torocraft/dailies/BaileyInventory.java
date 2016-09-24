@@ -168,6 +168,10 @@ public class BaileyInventory implements IInventory {
 		lastModifiedStack = this.itemStacks[lastModifiedIndex];
 		acceptedQuests = playerDailiesCapability.getAcceptedQuests();
 		
+		if (DailiesMod.devMode) {
+			logItemStack(lastModifiedStack);
+		}
+		
 		if(canSearchForReward()) {
 			int itemId = Item.getIdFromItem(lastModifiedStack.getItem());
 			int subType = lastModifiedStack.getMetadata();
@@ -177,6 +181,16 @@ public class BaileyInventory implements IInventory {
 				updateQuestProgress(quest, lastModifiedStack, lastModifiedIndex);
 			}
 		}
+	}
+	
+	public static void logItemStack(ItemStack stack) {
+		if (stack == null) {
+			return;
+		}
+		System.out.println("LOGGING ITEM STACK");
+		System.out.println("type:" + Item.getIdFromItem(stack.getItem()));
+		System.out.println("subType:" + stack.getMetadata());
+		System.out.println("NBT: " + String.valueOf(stack.getTagCompound()));
 	}
 	
 	private DailyQuest checkForMatchingQuest(int itemId, int itemSubType) {

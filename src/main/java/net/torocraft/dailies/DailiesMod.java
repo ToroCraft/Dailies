@@ -15,6 +15,7 @@ import net.torocraft.dailies.config.ConfigurationHandler;
 @Mod(modid = DailiesMod.MODID, guiFactory = "net.torocraft.dailies.gui.GuiFactoryDailies")
 public class DailiesMod {
 
+	public static final boolean devMode = false;
 	public static final String MODID = "dailies";
 	public static final Integer MAX_QUESTS_ACCEPTABLE = 10;
 	public static ModMetadata metadata;
