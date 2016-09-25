@@ -140,7 +140,7 @@ public class Events {
 	private Set<DailyQuest> getDailyQuests(EntityPlayer player) {
 		Set<DailyQuest> quests = new HashSet<DailyQuest>();
 		try {
-			quests = new QuestInventoryFetcher(player.getName()).getQuestInventory();
+			quests = new QuestInventoryFetcher(player).getQuestInventory();
 		} catch (DailiesNetworkException e) {
 			player.addChatMessage(e.getMessageAsTextComponent());
 			player.addChatMessage(new TextComponentString("Randomly generating quests instead."));
