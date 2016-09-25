@@ -258,7 +258,7 @@ public class BaileyInventory implements IInventory {
 			@Override
 			public void run() {
 				try {
-					new ProgressUpdater(player.getName(), questId, progress).update();
+					new ProgressUpdater(player, questId, progress).update();
 				} catch (DailiesException e) {
 					player.addChatMessage(e.getMessageAsTextComponent());
 				}

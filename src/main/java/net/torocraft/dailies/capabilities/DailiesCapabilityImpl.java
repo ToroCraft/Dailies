@@ -41,7 +41,7 @@ public class DailiesCapabilityImpl implements IDailiesCapability {
 			@Override
 			public void run() {
 				try {
-					new QuestActionHandler(player.getName(), quest.id).complete();
+					new QuestActionHandler(player, quest.id).complete();
 				} catch (DailiesException e) {
 					player.addChatMessage(e.getMessageAsTextComponent());
 				}
@@ -145,7 +145,7 @@ public class DailiesCapabilityImpl implements IDailiesCapability {
 		playerQuest.date = System.currentTimeMillis();
 		acceptedQuests.add(playerQuest);
 		availableQuests.remove(quest);
-		new QuestActionHandler(player.getName(), quest.id).accept();
+		new QuestActionHandler(player, quest.id).accept();
 	}
 
 	@Override
@@ -162,7 +162,7 @@ public class DailiesCapabilityImpl implements IDailiesCapability {
 		}
 		
 		try {
-			new QuestActionHandler(player.getName(), quest.id).abandon();
+			new QuestActionHandler(player, quest.id).abandon();
 		} catch (DailiesException e) {
 			player.addChatMessage(e.getMessageAsTextComponent());
 		}
