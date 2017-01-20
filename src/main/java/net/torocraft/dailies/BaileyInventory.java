@@ -25,12 +25,16 @@ public class BaileyInventory implements IInventory {
 	
 	private ItemStack[] itemStacks = new ItemStack[TOTAL_SLOT_COUNT];
 	
-	private ItemStack lastModifiedStack = null;
+	private ItemStack lastModifiedStack = ItemStack.field_190927_a;
 	private int lastModifiedIndex = 0;
 	
 	private EntityPlayer player = null;
 	private IDailiesCapability playerDailiesCapability = null;
 	private Set<DailyQuest> acceptedQuests;
+	
+	public BaileyInventory() {
+		clear();
+	}
 	
 	@Override
 	public String getName() {
@@ -61,18 +65,18 @@ public class BaileyInventory implements IInventory {
 	public ItemStack decrStackSize(int index, int count) {
 		ItemStack slotStack = getStackInSlot(index);
 		if(slotStack == null) {
-			return null;
+			return ItemStack.field_190927_a;
 		}
 		
 		ItemStack stackRemoved;
-		if(slotStack.stackSize <= count) {
+		if(slotStack.func_190916_E() <= count) {
 			stackRemoved = slotStack;
-			setInventorySlotContents(index, null);
+			setInventorySlotContents(index, ItemStack.field_190927_a);
 			
 		} else {
 			stackRemoved = slotStack.splitStack(count);
-			if(slotStack.stackSize == 0) {
-				setInventorySlotContents(index, null);
+			if(slotStack.func_190916_E() == 0) {
+				setInventorySlotContents(index, ItemStack.field_190927_a);
 			}
 		}
 		
@@ -85,7 +89,7 @@ public class BaileyInventory implements IInventory {
 	public ItemStack removeStackFromSlot(int index) {
 		ItemStack itemStack = getStackInSlot(index);
 		if(itemStack != null) {
-			setInventorySlotContents(index, null);
+			setInventorySlotContents(index, ItemStack.field_190927_a);
 		}
 		
 		return itemStack;
@@ -94,8 +98,8 @@ public class BaileyInventory implements IInventory {
 	@Override
 	public void setInventorySlotContents(int index, ItemStack stack) {
 		itemStacks[index] = stack;
-		if(stack != null && stack.stackSize > getInventoryStackLimit()) {
-			stack.stackSize = getInventoryStackLimit();
+		if(stack != null && stack.func_190916_E() > getInventoryStackLimit()) {
+			stack.func_190920_e(getInventoryStackLimit());
 		}
 		
 		if(stack != null && index != REWARD_OUTPUT_INDEX) {
@@ -152,7 +156,7 @@ public class BaileyInventory implements IInventory {
 
 	@Override
 	public void clear() {
-		Arrays.fill(itemStacks, null);
+		Arrays.fill(itemStacks, ItemStack.field_190927_a);
 	}
 	
 	@Override
@@ -207,13 +211,13 @@ public class BaileyInventory implements IInventory {
 	
 	private void updateQuestProgress(DailyQuest quest, ItemStack stack, int index) {
 		int remainingTarget = quest.target.quantity - quest.progress;
-		int leftOver = stack.stackSize - remainingTarget;
+		int leftOver = stack.func_190916_E() - remainingTarget;
 		
 		if (leftOver < 0) {
 			leftOver = 0;
 		}
 		
-		quest.progress += stack.stackSize - leftOver;
+		quest.progress += stack.func_190916_E() - leftOver;
 		
 		if(quest.isComplete()) {
 			quest.rewardFulfilled = true;
@@ -224,7 +228,7 @@ public class BaileyInventory implements IInventory {
 		}
 		
 		if (leftOver > 0) {
-			stack.stackSize = leftOver;
+			stack.func_190920_e(leftOver);
 			setInventorySlotContents(index, stack);
 		} else {
 			removeStackFromSlot(index);
@@ -283,5 +287,16 @@ public class BaileyInventory implements IInventory {
 			return false;
 		}
 		return true;
+	}
+
+	@Override
+	public boolean func_191420_l() {
+		for (ItemStack itemstack : this.itemStacks) {
+            if (!itemstack.func_190926_b()) {
+                return false;
+            }
+        }
+
+        return true;
 	}
 }

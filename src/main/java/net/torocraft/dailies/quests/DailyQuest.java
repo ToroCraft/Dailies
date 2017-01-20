@@ -83,8 +83,8 @@ public class DailyQuest {
 	}
 
 	private String entityIdToLangKey(int entityId) {
-		Class<? extends Entity> entityClass = EntityList.ID_TO_CLASS.get(entityId);
-		String entityName = EntityList.CLASS_TO_NAME.get(entityClass);
+		Class<? extends Entity> entityClass = EntityList.getClassFromID(entityId);
+		String entityName = EntityList.func_191306_a(entityClass).getResourcePath();
 
 		if (entityName == null || entityName.length() == 0) {
 			entityName = "generic";
@@ -110,7 +110,7 @@ public class DailyQuest {
 
 	public void dropNewStack(EntityPlayer player, EntityItem item, int amount) {
 		ItemStack stack = item.getEntityItem().copy();
-		stack.stackSize = amount;
+		stack.func_190920_e(amount);
 		EntityItem dropItem = new EntityItem(player.worldObj, player.posX, player.posY, player.posZ, stack);
 		dropItem.setNoPickupDelay();
 		player.worldObj.spawnEntityInWorld(dropItem);
@@ -121,7 +121,7 @@ public class DailyQuest {
 			return false;
 		}
 
-		int mobId = EntityList.getEntityID(mob);
+		int mobId = EntityList.getID(mob.getClass());
 
 		if (mobId != target.type) {
 			return false;
