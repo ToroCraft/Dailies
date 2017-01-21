@@ -26,17 +26,17 @@ public class DailiesCommand extends CommandBase {
 	private List<String> aliases = new ArrayList<String>();
 
 	@Override
-	public String getCommandName() {
+	public String getName() {
 		return "dailies";
 	}
 
 	@Override
-	public String getCommandUsage(ICommandSender sender) {
+	public String getUsage(ICommandSender sender) {
 		return "dailies <command> <id>";
 	}
 
 	@Override
-	public List<String> getCommandAliases() {
+	public List<String> getAliases() {
 		return this.aliases;
 	}
 
@@ -65,14 +65,14 @@ public class DailiesCommand extends CommandBase {
 					try {
 						handleSubCommand(questsData, args);
 					} catch (DailiesException e) {
-						questsData.player.addChatMessage(e.getMessageAsTextComponent());
+						questsData.player.sendMessage(e.getMessageAsTextComponent());
 					}
 				} else if(args.length == 1 && args[0].equals("gui")) {
-					questsData.player.openGui(DailiesMod.instance, DailiesGuiHandler.getGuiID(), questsData.player.worldObj, sender.getPosition().getX(), sender.getPosition().getY(), sender.getPosition().getZ());
+					questsData.player.openGui(DailiesMod.instance, DailiesGuiHandler.getGuiID(), questsData.player.world, sender.getPosition().getX(), sender.getPosition().getY(), sender.getPosition().getZ());
 				} else if(args.length == 1 && args[0].equals("spawn")) {
 					spawnBailey(server, sender);
 				}  else {
-					sender.addChatMessage(invalidCommand);
+					sender.sendMessage(invalidCommand);
 				}
 			}
 		}).start();
@@ -80,11 +80,11 @@ public class DailiesCommand extends CommandBase {
 	
 	private void spawnBailey(MinecraftServer server, ICommandSender sender) {
 		EntityPlayer player = (EntityPlayer) sender;
-		World world = player.worldObj;
+		World world = player.world;
 		if(!world.isRemote) {
 			Entity entity = new EntityBailey(world);
 			entity.setPosition(player.getPosition().getX() + 2, player.getPosition().getY(), player.getPosition().getZ());
-			world.spawnEntityInWorld(entity);
+			world.spawnEntity(entity);
 		}
 	}
 
@@ -93,7 +93,7 @@ public class DailiesCommand extends CommandBase {
 		int index = toIndex(args[1]);
 
 		if (!validCommand(command)) {
-			d.player.addChatMessage(invalidCommand);
+			d.player.sendMessage(invalidCommand);
 			return;
 		}
 		
@@ -106,10 +106,10 @@ public class DailiesCommand extends CommandBase {
 			} catch (Exception ex) {}
 			
 			if (quest == null) {
-				d.player.addChatMessage(questNotFound);
+				d.player.sendMessage(questNotFound);
 			} else {
 				d.playerDailiesCapability.abandonQuest(d.player, quest);
-				d.player.addChatMessage(new TextComponentString("Quest " + fromIndex(index) + " " + quest.getDisplayName() + " abandoned"));
+				d.player.sendMessage(new TextComponentString("Quest " + fromIndex(index) + " " + quest.getDisplayName() + " abandoned"));
 			}
 
 		} else if (command.equalsIgnoreCase("accept")) {
@@ -118,10 +118,10 @@ public class DailiesCommand extends CommandBase {
 			} catch (Exception ex) {}
 			
 			if (quest == null) {
-				d.player.addChatMessage(questNotFound);
+				d.player.sendMessage(questNotFound);
 			} else {
 				d.playerDailiesCapability.acceptQuest(d.player, quest);
-				d.player.addChatMessage(new TextComponentString("Quest " + fromIndex(index) + " " + quest.getDisplayName() + " accepted"));
+				d.player.sendMessage(new TextComponentString("Quest " + fromIndex(index) + " " + quest.getDisplayName() + " accepted"));
 			}
 		}
 	}
@@ -143,7 +143,7 @@ public class DailiesCommand extends CommandBase {
 
 	private void listDailyQuests(PlayerDailyQuests questsData) {
 		String dailiesList = buildDailiesListText(questsData);
-		questsData.player.addChatMessage(new TextComponentString(dailiesList));
+		questsData.player.sendMessage(new TextComponentString(dailiesList));
 	}
 
 	private int toIndex(String string) {
@@ -195,7 +195,7 @@ public class DailiesCommand extends CommandBase {
 	}
 
 	@Override
-	public List<String> getTabCompletionOptions(MinecraftServer server, ICommandSender sender, String[] args, BlockPos pos) {
+	public List<String> getTabCompletions(MinecraftServer server, ICommandSender sender, String[] args, BlockPos pos) {
 		List<String> tabOptions = new ArrayList<String>();
 
 		if (args.length == 0) {

@@ -56,8 +56,8 @@ public class EntityBailey extends EntityVillager implements IEntityAdditionalSpa
 
 	public boolean processInteract(EntityPlayer player, EnumHand hand) {
 		if (this.isEntityAlive() && !this.isTrading() && !this.isChild()) {
-			if (!this.worldObj.isRemote) {
-				player.openGui(DailiesMod.instance, DailiesGuiHandler.getGuiID(), this.worldObj,
+			if (!this.world.isRemote) {
+				player.openGui(DailiesMod.instance, DailiesGuiHandler.getGuiID(), this.world,
 						player.getPosition().getX(), player.getPosition().getY(), player.getPosition().getZ());
 			}
 
@@ -91,7 +91,7 @@ public class EntityBailey extends EntityVillager implements IEntityAdditionalSpa
 	}
 
 	private void setVariantByCurrentBiome() {
-		Biome biome = worldObj.getBiome(getPosition());
+		Biome biome = world.getBiome(getPosition());
 		if (biome instanceof BiomeTaiga) {
 			variant = BaileyVariant.TAIGA;
 		} else if (biome instanceof BiomeDesert) {

@@ -25,7 +25,7 @@ public class BaileyInventory implements IInventory {
 	
 	private ItemStack[] itemStacks = new ItemStack[TOTAL_SLOT_COUNT];
 	
-	private ItemStack lastModifiedStack = ItemStack.field_190927_a;
+	private ItemStack lastModifiedStack = ItemStack.EMPTY;
 	private int lastModifiedIndex = 0;
 	
 	private EntityPlayer player = null;
@@ -65,18 +65,18 @@ public class BaileyInventory implements IInventory {
 	public ItemStack decrStackSize(int index, int count) {
 		ItemStack slotStack = getStackInSlot(index);
 		if(slotStack == null) {
-			return ItemStack.field_190927_a;
+			return ItemStack.EMPTY;
 		}
 		
 		ItemStack stackRemoved;
-		if(slotStack.func_190916_E() <= count) {
+		if(slotStack.getCount() <= count) {
 			stackRemoved = slotStack;
-			setInventorySlotContents(index, ItemStack.field_190927_a);
+			setInventorySlotContents(index, ItemStack.EMPTY);
 			
 		} else {
 			stackRemoved = slotStack.splitStack(count);
-			if(slotStack.func_190916_E() == 0) {
-				setInventorySlotContents(index, ItemStack.field_190927_a);
+			if(slotStack.getCount() == 0) {
+				setInventorySlotContents(index, ItemStack.EMPTY);
 			}
 		}
 		
@@ -89,7 +89,7 @@ public class BaileyInventory implements IInventory {
 	public ItemStack removeStackFromSlot(int index) {
 		ItemStack itemStack = getStackInSlot(index);
 		if(itemStack != null) {
-			setInventorySlotContents(index, ItemStack.field_190927_a);
+			setInventorySlotContents(index, ItemStack.EMPTY);
 		}
 		
 		return itemStack;
@@ -98,8 +98,8 @@ public class BaileyInventory implements IInventory {
 	@Override
 	public void setInventorySlotContents(int index, ItemStack stack) {
 		itemStacks[index] = stack;
-		if(stack != null && stack.func_190916_E() > getInventoryStackLimit()) {
-			stack.func_190920_e(getInventoryStackLimit());
+		if(stack != null && stack.getCount() > getInventoryStackLimit()) {
+			stack.setCount(getInventoryStackLimit());
 		}
 		
 		if(stack != null && index != REWARD_OUTPUT_INDEX) {
@@ -112,11 +112,6 @@ public class BaileyInventory implements IInventory {
 	@Override
 	public int getInventoryStackLimit() {
 		return 64;
-	}
-
-	@Override
-	public boolean isUseableByPlayer(EntityPlayer player) {
-		return true;
 	}
 	
 	@Override
@@ -156,7 +151,7 @@ public class BaileyInventory implements IInventory {
 
 	@Override
 	public void clear() {
-		Arrays.fill(itemStacks, ItemStack.field_190927_a);
+		Arrays.fill(itemStacks, ItemStack.EMPTY);
 	}
 	
 	@Override
@@ -211,13 +206,13 @@ public class BaileyInventory implements IInventory {
 	
 	private void updateQuestProgress(DailyQuest quest, ItemStack stack, int index) {
 		int remainingTarget = quest.target.quantity - quest.progress;
-		int leftOver = stack.func_190916_E() - remainingTarget;
+		int leftOver = stack.getCount() - remainingTarget;
 		
 		if (leftOver < 0) {
 			leftOver = 0;
 		}
 		
-		quest.progress += stack.func_190916_E() - leftOver;
+		quest.progress += stack.getCount() - leftOver;
 		
 		if(quest.isComplete()) {
 			quest.rewardFulfilled = true;
@@ -228,7 +223,7 @@ public class BaileyInventory implements IInventory {
 		}
 		
 		if (leftOver > 0) {
-			stack.func_190920_e(leftOver);
+			stack.setCount(leftOver);
 			setInventorySlotContents(index, stack);
 		} else {
 			removeStackFromSlot(index);
@@ -264,7 +259,7 @@ public class BaileyInventory implements IInventory {
 				try {
 					new ProgressUpdater(player, questId, progress).update();
 				} catch (DailiesException e) {
-					player.addChatMessage(e.getMessageAsTextComponent());
+					player.sendMessage(e.getMessageAsTextComponent());
 				}
 			}
 
@@ -276,7 +271,7 @@ public class BaileyInventory implements IInventory {
 	}
 	
 	private boolean rewardStackExists() {
-		if(itemStacks[REWARD_OUTPUT_INDEX] != ItemStack.field_190927_a) {
+		if(!itemStacks[REWARD_OUTPUT_INDEX].equals(ItemStack.EMPTY)) {
 			return true;
 		}
 		return false;
@@ -289,14 +284,21 @@ public class BaileyInventory implements IInventory {
 		return true;
 	}
 
+
 	@Override
-	public boolean func_191420_l() {
+	public boolean isEmpty() {
 		for (ItemStack itemstack : this.itemStacks) {
-            if (!itemstack.func_190926_b()) {
+            if (!itemstack.isEmpty()) {
                 return false;
             }
         }
 
         return true;
+	}
+
+	@Override
+	public boolean isUsableByPlayer(EntityPlayer player) {
+		// TODO Auto-generated method stub
+		return true;
 	}
 }

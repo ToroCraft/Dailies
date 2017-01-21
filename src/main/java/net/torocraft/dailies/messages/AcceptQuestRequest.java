@@ -74,7 +74,7 @@ public class AcceptQuestRequest implements IMessage  {
 			try {
 				cap.acceptQuest(player, quest);
 			} catch (DailiesException e) {
-				player.addChatMessage(e.getMessageAsTextComponent());
+				player.sendMessage(e.getMessageAsTextComponent());
 			}
 			DailiesPacketHandler.INSTANCE.sendTo(new AvailableQuestsToClient(cap.getAvailableQuests()), player);
 			DailiesPacketHandler.INSTANCE.sendTo(new AcceptedQuestsToClient(cap.getAcceptedQuests()), player);

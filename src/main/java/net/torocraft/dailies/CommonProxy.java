@@ -8,7 +8,7 @@ import net.minecraftforge.fml.common.network.NetworkRegistry;
 import net.minecraftforge.fml.common.registry.VillagerRegistry;
 import net.torocraft.dailies.capabilities.CapabilityDailiesHandler;
 import net.torocraft.dailies.entities.Entities;
-import net.torocraft.dailies.generation.BaileysShopVilleagePiece;
+import net.torocraft.dailies.generation.BaileysShopVillagePiece;
 import net.torocraft.dailies.generation.VillageHandlerBailey;
 import net.torocraft.dailies.gui.DailiesGuiHandler;
 import net.torocraft.dailies.messages.DailiesPacketHandler;
@@ -19,7 +19,7 @@ public class CommonProxy {
 		CapabilityDailiesHandler.register();
 		DailiesPacketHandler.init();
 		NetworkRegistry.INSTANCE.registerGuiHandler(DailiesMod.instance, new DailiesGuiHandler());
-		MapGenStructureIO.registerStructureComponent(BaileysShopVilleagePiece.class, "baileyshop");
+		MapGenStructureIO.registerStructureComponent(BaileysShopVillagePiece.class, "baileyshop");
 		VillagerRegistry.instance().registerVillageCreationHandler(new VillageHandlerBailey());
 	}
 

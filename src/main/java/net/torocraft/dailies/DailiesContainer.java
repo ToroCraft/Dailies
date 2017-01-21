@@ -71,7 +71,7 @@ public class DailiesContainer extends Container {
 	public ItemStack transferStackInSlot(EntityPlayer player, int index) {
 		Slot slot = (Slot)this.inventorySlots.get(index);
         if(slot == null || !slot.getHasStack()) {
-        	return ItemStack.field_190927_a;
+        	return ItemStack.EMPTY;
         }
         
         ItemStack sourceStack = slot.getStack();
@@ -79,23 +79,23 @@ public class DailiesContainer extends Container {
         
         if(indexIsForAVanillaSlot(index)) {
         	if(!mergeItemStack(sourceStack, BAILEY_INVENTORY_FIRST_SLOT_INDEX, BAILEY_INVENTORY_FIRST_SLOT_INDEX + BAILEY_INVENTORY_SLOT_COUNT, false)) {
-        		return ItemStack.field_190927_a;
+        		return ItemStack.EMPTY;
         	}
         } else if(indexIsForABaileyInventorySlot(index) || indexIsForBaileyOutputSlot(index)) {
         	if(!mergeStackFromBaileyToPlayer(sourceStack)) {
-        		return ItemStack.field_190927_a;
+        		return ItemStack.EMPTY;
         	}
         } else {
-        	return ItemStack.field_190927_a;
+        	return ItemStack.EMPTY;
         }
         
-        if(sourceStack.func_190916_E() == 0) {
-        	slot.putStack(ItemStack.field_190927_a);
+        if(sourceStack.getCount() == 0) {
+        	slot.putStack(ItemStack.EMPTY);
         } else {
         	slot.onSlotChanged();
         }
         
-        slot.func_190901_a(player, sourceStack);
+        slot.onTake(player, sourceStack);
         return copyOfSourceStack;
 	}
 
