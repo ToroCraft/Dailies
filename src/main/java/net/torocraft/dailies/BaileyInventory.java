@@ -276,7 +276,7 @@ public class BaileyInventory implements IInventory {
 	}
 	
 	private boolean rewardStackExists() {
-		if(itemStacks[REWARD_OUTPUT_INDEX] != null) {
+		if(itemStacks[REWARD_OUTPUT_INDEX] != ItemStack.field_190927_a) {
 			return true;
 		}
 		return false;
