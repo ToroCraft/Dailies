@@ -1,5 +1,6 @@
 package net.torocraft.dailies;
 
+import java.util.Arrays;
 import java.util.Set;
 
 import net.minecraft.entity.player.EntityPlayer;
@@ -14,7 +15,6 @@ import net.torocraft.dailies.capabilities.IDailiesCapability;
 import net.torocraft.dailies.network.ProgressUpdater;
 import net.torocraft.dailies.quests.DailyQuest;
 import net.torocraft.dailies.quests.Reward;
-import scala.actors.threadpool.Arrays;
 
 public class BaileyInventory implements IInventory {
 
