@@ -5,19 +5,16 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 
-import javax.annotation.Nullable;
-
 import io.netty.buffer.ByteBuf;
 import net.minecraft.entity.IEntityLivingData;
 import net.minecraft.entity.passive.EntityVillager;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.init.Items;
-import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.scoreboard.ScorePlayerTeam;
 import net.minecraft.scoreboard.Team;
 import net.minecraft.stats.StatList;
 import net.minecraft.util.EnumHand;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.TextComponentString;
 import net.minecraft.world.DifficultyInstance;
@@ -54,22 +51,20 @@ public class EntityBailey extends EntityVillager implements IEntityAdditionalSpa
 	}
 
 	public static void init(int entityId) {
-		EntityRegistry.registerModEntity(EntityBailey.class, NAME, entityId, DailiesMod.instance, 60, 2, true, 0xeca58c, 0xba12c8);
+		EntityRegistry.registerModEntity(new ResourceLocation(DailiesMod.MODID, NAME), EntityBailey.class, NAME, entityId, DailiesMod.instance, 60, 2, true, 0xeca58c, 0xba12c8);
 	}
 
-	public boolean processInteract(EntityPlayer player, EnumHand hand, @Nullable ItemStack stack) {
-		boolean flag = stack != null && stack.getItem() == Items.SPAWN_EGG;
-
-		if (!flag && this.isEntityAlive() && !this.isTrading() && !this.isChild()) {
-			if (!this.worldObj.isRemote) {
-				player.openGui(DailiesMod.instance, DailiesGuiHandler.getGuiID(), this.worldObj,
+	public boolean processInteract(EntityPlayer player, EnumHand hand) {
+		if (this.isEntityAlive() && !this.isTrading() && !this.isChild()) {
+			if (!this.world.isRemote) {
+				player.openGui(DailiesMod.instance, DailiesGuiHandler.getGuiID(), this.world,
 						player.getPosition().getX(), player.getPosition().getY(), player.getPosition().getZ());
 			}
 
 			player.addStat(StatList.TALKED_TO_VILLAGER);
 			return true;
 		} else {
-			return super.processInteract(player, hand, stack);
+			return super.processInteract(player, hand);
 		}
 	}
 
@@ -96,7 +91,7 @@ public class EntityBailey extends EntityVillager implements IEntityAdditionalSpa
 	}
 
 	private void setVariantByCurrentBiome() {
-		Biome biome = worldObj.getBiome(getPosition());
+		Biome biome = world.getBiome(getPosition());
 		if (biome instanceof BiomeTaiga) {
 			variant = BaileyVariant.TAIGA;
 		} else if (biome instanceof BiomeDesert) {

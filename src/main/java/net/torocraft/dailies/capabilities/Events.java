@@ -142,11 +142,11 @@ public class Events {
 		try {
 			quests = new QuestInventoryFetcher(player).getQuestInventory();
 		} catch (DailiesNetworkException e) {
-			player.addChatMessage(e.getMessageAsTextComponent());
-			player.addChatMessage(new TextComponentString("Randomly generating quests instead."));
+			player.sendMessage(e.getMessageAsTextComponent());
+			player.sendMessage(new TextComponentString("Randomly generating quests instead."));
 			quests = new RandomQuestGenerator().generateQuests();
 		} catch (DailiesException e) {
-			player.addChatMessage(e.getMessageAsTextComponent());
+			player.sendMessage(e.getMessageAsTextComponent());
 		}
 		return quests;
 	}

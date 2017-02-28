@@ -1,5 +1,6 @@
 package net.torocraft.dailies;
 
+import java.util.Arrays;
 import java.util.Set;
 
 import net.minecraft.entity.player.EntityPlayer;
@@ -14,7 +15,6 @@ import net.torocraft.dailies.capabilities.IDailiesCapability;
 import net.torocraft.dailies.network.ProgressUpdater;
 import net.torocraft.dailies.quests.DailyQuest;
 import net.torocraft.dailies.quests.Reward;
-import scala.actors.threadpool.Arrays;
 
 public class BaileyInventory implements IInventory {
 
@@ -25,12 +25,16 @@ public class BaileyInventory implements IInventory {
 	
 	private ItemStack[] itemStacks = new ItemStack[TOTAL_SLOT_COUNT];
 	
-	private ItemStack lastModifiedStack = null;
+	private ItemStack lastModifiedStack = ItemStack.EMPTY;
 	private int lastModifiedIndex = 0;
 	
 	private EntityPlayer player = null;
 	private IDailiesCapability playerDailiesCapability = null;
 	private Set<DailyQuest> acceptedQuests;
+	
+	public BaileyInventory() {
+		clear();
+	}
 	
 	@Override
 	public String getName() {
@@ -61,18 +65,18 @@ public class BaileyInventory implements IInventory {
 	public ItemStack decrStackSize(int index, int count) {
 		ItemStack slotStack = getStackInSlot(index);
 		if(slotStack == null) {
-			return null;
+			return ItemStack.EMPTY;
 		}
 		
 		ItemStack stackRemoved;
-		if(slotStack.stackSize <= count) {
+		if(slotStack.getCount() <= count) {
 			stackRemoved = slotStack;
-			setInventorySlotContents(index, null);
+			setInventorySlotContents(index, ItemStack.EMPTY);
 			
 		} else {
 			stackRemoved = slotStack.splitStack(count);
-			if(slotStack.stackSize == 0) {
-				setInventorySlotContents(index, null);
+			if(slotStack.getCount() == 0) {
+				setInventorySlotContents(index, ItemStack.EMPTY);
 			}
 		}
 		
@@ -85,7 +89,7 @@ public class BaileyInventory implements IInventory {
 	public ItemStack removeStackFromSlot(int index) {
 		ItemStack itemStack = getStackInSlot(index);
 		if(itemStack != null) {
-			setInventorySlotContents(index, null);
+			setInventorySlotContents(index, ItemStack.EMPTY);
 		}
 		
 		return itemStack;
@@ -94,8 +98,8 @@ public class BaileyInventory implements IInventory {
 	@Override
 	public void setInventorySlotContents(int index, ItemStack stack) {
 		itemStacks[index] = stack;
-		if(stack != null && stack.stackSize > getInventoryStackLimit()) {
-			stack.stackSize = getInventoryStackLimit();
+		if(stack != null && stack.getCount() > getInventoryStackLimit()) {
+			stack.setCount(getInventoryStackLimit());
 		}
 		
 		if(stack != null && index != REWARD_OUTPUT_INDEX) {
@@ -108,11 +112,6 @@ public class BaileyInventory implements IInventory {
 	@Override
 	public int getInventoryStackLimit() {
 		return 64;
-	}
-
-	@Override
-	public boolean isUseableByPlayer(EntityPlayer player) {
-		return true;
 	}
 	
 	@Override
@@ -152,7 +151,7 @@ public class BaileyInventory implements IInventory {
 
 	@Override
 	public void clear() {
-		Arrays.fill(itemStacks, null);
+		Arrays.fill(itemStacks, ItemStack.EMPTY);
 	}
 	
 	@Override
@@ -207,13 +206,13 @@ public class BaileyInventory implements IInventory {
 	
 	private void updateQuestProgress(DailyQuest quest, ItemStack stack, int index) {
 		int remainingTarget = quest.target.quantity - quest.progress;
-		int leftOver = stack.stackSize - remainingTarget;
+		int leftOver = stack.getCount() - remainingTarget;
 		
 		if (leftOver < 0) {
 			leftOver = 0;
 		}
 		
-		quest.progress += stack.stackSize - leftOver;
+		quest.progress += stack.getCount() - leftOver;
 		
 		if(quest.isComplete()) {
 			quest.rewardFulfilled = true;
@@ -224,7 +223,7 @@ public class BaileyInventory implements IInventory {
 		}
 		
 		if (leftOver > 0) {
-			stack.stackSize = leftOver;
+			stack.setCount(leftOver);
 			setInventorySlotContents(index, stack);
 		} else {
 			removeStackFromSlot(index);
@@ -260,7 +259,7 @@ public class BaileyInventory implements IInventory {
 				try {
 					new ProgressUpdater(player, questId, progress).update();
 				} catch (DailiesException e) {
-					player.addChatMessage(e.getMessageAsTextComponent());
+					player.sendMessage(e.getMessageAsTextComponent());
 				}
 			}
 
@@ -272,7 +271,7 @@ public class BaileyInventory implements IInventory {
 	}
 	
 	private boolean rewardStackExists() {
-		if(itemStacks[REWARD_OUTPUT_INDEX] != null) {
+		if(!itemStacks[REWARD_OUTPUT_INDEX].equals(ItemStack.EMPTY)) {
 			return true;
 		}
 		return false;
@@ -282,6 +281,24 @@ public class BaileyInventory implements IInventory {
 		if(rewardStackExists() || lastModifiedStack == null || acceptedQuests == null || acceptedQuests.isEmpty()) {
 			return false;
 		}
+		return true;
+	}
+
+
+	@Override
+	public boolean isEmpty() {
+		for (ItemStack itemstack : this.itemStacks) {
+            if (!itemstack.isEmpty()) {
+                return false;
+            }
+        }
+
+        return true;
+	}
+
+	@Override
+	public boolean isUsableByPlayer(EntityPlayer player) {
+		// TODO Auto-generated method stub
 		return true;
 	}
 }

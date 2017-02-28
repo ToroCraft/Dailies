@@ -3,9 +3,9 @@ package net.torocraft.dailies;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.Container;
 import net.minecraft.inventory.IInventory;
-import net.minecraft.world.World;
 import net.minecraft.inventory.Slot;
 import net.minecraft.item.ItemStack;
+import net.minecraft.world.World;
 
 public class DailiesContainer extends Container {
 
@@ -71,7 +71,7 @@ public class DailiesContainer extends Container {
 	public ItemStack transferStackInSlot(EntityPlayer player, int index) {
 		Slot slot = (Slot)this.inventorySlots.get(index);
         if(slot == null || !slot.getHasStack()) {
-        	return null;
+        	return ItemStack.EMPTY;
         }
         
         ItemStack sourceStack = slot.getStack();
@@ -79,23 +79,23 @@ public class DailiesContainer extends Container {
         
         if(indexIsForAVanillaSlot(index)) {
         	if(!mergeItemStack(sourceStack, BAILEY_INVENTORY_FIRST_SLOT_INDEX, BAILEY_INVENTORY_FIRST_SLOT_INDEX + BAILEY_INVENTORY_SLOT_COUNT, false)) {
-        		return null;
+        		return ItemStack.EMPTY;
         	}
         } else if(indexIsForABaileyInventorySlot(index) || indexIsForBaileyOutputSlot(index)) {
         	if(!mergeStackFromBaileyToPlayer(sourceStack)) {
-        		return null;
+        		return ItemStack.EMPTY;
         	}
         } else {
-        	return null;
+        	return ItemStack.EMPTY;
         }
         
-        if(sourceStack.stackSize == 0) {
-        	slot.putStack(null);
+        if(sourceStack.getCount() == 0) {
+        	slot.putStack(ItemStack.EMPTY);
         } else {
         	slot.onSlotChanged();
         }
         
-        slot.onPickupFromSlot(player, sourceStack);
+        slot.onTake(player, sourceStack);
         return copyOfSourceStack;
 	}
 

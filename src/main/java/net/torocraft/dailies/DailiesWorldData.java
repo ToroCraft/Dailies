@@ -69,10 +69,10 @@ public class DailiesWorldData extends WorldSavedData {
 	}
 
 	public static DailiesWorldData get(World world) {
-		DailiesWorldData data = (DailiesWorldData) world.loadItemData(DailiesWorldData.class, MODNAME);
+		DailiesWorldData data = (DailiesWorldData) world.loadData(DailiesWorldData.class, MODNAME);
 		if (data == null) {
 			data = new DailiesWorldData();
-			world.setItemData(MODNAME, data);
+			world.setData(MODNAME, data);
 		}
 		return data;
 	}

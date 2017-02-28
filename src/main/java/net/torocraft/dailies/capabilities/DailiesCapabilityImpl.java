@@ -43,7 +43,7 @@ public class DailiesCapabilityImpl implements IDailiesCapability {
 				try {
 					new QuestActionHandler(player, quest.id).complete();
 				} catch (DailiesException e) {
-					player.addChatMessage(e.getMessageAsTextComponent());
+					player.sendMessage(e.getMessageAsTextComponent());
 				}
 			}
 		}).start();
@@ -164,7 +164,7 @@ public class DailiesCapabilityImpl implements IDailiesCapability {
 		try {
 			new QuestActionHandler(player, quest.id).abandon();
 		} catch (DailiesException e) {
-			player.addChatMessage(e.getMessageAsTextComponent());
+			player.sendMessage(e.getMessageAsTextComponent());
 		}
 	}
 	

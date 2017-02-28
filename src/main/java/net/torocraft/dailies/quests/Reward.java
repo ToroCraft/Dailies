@@ -10,9 +10,9 @@ public class Reward extends TypedInteger {
 	public void reward(EntityPlayer player) {
 		ItemStack stack = new ItemStack(Item.getItemById(type));
 		for (int i = 0; i < quantity; i++) {
-			EntityItem dropItem = new EntityItem(player.worldObj, player.posX, player.posY, player.posZ, stack.copy());
+			EntityItem dropItem = new EntityItem(player.world, player.posX, player.posY, player.posZ, stack.copy());
 			dropItem.setNoPickupDelay();
-			player.worldObj.spawnEntityInWorld(dropItem);
+			player.world.spawnEntity(dropItem);
 		}
 	}
 

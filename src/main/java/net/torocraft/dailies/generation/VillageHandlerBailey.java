@@ -14,17 +14,17 @@ public class VillageHandlerBailey implements IVillageCreationHandler  {
 
 	@Override
 	public PieceWeight getVillagePieceWeight(Random random, int i) {
-		return new PieceWeight(BaileysShopVilleagePiece.class, 30, 1);
+		return new PieceWeight(BaileysShopVillagePiece.class, 30, 1);
 	}
 
 	@Override
 	public Class<?> getComponentClass() {
-		return BaileysShopVilleagePiece.class;
+		return BaileysShopVillagePiece.class;
 	}
 
 	@Override
 	public Village buildComponent(PieceWeight villagePiece, Start startPiece, List<StructureComponent> pieces,
 			Random random, int p1, int p2, int p3, EnumFacing facing, int p5) {
-		return BaileysShopVilleagePiece.createPiece(startPiece, pieces, random, p1, p2, p3, facing, p5);
+		return BaileysShopVillagePiece.createPiece(startPiece, pieces, random, p1, p2, p3, facing, p5);
 	}
 }

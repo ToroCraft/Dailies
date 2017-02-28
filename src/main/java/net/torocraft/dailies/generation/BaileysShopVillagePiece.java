@@ -16,19 +16,19 @@ import net.minecraft.world.gen.structure.StructureComponent;
 import net.minecraft.world.gen.structure.StructureVillagePieces;
 import net.torocraft.dailies.entities.EntityBailey;
 
-public class BaileysShopVilleagePiece extends StructureVillagePieces.Village {
-	public BaileysShopVilleagePiece() {
+public class BaileysShopVillagePiece extends StructureVillagePieces.Village {
+	public BaileysShopVillagePiece() {
 	}
 
-	public BaileysShopVilleagePiece(StructureVillagePieces.Start start, int type, Random rand, StructureBoundingBox p_i45571_4_, EnumFacing facing) {
+	public BaileysShopVillagePiece(StructureVillagePieces.Start start, int type, Random rand, StructureBoundingBox p_i45571_4_, EnumFacing facing) {
 		super(start, type);
 		this.setCoordBaseMode(facing);
 		this.boundingBox = p_i45571_4_;
 	}
 
-	public static BaileysShopVilleagePiece createPiece(StructureVillagePieces.Start start, List<StructureComponent> p_175850_1_, Random rand, int x, int y, int z, EnumFacing facing, int p_175850_7_) {
+	public static BaileysShopVillagePiece createPiece(StructureVillagePieces.Start start, List<StructureComponent> p_175850_1_, Random rand, int x, int y, int z, EnumFacing facing, int p_175850_7_) {
 		StructureBoundingBox structureboundingbox = StructureBoundingBox.getComponentToAddBoundingBox(x, y, z, 0, 0, 0, 9, 9, 6, facing);
-		return canVillageGoDeeper(structureboundingbox) && StructureComponent.findIntersecting(p_175850_1_, structureboundingbox) == null ? new BaileysShopVilleagePiece(start, p_175850_7_, rand, structureboundingbox, facing) : null;
+		return canVillageGoDeeper(structureboundingbox) && StructureComponent.findIntersecting(p_175850_1_, structureboundingbox) == null ? new BaileysShopVillagePiece(start, p_175850_7_, rand, structureboundingbox, facing) : null;
 	}
 
 	/**
@@ -100,7 +100,7 @@ public class BaileysShopVilleagePiece extends StructureVillagePieces.Village {
 		this.fillWithBlocks(worldIn, structureBoundingBoxIn, 8, 0, 5, 8, 4, 5, logs, logs, false);
 
 		// door
-		this.func_189927_a(worldIn, structureBoundingBoxIn, randomIn, 1, 1, 0, EnumFacing.NORTH);
+		this.generateDoor(worldIn, structureBoundingBoxIn, randomIn, 1, 1, 0, EnumFacing.NORTH, Blocks.OAK_DOOR);
 
 		// counter
 		this.fillWithBlocks(worldIn, structureBoundingBoxIn, 6, 1, 1, 6, 1, 4, planks, planks, false);
@@ -148,6 +148,6 @@ public class BaileysShopVilleagePiece extends StructureVillagePieces.Village {
         EntityBailey bailey = new EntityBailey(worldIn);
 		bailey.setLocationAndAngles((double) j + 0.5D, (double) k, (double) l + 0.5D, 180F, 0.0F);
         bailey.onInitialSpawn(worldIn.getDifficultyForLocation(new BlockPos(bailey)), (IEntityLivingData)null);
-        worldIn.spawnEntityInWorld(bailey);
+        worldIn.spawnEntity(bailey);
     }
 }
