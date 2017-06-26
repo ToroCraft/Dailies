@@ -109,7 +109,7 @@ public class DailyQuest {
 	}
 
 	public void dropNewStack(EntityPlayer player, EntityItem item, int amount) {
-		ItemStack stack = item.getEntityItem().copy();
+		ItemStack stack = item.getItem().copy();
 		stack.setCount(amount);
 		EntityItem dropItem = new EntityItem(player.world, player.posX, player.posY, player.posZ, stack);
 		dropItem.setNoPickupDelay();

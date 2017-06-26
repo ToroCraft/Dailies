@@ -42,7 +42,7 @@ public class RequestAvailableQuests implements IMessage {
 				return null;
 			}
 			
-			final EntityPlayerMP player = ctx.getServerHandler().playerEntity;
+			final EntityPlayerMP player = ctx.getServerHandler().player;
 			
 			if(player == null) {
 				return null;

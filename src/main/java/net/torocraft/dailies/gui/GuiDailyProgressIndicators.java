@@ -179,8 +179,8 @@ public class GuiDailyProgressIndicators {
 		if (offset > quests) {
 			offset = reduceOffset(offset);
 		}
-		prevBtn.drawButton(mc, mouseX, mouseY);
-		nextBtn.drawButton(mc, mouseX, mouseY);
+		prevBtn.drawButton(mc, mouseX, mouseY, 1);
+		nextBtn.drawButton(mc, mouseX, mouseY, 1);
 
 		if (mouseCooldownOver() && Mouse.getEventButtonState() && Mouse.getEventButton() != -1) {
 			if (prevBtn.mousePressed(mc, mouseX, mouseY)) {
@@ -208,7 +208,7 @@ public class GuiDailyProgressIndicators {
 	private void drawQuestAbandonButtons(int mouseX, int mouseY) {
 		for (Entry<String, GuiButton> entry : abandonButtonMap.entrySet()) {
 			GuiButton btn = entry.getValue();
-			btn.drawButton(mc, mouseX, mouseY);
+			btn.drawButton(mc, mouseX, mouseY, 1);
 
 			if (Mouse.getEventButtonState() && Mouse.getEventButton() != -1) {
 				if (btn.mousePressed(mc, mouseX, mouseY) && mouseCooldownOver()) {
@@ -223,7 +223,7 @@ public class GuiDailyProgressIndicators {
 	private void drawQuestAcceptButtons(int mouseX, int mouseY) {
 		for (Entry<String, GuiButton> entry : acceptButtonMap.entrySet()) {
 			GuiButton btn = entry.getValue();
-			btn.drawButton(mc, mouseX, mouseY);
+			btn.drawButton(mc, mouseX, mouseY, 1);
 
 			if (Mouse.getEventButtonState() && Mouse.getEventButton() != -1) {
 				if (btn.mousePressed(mc, mouseX, mouseY) && mouseCooldownOver()) {

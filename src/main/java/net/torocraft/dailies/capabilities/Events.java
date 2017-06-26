@@ -7,6 +7,7 @@ import java.util.Set;
 
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.Entity;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.DamageSource;
 import net.minecraft.util.ResourceLocation;
@@ -32,8 +33,8 @@ public class Events {
 		EntityLivingBase e = (EntityLivingBase) event.getEntity();
 		DamageSource source = event.getSource();
 
-		if (source.getEntity() instanceof EntityPlayer) {
-			player = (EntityPlayer) source.getEntity();
+		if (source.getTrueSource() instanceof EntityPlayer) {
+			player = (EntityPlayer) source.getTrueSource();
 		}
 
 		if (player == null) {
@@ -94,9 +95,9 @@ public class Events {
 	}
 
 	@SubscribeEvent
-	public void onEntityLoad(AttachCapabilitiesEvent.Entity event) {
+	public void onEntityLoad(AttachCapabilitiesEvent<Entity> event) {
 
-		if (!(event.getEntity() instanceof EntityPlayer)) {
+		if (!(event.getObject() instanceof EntityPlayer)) {
 			return;
 		}
 

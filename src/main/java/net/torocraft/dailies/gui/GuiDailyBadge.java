@@ -57,13 +57,13 @@ public class GuiDailyBadge extends Gui {
 		int progress = (int) Math.ceil(108 * ((double) quest.progress / (double) quest.target.quantity));
 		drawTexturedModalRect(x + 6, y + 14, 0, 86, progress, 10);
 
-		String formattedQuestName = mc.fontRendererObj.trimStringToWidth(quest.name, 110);
-		drawCenteredString(mc.fontRendererObj, formattedQuestName, x + 60, y + 5, 0xffffff);
+		String formattedQuestName = mc.fontRenderer.trimStringToWidth(quest.name, 110);
+		drawCenteredString(mc.fontRenderer, formattedQuestName, x + 60, y + 5, 0xffffff);
 		String barText = buildQuestProgressRatioString();
 		if (Minecraft.getSystemTime() % 6000 < 3000) {
-			barText = mc.fontRendererObj.trimStringToWidth(quest.description, 110);
+			barText = mc.fontRenderer.trimStringToWidth(quest.description, 110);
 		}
-		drawCenteredString(mc.fontRendererObj, barText, x + 60, y + 15, 0xffffff);
+		drawCenteredString(mc.fontRenderer, barText, x + 60, y + 15, 0xffffff);
 	}
 	
 	public void checkForHover(int mouseX, int mouseY) {
@@ -73,7 +73,7 @@ public class GuiDailyBadge extends Gui {
 	}
 
 	private void drawHoverText(int mouseX, int mouseY) {
-		GuiUtils.drawHoveringText(hoverLines, mouseX, mouseY, screenWidth, screenHeight, 110, mc.fontRendererObj);
+		GuiUtils.drawHoveringText(hoverLines, mouseX, mouseY, screenWidth, screenHeight, 110, mc.fontRenderer);
 	}
 
 	private String buildQuestProgressRatioString() {
@@ -90,9 +90,9 @@ public class GuiDailyBadge extends Gui {
 		drawTexturedModalRect(x, y, 0, 0, width, height);
 		drawTexturedModalRect(x + 6, y + 14, 0, 76, 108, 10);
 
-		String formattedQuestName = mc.fontRendererObj.trimStringToWidth(quest.name, 110);
-		String questDescription = mc.fontRendererObj.trimStringToWidth(quest.description, 110);
-		drawCenteredString(mc.fontRendererObj, formattedQuestName, x + 60, y + 5, 0xffffff);
-		drawCenteredString(mc.fontRendererObj, questDescription, x + 60, y + 15, 0xffffff);
+		String formattedQuestName = mc.fontRenderer.trimStringToWidth(quest.name, 110);
+		String questDescription = mc.fontRenderer.trimStringToWidth(quest.description, 110);
+		drawCenteredString(mc.fontRenderer, formattedQuestName, x + 60, y + 5, 0xffffff);
+		drawCenteredString(mc.fontRenderer, questDescription, x + 60, y + 15, 0xffffff);
 	}
 }

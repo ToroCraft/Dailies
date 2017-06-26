@@ -5,7 +5,7 @@ import com.google.gson.Gson;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.client.Minecraft;
 import net.minecraft.item.Item;
-import net.minecraft.stats.Achievement;
+import net.minecraft.advancements.Advancement;
 import net.minecraftforge.fml.common.network.ByteBufUtils;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessageHandler;
@@ -76,9 +76,9 @@ public class AchievementToClient implements IMessage {
 		void processMessage(AchievementToClient message) {
 			DailyQuest quest = message.getCompletedQuest();
 			if(quest != null) {
-				Achievement achievement = new Achievement(quest.getDisplayName(), "dailyquestcompleted", 0, 0,
-						Item.getItemById(quest.target.type), (Achievement) null);
-				Minecraft.getMinecraft().guiAchievement.displayAchievement(achievement);
+				//Achievement achievement = new Achievement(quest.getDisplayName(), "dailyquestcompleted", 0, 0,
+						//Item.getItemById(quest.target.type), (Achievement) null);
+				//Minecraft.getMinecraft().guiAchievement.displayAchievement(achievement);
 			}
 			return;
 		}	
