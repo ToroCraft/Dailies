@@ -33,7 +33,7 @@ public class DailiesContainer extends Container {
 	private final int SUBMIT_ITEM_XPOS = 30;
 	private final int SUBMIT_ITEM_YPOS = 17;
 	
-	private final int OUTPUT_ITEM_XPOS = 107;
+	private final int OUTPUT_ITEM_XPOS = 117;
 	private final int OUTPUT_ITEM_YPOS = 17;
 	
 	private final BaileyInventory baileyInventory;
