@@ -68,11 +68,13 @@ public class GuiDailyProgressIndicators {
 	
 	@SubscribeEvent
 	public void checkForHovering(DrawScreenEvent.Post event) {
-		for (GuiDailyBadge badge : acceptedBadgeList) {
-			badge.checkForHover(event.getMouseX(), event.getMouseY());
-		}
-		for (GuiDailyBadge badge : availableBadgeList) {
-			badge.checkForHover(event.getMouseX(), event.getMouseY());
+		if ((ConfigurationHandler.showQuestsInPlayerInventory && mc.currentScreen instanceof GuiInventory) || mc.currentScreen instanceof DailiesGuiContainer) {
+			for (GuiDailyBadge badge : acceptedBadgeList) {
+				badge.checkForHover(event.getMouseX(), event.getMouseY());
+			}
+			for (GuiDailyBadge badge : availableBadgeList) {
+				badge.checkForHover(event.getMouseX(), event.getMouseY());
+			}
 		}
 	}
 	
