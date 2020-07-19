@@ -21,7 +21,7 @@ import net.minecraftforge.fml.event.server.FMLServerStartingEvent;
 import net.torocraft.dailies.DailiesException;
 import net.torocraft.dailies.capabilities.DailiesCapabilityProvider;
 import net.torocraft.dailies.capabilities.IDailiesCapability;
-import net.torocraft.dailies.commands.SpawnBaileyCommand;
+import net.torocraft.dailies.commands.DailiesCommand;
 import net.torocraft.dailies.network.DailiesNetworkException;
 import net.torocraft.dailies.network.QuestInventoryFetcher;
 import net.torocraft.dailies.quests.DailyQuest;
@@ -40,7 +40,7 @@ public class Events {
 	@SubscribeEvent
 	public static void registerCommands(final FMLServerStartingEvent event) {
 		LOGGER.debug("REGISTERING COMMANDS");
-		SpawnBaileyCommand.register(event.getCommandDispatcher());
+		DailiesCommand.register(event.getCommandDispatcher());
 	}
 
 	@SubscribeEvent
