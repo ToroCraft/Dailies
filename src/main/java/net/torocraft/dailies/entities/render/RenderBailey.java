@@ -3,22 +3,29 @@ package net.torocraft.dailies.entities.render;
 import java.util.HashMap;
 import java.util.Map;
 
-import net.minecraft.client.renderer.GlStateManager;
-import net.minecraft.client.renderer.entity.RenderLiving;
-import net.minecraft.client.renderer.entity.RenderManager;
+import com.mojang.blaze3d.matrix.MatrixStack;
+import com.mojang.blaze3d.platform.GlStateManager;
+import net.minecraft.client.renderer.IRenderTypeBuffer;
+import net.minecraft.client.renderer.RenderTimeManager;
+import net.minecraft.client.renderer.entity.EntityRendererManager;
+import net.minecraft.client.renderer.entity.MobRenderer;
+import net.minecraft.client.renderer.entity.model.VillagerModel;
+import net.minecraft.entity.merchant.villager.VillagerEntity;
+import net.minecraft.resources.IReloadableResourceManager;
 import net.minecraft.util.ResourceLocation;
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
+import net.torocraft.dailies.DailiesMod;
 import net.torocraft.dailies.entities.EntityBailey;
 import net.torocraft.dailies.entities.EntityBailey.BaileyVariant;
 import net.torocraft.dailies.entities.model.ModelBailey;
 
-@SideOnly(Side.CLIENT)
-public class RenderBailey extends RenderLiving<EntityBailey> {
-	private static final ResourceLocation baileyTextureSavanna = new ResourceLocation("dailiesmod:textures/entity/baileySavanna.png");
-	private static final ResourceLocation baileyTextureTaiga = new ResourceLocation("dailiesmod:textures/entity/baileyTaiga.png");
-	private static final ResourceLocation baileyTextureDesert = new ResourceLocation("dailiesmod:textures/entity/baileyDesert.png");
-	private static final ResourceLocation baileyTexturePlains = new ResourceLocation("dailiesmod:textures/entity/baileyPlains.png");
+@OnlyIn(Dist.CLIENT)
+public class RenderBailey extends MobRenderer<EntityBailey, ModelBailey<EntityBailey>> {
+	private static final ResourceLocation baileyTextureSavanna = new ResourceLocation(DailiesMod.MODID + ":textures/entity/baileysavanna.png");
+	private static final ResourceLocation baileyTextureTaiga = new ResourceLocation(DailiesMod.MODID + ":textures/entity/baileytaiga.png");
+	private static final ResourceLocation baileyTextureDesert = new ResourceLocation(DailiesMod.MODID + ":textures/entity/baileydesert.png");
+	private static final ResourceLocation baileyTexturePlains = new ResourceLocation(DailiesMod.MODID + ":textures/entity/baileyplains.png");
 	
 	private static final Map<BaileyVariant, ResourceLocation> textures = new HashMap<BaileyVariant, ResourceLocation>();
 	
@@ -29,19 +36,28 @@ public class RenderBailey extends RenderLiving<EntityBailey> {
 		textures.put(BaileyVariant.PLAINS, baileyTexturePlains);
 	}
 
-	public RenderBailey(RenderManager renderManagerIn) {
-		super(renderManagerIn, new ModelBailey(0.0F), 0.5F);
+	public RenderBailey(EntityRendererManager renderManagerIn, IReloadableResourceManager resourceManagerIn) {
+		super(renderManagerIn, new ModelBailey<>(0.0F), 0.5F);
+	}
+
+	public RenderBailey(EntityRendererManager renderManagerIn) {
+		super(renderManagerIn, new ModelBailey<>(0.0F), 0.5F);
 	}
 
 	public ModelBailey getMainModel() {
-		return (ModelBailey) super.getMainModel();
+		return (ModelBailey) super.getEntityModel();
+	}
+
+	@Override
+	public void render(EntityBailey entityIn, float entityYaw, float partialTicks, MatrixStack matrixStackIn, IRenderTypeBuffer bufferIn, int packedLightIn) {
+		super.render(entityIn, entityYaw, partialTicks, matrixStackIn, bufferIn, packedLightIn);
 	}
 
 	/**
 	 * Returns the location of an entity's texture. Doesn't seem to be called
 	 * unless you call Render.bindEntityTexture.
 	 */
-	protected ResourceLocation getEntityTexture(EntityBailey entity) {
+	public ResourceLocation getEntityTexture(EntityBailey entity) {
 		if (entity.variant == null) {
 			return baileyTextureSavanna;
 		}
@@ -62,6 +78,6 @@ public class RenderBailey extends RenderLiving<EntityBailey> {
 			this.shadowSize = 0.5F;
 		}
 
-		GlStateManager.scale(f, f, f);
+		//GlStateManager.scale(f, f, f);
 	}
 }

@@ -1,5 +1,5 @@
 package net.torocraft.dailies.gui;
-
+/*
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraftforge.common.config.ConfigElement;
 import net.minecraftforge.common.config.Configuration;
@@ -18,3 +18,4 @@ public class GuiConfigDailies extends GuiConfig {
 		titleLine2 = ConfigurationHandler.config.getConfigFile().getAbsolutePath();
 	}
 }
+ */

@@ -1,24 +1,6 @@
-package net.torocraft.dailies;
+package net.torocraft.dailies.commands;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import net.minecraft.command.CommandBase;
-import net.minecraft.command.CommandException;
-import net.minecraft.command.ICommandSender;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.server.MinecraftServer;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.text.TextComponentString;
-import net.minecraft.world.World;
-import net.torocraft.dailies.capabilities.CapabilityDailiesHandler;
-import net.torocraft.dailies.capabilities.IDailiesCapability;
-import net.torocraft.dailies.entities.EntityBailey;
-import net.torocraft.dailies.gui.DailiesGuiHandler;
-import net.torocraft.dailies.quests.DailyQuest;
-
-public class DailiesCommand extends CommandBase {
+/*public class DailiesCommand extends CommandBase {
 
 	private static final TextComponentString invalidCommand = new TextComponentString("Invalid Command");
 	private static final TextComponentString questNotFound = new TextComponentString("Quest not Found");
@@ -220,4 +202,4 @@ public class DailiesCommand extends CommandBase {
 		return "";
 	}
 	
-}
+}*/

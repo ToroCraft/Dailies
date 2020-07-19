@@ -1,27 +1,27 @@
 package net.torocraft.dailies.capabilities;
 
-import net.minecraft.nbt.NBTBase;
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.util.EnumFacing;
+import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.nbt.INBT;
+import net.minecraft.util.Direction;
 import net.minecraftforge.common.capabilities.Capability;
 
 public class DailiesStorage implements Capability.IStorage<IDailiesCapability> {
 
 	@Override
-	public NBTBase writeNBT(Capability<IDailiesCapability> capability, IDailiesCapability instance, EnumFacing side) {
+	public CompoundNBT writeNBT(Capability<IDailiesCapability> capability, IDailiesCapability instance, Direction side) {
 		return instance.writeNBT();
 	}
 
 	@Override
-	public void readNBT(Capability<IDailiesCapability> capability, IDailiesCapability instance, EnumFacing side, NBTBase base) {
+	public void readNBT(Capability<IDailiesCapability> capability, IDailiesCapability instance, Direction side, INBT nbt) {
 		if (instance == null) {
 			return;
 		}
 
-		NBTTagCompound c = null;
+		CompoundNBT c = null;
 
-		if (base != null && base instanceof NBTTagCompound) {
-			c = (NBTTagCompound) base;
+		if (nbt != null && nbt instanceof CompoundNBT) {
+			c = (CompoundNBT) nbt;
 		}
 
 		instance.readNBT(c);

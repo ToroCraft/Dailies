@@ -1,6 +1,6 @@
 package net.torocraft.dailies;
 
-import net.minecraft.util.text.TextComponentString;
+import net.minecraft.util.text.StringTextComponent;
 
 public class DailiesException extends Exception {
 	private static final long serialVersionUID = 521954328281793833L;
@@ -10,7 +10,7 @@ public class DailiesException extends Exception {
 	}
 	
 	public static DailiesException SYSTEM_ERROR(Exception e) {
-		return new DailiesException(DailiesMod.metadata.name + " Error: " + e.getMessage());
+		return new DailiesException(DailiesMod.MODID + " Error: " + e.getMessage());
 	}
 	
 	public static DailiesException ACCEPTED_QUEST_LIMIT_HIT() {
@@ -21,8 +21,8 @@ public class DailiesException extends Exception {
 		return new DailiesException("Error from Dailies Service: " + message);
 	}
 	
-	public TextComponentString getMessageAsTextComponent() {
-		return new TextComponentString(getMessage());
+	public StringTextComponent getMessageAsTextComponent() {
+		return new StringTextComponent(getMessage());
 	}
 
 }

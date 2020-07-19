@@ -1,5 +1,5 @@
 package net.torocraft.dailies.messages;
-
+/*
 import com.google.gson.Gson;
 
 import io.netty.buffer.ByteBuf;
@@ -84,3 +84,4 @@ public class AchievementToClient implements IMessage {
 		}	
 	}
 }
+*/

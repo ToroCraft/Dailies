@@ -2,78 +2,58 @@ package net.torocraft.dailies.messages;
 
 import java.util.HashSet;
 import java.util.Set;
+import java.util.function.Supplier;
 
-import io.netty.buffer.ByteBuf;
-import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraft.world.WorldServer;
-import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
-import net.minecraftforge.fml.common.network.simpleimpl.IMessageHandler;
-import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
-import net.minecraftforge.fml.relauncher.Side;
-import net.torocraft.dailies.capabilities.CapabilityDailiesHandler;
+import net.minecraft.client.Minecraft;
+import net.minecraft.entity.player.ServerPlayerEntity;
+import net.minecraft.network.NetworkManager;
+import net.minecraft.network.PacketBuffer;
+import net.minecraft.world.server.ServerWorld;
+import net.minecraftforge.fml.network.NetworkDirection;
+import net.minecraftforge.fml.network.NetworkEvent;
+import net.minecraftforge.fml.network.PacketDistributor;
+import net.torocraft.dailies.capabilities.DailiesCapabilityProvider;
 import net.torocraft.dailies.capabilities.IDailiesCapability;
 import net.torocraft.dailies.quests.DailyQuest;
 
-public class RequestAvailableQuests implements IMessage {
+class RequestAvailableQuests {
 
-	public RequestAvailableQuests() {
-	
-	}
-	
-	@Override
-	public void fromBytes(ByteBuf buf) {
+	public RequestAvailableQuests(PacketBuffer buf) {
 		buf.readInt();
-		
 	}
 
-	@Override
-	public void toBytes(ByteBuf buf) {
-		buf.writeInt(1);
-		
+	void decode(PacketBuffer buf) {
+		buf.readInt();
 	}
-	
-	public static class Handler implements IMessageHandler<RequestAvailableQuests, IMessage> {
-		
-		public Handler() {}
-		
-		@Override
-		public IMessage onMessage(final RequestAvailableQuests message, MessageContext ctx) {
-			if(ctx.side != Side.SERVER) {
-				return null;
-			}
-			
-			final EntityPlayerMP player = ctx.getServerHandler().player;
-			
+
+	void encode(PacketBuffer buf) {
+		buf.writeInt(1);
+	}
+
+	void handle(Supplier<NetworkEvent.Context> ctx) {
+		ctx.get().enqueueWork(() -> {
+			// Work that needs to be threadsafe (most work)
+			ServerPlayerEntity player = ctx.get().getSender(); // the client that sent this packet
+
 			if(player == null) {
-				return null;
+				return;
 			}
-			
-			final WorldServer worldServer = player.getServerWorld();
-			
-			worldServer.addScheduledTask(new Runnable() {
-				@Override
-				public void run() {
-					processMessage(message, player);
+
+			NetworkManager manager = Minecraft.getInstance().getConnection().getNetworkManager();
+
+			player.getCapability(DailiesCapabilityProvider.DAILIES_CAPABILITY, null).ifPresent((d) -> {
+				if(!isSet(d.getAvailableQuests())) {
+					DailiesPacketHandler.INSTANCE.sendTo(new AvailableQuestsToClient(new HashSet<DailyQuest>()), manager, NetworkDirection.PLAY_TO_CLIENT);
+				} else {
+					DailiesPacketHandler.INSTANCE.sendTo(new AvailableQuestsToClient(d.getAvailableQuests()), manager, NetworkDirection.PLAY_TO_CLIENT);
 				}
 			});
-			
-			return null;
-		}
-		
-		void processMessage(RequestAvailableQuests message, EntityPlayerMP player) {
-			IDailiesCapability cap = player.getCapability(CapabilityDailiesHandler.DAILIES_CAPABILITY, null);
-			
-			if(!isSet(cap.getAvailableQuests())) {
-				DailiesPacketHandler.INSTANCE.sendTo(new AvailableQuestsToClient(new HashSet<DailyQuest>()), player);
-			} else {
-				DailiesPacketHandler.INSTANCE.sendTo(new AvailableQuestsToClient(cap.getAvailableQuests()), player);
-			}
-			
-			return;
-		}
-		
-		private boolean isSet(Set<DailyQuest> set) {
-			return set != null && set.size() > 0;
-		}
+		});
+
+		ctx.get().setPacketHandled(true);
+	}
+
+	private static boolean isSet(Set<DailyQuest> set) {
+		return set != null && set.size() > 0;
 	}
 }

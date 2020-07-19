@@ -1,5 +1,5 @@
 package net.torocraft.dailies.config;
-
+/*
 import java.io.File;
 
 import net.minecraftforge.common.config.Configuration;
@@ -37,3 +37,4 @@ public class ConfigurationHandler {
 	}
 
 }
+*/

@@ -2,33 +2,26 @@ package net.torocraft.dailies.capabilities;
 
 import java.util.Set;
 
-import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.command.arguments.NBTCompoundTagArgument;
+import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.nbt.CompoundNBT;
 import net.torocraft.dailies.DailiesException;
 import net.torocraft.dailies.quests.DailyQuest;
 
 public interface IDailiesCapability {
 
-	/**
-	 * return true when quest target was hit
-	 */
-//	DailyQuest gather(EntityPlayer player, EntityItem item);
+	void hunt(PlayerEntity player, LivingEntity mob);
 
-	/**
-	 * return true when quest target was hit
-	 */
-	void hunt(EntityPlayer player, EntityLivingBase mob);
+	CompoundNBT writeNBT();
 
-	NBTTagCompound writeNBT();
+	void readNBT(CompoundNBT c);
 
-	void readNBT(NBTTagCompound c);
+	void acceptQuest(PlayerEntity player, DailyQuest quest) throws DailiesException;
 
-	void acceptQuest(EntityPlayer player, DailyQuest quest) throws DailiesException;
-
-	void abandonQuest(EntityPlayer player, DailyQuest quest);
+	void abandonQuest(PlayerEntity player, DailyQuest quest);
 	
-	void completeQuest(EntityPlayer player, DailyQuest quest);
+	void completeQuest(PlayerEntity player, DailyQuest quest);
 
 	Set<DailyQuest> getAcceptedQuests();
 
@@ -46,6 +39,6 @@ public interface IDailiesCapability {
 
 	DailyQuest getAvailableQuestById(String questId);
 
-	void sendAcceptedQuestsToClient(EntityPlayer player);
+	void sendAcceptedQuestsToClient(PlayerEntity player);
 
 }

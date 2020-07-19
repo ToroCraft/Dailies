@@ -1,16 +1,14 @@
 package net.torocraft.dailies.gui;
-
+/*
 import java.util.ArrayList;
 import java.util.List;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.Gui;
-import net.minecraft.client.gui.ScaledResolution;
+import net.minecraft.client.gui.AbstractGui;
 import net.minecraft.util.ResourceLocation;
-import net.minecraftforge.fml.client.config.GuiUtils;
 import net.torocraft.dailies.quests.DailyQuest;
 
-public class GuiDailyBadge extends Gui {
+public class GuiDailyBadge extends AbstractGui {
 	
 	private static ResourceLocation badgeTexture = new ResourceLocation("dailiesmod", "textures/gui/badge_bg.png");
 
@@ -30,17 +28,10 @@ public class GuiDailyBadge extends Gui {
 		this.mc = mc;
 		this.x = x;
 		this.y = y;
-		
-		getScreenDimensions();
+
 		buildHoverLines();
 		draw();
 	}
-	
-	 private void getScreenDimensions() {
-	 	ScaledResolution res = new ScaledResolution(mc);
-	 	screenWidth = res.getScaledWidth();
-	 	screenHeight = res.getScaledHeight();
-	 }
 
 
 	private void buildHoverLines() {
@@ -96,3 +87,4 @@ public class GuiDailyBadge extends Gui {
 		drawCenteredString(mc.fontRenderer, questDescription, x + 60, y + 15, 0xffffff);
 	}
 }
+ */

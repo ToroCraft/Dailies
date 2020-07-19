@@ -1,5 +1,5 @@
 package net.torocraft.dailies.generation;
-
+/*
 import java.util.List;
 import java.util.Random;
 
@@ -10,7 +10,7 @@ import net.minecraft.world.gen.structure.StructureVillagePieces.Start;
 import net.minecraft.world.gen.structure.StructureVillagePieces.Village;
 import net.minecraftforge.fml.common.registry.VillagerRegistry.IVillageCreationHandler;
 
-public class VillageHandlerBailey implements IVillageCreationHandler  {
+public class VillageHandlerBailey implements Village  {
 
 	@Override
 	public PieceWeight getVillagePieceWeight(Random random, int i) {
@@ -27,4 +27,4 @@ public class VillageHandlerBailey implements IVillageCreationHandler  {
 			Random random, int p1, int p2, int p3, EnumFacing facing, int p5) {
 		return BaileysShopVillagePiece.createPiece(startPiece, pieces, random, p1, p2, p3, facing, p5);
 	}
-}
+}*/

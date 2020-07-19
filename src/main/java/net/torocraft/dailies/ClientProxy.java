@@ -1,14 +1,9 @@
 package net.torocraft.dailies;
 
 import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.fml.common.event.FMLInitializationEvent;
-import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
-import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
-import net.torocraft.dailies.entities.render.Renders;
-import net.torocraft.dailies.gui.GuiDailyProgressIndicators;
 import net.torocraft.dailies.quests.DailyQuest;
 
-public class ClientProxy extends CommonProxy {
+/*public class ClientProxy extends CommonProxy {
 
 	public static GuiDailyProgressIndicators dailyGui = new GuiDailyProgressIndicators();
 
@@ -32,4 +27,4 @@ public class ClientProxy extends CommonProxy {
 	public static void displayQuestProgress(DailyQuest quest) {
 		dailyGui.setQuest(quest);
 	}
-}
+}*/

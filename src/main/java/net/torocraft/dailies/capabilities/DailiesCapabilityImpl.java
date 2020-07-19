@@ -3,29 +3,25 @@ package net.torocraft.dailies.capabilities;
 import java.util.Calendar;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.Callable;
 
-import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.nbt.NBTTagList;
+import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.nbt.ListNBT;
 import net.torocraft.dailies.DailiesException;
 import net.torocraft.dailies.DailiesMod;
-import net.torocraft.dailies.messages.AcceptedQuestsToClient;
-import net.torocraft.dailies.messages.AchievementToClient;
-import net.torocraft.dailies.messages.DailiesPacketHandler;
-import net.torocraft.dailies.messages.QuestProgressToClient;
 import net.torocraft.dailies.network.QuestActionHandler;
 import net.torocraft.dailies.quests.DailyQuest;
 
 public class DailiesCapabilityImpl implements IDailiesCapability {
 
-	private Set<DailyQuest> availableQuests;
-	private Set<DailyQuest> acceptedQuests;
-	private Set<DailyQuest> completedQuests;
+	private Set<DailyQuest> availableQuests = new HashSet<>();
+	private Set<DailyQuest> acceptedQuests = new HashSet<>();
+	private Set<DailyQuest> completedQuests = new HashSet<>();
 
 	@Override
-	public void completeQuest(final EntityPlayer player, final DailyQuest quest) {
+	public void completeQuest(final PlayerEntity player, final DailyQuest quest) {
 		acceptedQuests.remove(quest);
 		
 		if (completedQuests == null) {
@@ -43,14 +39,14 @@ public class DailiesCapabilityImpl implements IDailiesCapability {
 				try {
 					new QuestActionHandler(player, quest.id).complete();
 				} catch (DailiesException e) {
-					player.sendMessage(e.getMessageAsTextComponent());
+					//player.sendMessage(e.getMessageAsTextComponent());
 				}
 			}
 		}).start();
 	}
 
 	@Override
-	public void hunt(EntityPlayer player, EntityLivingBase mob) {
+	public void hunt(PlayerEntity player, LivingEntity mob) {
 		DailyQuest quest = huntNextQuest(player, mob);
 
 		if (quest == null) {
@@ -61,13 +57,13 @@ public class DailiesCapabilityImpl implements IDailiesCapability {
 			quest.reward(player);
 			completeQuest(player, quest);
 		} else {
-			DailiesPacketHandler.INSTANCE.sendTo(new QuestProgressToClient(quest), (EntityPlayerMP)player);
+			//DailiesPacketHandler.INSTANCE.sendTo(new QuestProgressToClient(quest), (PlayerEntity)player);
 		}
 
-		DailiesPacketHandler.INSTANCE.sendTo(new AcceptedQuestsToClient(getAcceptedQuests()), (EntityPlayerMP)player);
+		//DailiesPacketHandler.INSTANCE.sendTo(new AcceptedQuestsToClient(getAcceptedQuests()), (EntityPlayerMP)player);
 	}
 
-	private DailyQuest huntNextQuest(EntityPlayer player, EntityLivingBase mob) {
+	private DailyQuest huntNextQuest(PlayerEntity player, LivingEntity mob) {
 		if (acceptedQuests == null) {
 			return null;
 		}
@@ -79,13 +75,13 @@ public class DailiesCapabilityImpl implements IDailiesCapability {
 		return null;
 	}
 
-	private void displayAchievement(DailyQuest quest, EntityPlayer player) {
-		DailiesPacketHandler.INSTANCE.sendTo(new AchievementToClient(quest), (EntityPlayerMP)player);
+	private void displayAchievement(DailyQuest quest, PlayerEntity player) {
+		//DailiesPacketHandler.INSTANCE.sendTo(new AchievementToClient(quest), player);
 	}
 
 	@Override
-	public NBTTagCompound writeNBT() {
-		NBTTagCompound c = new NBTTagCompound();
+	public CompoundNBT writeNBT() {
+		CompoundNBT c = new CompoundNBT();
 		writeQuestsList(c, "availableQuests", availableQuests);
 		writeQuestsList(c, "acceptedQuests", acceptedQuests);
 		writeQuestsList(c, "completedQuests", completedQuests);
@@ -93,7 +89,7 @@ public class DailiesCapabilityImpl implements IDailiesCapability {
 	}
 
 	@Override
-	public void readNBT(NBTTagCompound b) {
+	public void readNBT(CompoundNBT b) {
 		if (b == null) {
 			acceptedQuests = new HashSet<DailyQuest>();
 			return;
@@ -104,27 +100,27 @@ public class DailiesCapabilityImpl implements IDailiesCapability {
 		completedQuests = readQuestList(b, "completedQuests");
 	}
 
-	private void writeQuestsList(NBTTagCompound c, String key, Set<DailyQuest> quests) {
-		NBTTagList list = new NBTTagList();
+	private void writeQuestsList(CompoundNBT c, String key, Set<DailyQuest> quests) {
+		ListNBT list = new ListNBT();
 		if (quests != null) {
 			for (DailyQuest quest : quests) {
-				list.appendTag(quest.writeNBT());
+				list.add(quest.writeNBT());
 			}
 		}
-		c.setTag(key, list);
+		c.put(key, list);
 	}
 
-	private Set<DailyQuest> readQuestList(NBTTagCompound b, String key) {
+	private Set<DailyQuest> readQuestList(CompoundNBT b, String key) {
 		Set<DailyQuest> quests = new HashSet<DailyQuest>();
-		NBTTagList list = (NBTTagList) b.getTag(key);
+		ListNBT list = (ListNBT) b.get(key);
 
 		if (list == null) {
 			return quests;
 		}
 
-		for (int i = 0; i < list.tagCount(); i++) {
+		for (int i = 0; i < list.size(); i++) {
 			DailyQuest quest = new DailyQuest();
-			quest.readNBT(list.getCompoundTagAt(i));
+			quest.readNBT(list.getCompound(i));
 			quests.add(quest);
 		}
 
@@ -132,7 +128,7 @@ public class DailiesCapabilityImpl implements IDailiesCapability {
 	}
 
 	@Override
-	public void acceptQuest(EntityPlayer player, DailyQuest quest) throws DailiesException {
+	public void acceptQuest(PlayerEntity player, DailyQuest quest) throws DailiesException {
 		if (acceptedQuests == null) {
 			return;
 		}
@@ -149,7 +145,7 @@ public class DailiesCapabilityImpl implements IDailiesCapability {
 	}
 
 	@Override
-	public void abandonQuest(EntityPlayer player, DailyQuest quest) {
+	public void abandonQuest(PlayerEntity player, DailyQuest quest) {
 		if (acceptedQuests == null) {
 			return;
 		}
@@ -164,7 +160,7 @@ public class DailiesCapabilityImpl implements IDailiesCapability {
 		try {
 			new QuestActionHandler(player, quest.id).abandon();
 		} catch (DailiesException e) {
-			player.sendMessage(e.getMessageAsTextComponent());
+			//player.sendMessage(e.getMessageAsTextComponent());
 		}
 	}
 	
@@ -236,7 +232,15 @@ public class DailiesCapabilityImpl implements IDailiesCapability {
 	}
 	
 	@Override
-	public void sendAcceptedQuestsToClient(EntityPlayer player) {
-		DailiesPacketHandler.INSTANCE.sendTo(new AcceptedQuestsToClient(getAcceptedQuests()), (EntityPlayerMP)player);
+	public void sendAcceptedQuestsToClient(PlayerEntity player) {
+		//DailiesPacketHandler.INSTANCE.sendTo(new AcceptedQuestsToClient(getAcceptedQuests()), (EntityPlayerMP)player);
+	}
+
+	private static class Factory implements Callable<IDailiesCapability> {
+
+		@Override
+		public IDailiesCapability call() throws Exception {
+			return new DailiesCapabilityImpl();
+		}
 	}
 }

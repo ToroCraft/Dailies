@@ -1,14 +1,19 @@
 package net.torocraft.dailies.entities.model;
 
-import net.minecraft.client.model.ModelBase;
-import net.minecraft.client.model.ModelRenderer;
+import com.google.common.collect.ImmutableList;
+import com.mojang.blaze3d.matrix.MatrixStack;
+import com.mojang.blaze3d.vertex.IVertexBuilder;
+import net.minecraft.client.renderer.entity.model.SegmentedModel;
+import net.minecraft.client.renderer.model.Model;
+import net.minecraft.client.renderer.model.ModelRenderer;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.merchant.villager.AbstractVillagerEntity;
 import net.minecraft.util.math.MathHelper;
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
 
-@SideOnly(Side.CLIENT)
-public class ModelBailey extends ModelBase {
+@OnlyIn(Dist.CLIENT)
+public class ModelBailey<T extends Entity> extends SegmentedModel<T> {
 	/** The head box of the VillagerModel */
 	public ModelRenderer villagerHead;
 	/** The body of the VillagerModel */
@@ -22,10 +27,11 @@ public class ModelBailey extends ModelBase {
 	public ModelRenderer villagerNose;
 
 	public ModelBailey(float scale) {
-		this(scale, 0.0F, 64, 64);
+		this(scale, 64, 64);
 	}
 
-	public ModelBailey(float scale, float rotYOffset, int width, int height) {
+	public ModelBailey(float scale, int width, int height) {
+		float rotYOffset = 0.0F;
 		this.villagerHead = (new ModelRenderer(this)).setTextureSize(width, height);
 		this.villagerHead.setRotationPoint(0.0F, 0.0F + rotYOffset, 0.0F);
 		this.villagerHead.setTextureOffset(0, 0).addBox(-4.0F, -10.0F, -4.0F, 8, 10, 8, scale);
@@ -51,32 +57,37 @@ public class ModelBailey extends ModelBase {
 		this.leftVillagerLeg.addBox(-2.0F, 0.0F, -2.0F, 4, 12, 4, scale);
 	}
 
-	/**
-	 * Sets the models various rotation angles then renders the model.
-	 */
-	public void render(Entity entityIn, float limbSwing, float limbSwingAmount, float ageInTicks, float netHeadYaw, float headPitch, float scale) {
-		this.setRotationAngles(limbSwing, limbSwingAmount, ageInTicks, netHeadYaw, headPitch, scale, entityIn);
-		this.villagerHead.render(scale);
-		this.villagerBody.render(scale);
-		this.rightVillagerLeg.render(scale);
-		this.leftVillagerLeg.render(scale);
-		this.villagerArms.render(scale);
+	public void render(MatrixStack matrixStackIn, IVertexBuilder bufferIn, int packedLightIn, int packedOverlayIn, float red, float green, float blue, float alpha) {
+		this.getParts().forEach((p_228272_8_) -> {
+			p_228272_8_.render(matrixStackIn, bufferIn, packedLightIn, packedOverlayIn, red, green, blue, alpha);
+		});
 	}
 
-	/**
-	 * Sets the model's various rotation angles. For bipeds, par1 and par2 are
-	 * used for animating the movement of arms and legs, where par1 represents
-	 * the time(so that arms and legs swing back and forth) and par2 represents
-	 * how "far" arms and legs can swing at most.
-	 */
-	public void setRotationAngles(float limbSwing, float limbSwingAmount, float ageInTicks, float netHeadYaw, float headPitch, float scaleFactor, Entity entityIn) {
-		this.villagerHead.rotateAngleY = netHeadYaw * 0.017453292F;
-		this.villagerHead.rotateAngleX = headPitch * 0.017453292F;
+	public Iterable<ModelRenderer> getParts() {
+		return ImmutableList.of(this.villagerHead, this.villagerBody, this.rightVillagerLeg, this.leftVillagerLeg, this.villagerArms);
+	}
+
+	@Override
+	public void setRotationAngles(T entityIn, float limbSwing, float limbSwingAmount, float ageInTicks, float netHeadYaw, float headPitch) {
+		boolean flag = false;
+		if (entityIn instanceof AbstractVillagerEntity) {
+			flag = ((AbstractVillagerEntity)entityIn).getShakeHeadTicks() > 0;
+		}
+
+		this.villagerHead.rotateAngleY = netHeadYaw * ((float)Math.PI / 180F);
+		this.villagerHead.rotateAngleX = headPitch * ((float)Math.PI / 180F);
+		if (flag) {
+			this.villagerHead.rotateAngleZ = 0.3F * MathHelper.sin(0.45F * ageInTicks);
+			this.villagerHead.rotateAngleX = 0.4F;
+		} else {
+			this.villagerHead.rotateAngleZ = 0.0F;
+		}
+
 		this.villagerArms.rotationPointY = 3.0F;
 		this.villagerArms.rotationPointZ = -1.0F;
-		this.villagerArms.rotateAngleX = 0F;// -0.75F;
+		this.villagerArms.rotateAngleX = -0.75F;
 		this.rightVillagerLeg.rotateAngleX = MathHelper.cos(limbSwing * 0.6662F) * 1.4F * limbSwingAmount * 0.5F;
-		this.leftVillagerLeg.rotateAngleX = MathHelper.cos(limbSwing * 0.6662F + (float) Math.PI) * 1.4F * limbSwingAmount * 0.5F;
+		this.leftVillagerLeg.rotateAngleX = MathHelper.cos(limbSwing * 0.6662F + (float)Math.PI) * 1.4F * limbSwingAmount * 0.5F;
 		this.rightVillagerLeg.rotateAngleY = 0.0F;
 		this.leftVillagerLeg.rotateAngleY = 0.0F;
 	}

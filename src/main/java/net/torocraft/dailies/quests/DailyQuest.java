@@ -1,15 +1,16 @@
 package net.torocraft.dailies.quests;
 
+import net.minecraft.client.resources.I18n;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityList;
-import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.entity.item.EntityItem;
-import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.EntityClassification;
+import net.minecraft.entity.EntityType;
+import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.item.ItemEntity;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NBTBase;
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.util.text.translation.I18n;
+import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.nbt.INBT;
 import net.torocraft.dailies.DailiesException;
 import net.torocraft.dailies.network.ProgressUpdater;
 
@@ -74,26 +75,29 @@ public class DailyQuest {
 	}
 
 	private String decodeItem(int entityId) {
-		return I18n.translateToLocal(Item.getItemById(entityId).getUnlocalizedName() + ".name");
+		//return I18n.translateToLocal(Item.getItemById(entityId).getUnlocalizedName() + ".name");
+		return "";
 	}
 
 	private String decodeMob(int entityId) {
 		String langKey = entityIdToLangKey(entityId);
-		return I18n.translateToLocal(langKey);
+		return "";
+		//return I18n.translateToLocal(langKey);
 	}
 
 	private String entityIdToLangKey(int entityId) {
-		Class<? extends Entity> entityClass = EntityList.getClassFromID(entityId);
+		/*Class<? extends Entity> entityClass = EntityList.getClassFromID(entityId);
 		String entityName = EntityList.getKey(entityClass).getResourcePath();
 
 		if (entityName == null || entityName.length() == 0) {
 			entityName = "generic";
 		}
 
-		return "entity." + entityName + ".name";
+		return "entity." + entityName + ".name";*/
+		return "";
 	}
 
-	private void syncProgress(final EntityPlayer player, final String questId, final int progress) {
+	private void syncProgress(final PlayerEntity player, final String questId, final int progress) {
 		new Thread(new Runnable() {
 
 			@Override
@@ -101,27 +105,27 @@ public class DailyQuest {
 				try {
 					new ProgressUpdater(player, questId, progress).update();
 				} catch (DailiesException e) {
-					player.sendMessage(e.getMessageAsTextComponent());
+					//player.sendMessage(e.getMessageAsTextComponent());
 				}
 			}
 
 		}).start();
 	}
 
-	public void dropNewStack(EntityPlayer player, EntityItem item, int amount) {
+	public void dropNewStack(PlayerEntity player, ItemEntity item, int amount) {
 		ItemStack stack = item.getItem().copy();
 		stack.setCount(amount);
-		EntityItem dropItem = new EntityItem(player.world, player.posX, player.posY, player.posZ, stack);
+		ItemEntity dropItem = new ItemEntity(player.world, player.getPosX(), player.getPosY(), player.getPosZ(), stack);
 		dropItem.setNoPickupDelay();
-		player.world.spawnEntity(dropItem);
+		player.world.addEntity(dropItem);
 	}
 
-	public boolean hunt(EntityPlayer player, EntityLivingBase mob) {
+	public boolean hunt(PlayerEntity player, LivingEntity mob) {
 		if (!isHuntQuest() || mob == null) {
 			return false;
 		}
 
-		int mobId = EntityList.getID(mob.getClass());
+		int mobId = mob.getEntityId();
 
 		if (mobId != target.type) {
 			return false;
@@ -133,33 +137,33 @@ public class DailyQuest {
 		return true;
 	}
 
-	public void reward(EntityPlayer player) {
+	public void reward(PlayerEntity player) {
 		if (reward != null) {
 			reward.reward(player);
 		}
 	}
 
-	public NBTTagCompound writeNBT() {
-		NBTTagCompound c = new NBTTagCompound();
-		c.setString("type", type);
-		c.setInteger("progress", progress);
-		c.setTag("target", target.writeNBT());
-		c.setTag("reward", reward.writeNBT());
-		c.setBoolean("rewardFulfilled", rewardFulfilled);
-		c.setLong("date", date);
-		c.setString("id", id);
-		c.setString("name", name);
-		c.setString("description", description);
-		c.setString("status", status);
+	public CompoundNBT writeNBT() {
+		CompoundNBT c = new CompoundNBT();
+		c.putString("type", type);
+		c.putInt("progress", progress);
+		c.put("target", target.writeNBT());
+		c.put("reward", reward.writeNBT());
+		c.putBoolean("rewardFulfilled", rewardFulfilled);
+		c.putLong("date", date);
+		c.putString("id", id);
+		c.putString("name", name);
+		c.putString("description", description);
+		c.putString("status", status);
 		return c;
 	}
 
-	public void readNBT(NBTTagCompound c) {
+	public void readNBT(CompoundNBT c) {
 		if (c == null) {
 			return;
 		}
 		type = c.getString("type");
-		progress = c.getInteger("progress");
+		progress = c.getInt("progress");
 		date = c.getLong("date");
 		id = c.getString("id");
 		name = c.getString("name");
@@ -170,15 +174,15 @@ public class DailyQuest {
 		target = new TypedInteger();
 		reward = new Reward();
 
-		target.readNBT(cast(c.getTag("target")));
-		reward.readNBT(cast(c.getTag("reward")));
+		target.readNBT(cast(c.get("target")));
+		reward.readNBT(cast(c.get("reward")));
 	}
 
-	private NBTTagCompound cast(NBTBase c) {
+	private CompoundNBT cast(INBT c) {
 		if (c == null) {
 			return null;
 		}
-		return (NBTTagCompound) c;
+		return (CompoundNBT) c;
 	}
 
 	public boolean isComplete() {

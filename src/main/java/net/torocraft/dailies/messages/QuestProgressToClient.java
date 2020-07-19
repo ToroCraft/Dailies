@@ -1,6 +1,6 @@
 package net.torocraft.dailies.messages;
 
-import com.google.gson.Gson;
+/*import com.google.gson.Gson;
 
 import io.netty.buffer.ByteBuf;
 import net.minecraft.client.Minecraft;
@@ -81,3 +81,4 @@ public class QuestProgressToClient implements IMessage {
 		}	
 	}
 }
+*/

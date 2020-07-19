@@ -3,7 +3,7 @@ package net.torocraft.dailies.network;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
-import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.PlayerEntity;
 import net.torocraft.dailies.DailiesMod;
 
 public class DailiesRequest {
@@ -11,8 +11,8 @@ public class DailiesRequest {
 	public String modVersion;
 	public String playerId;
 	
-	public DailiesRequest(EntityPlayer player) {
-		modVersion = DailiesMod.metadata.version;
+	public DailiesRequest(PlayerEntity player) {
+		modVersion = "11";//DailiesMod.version;
 		playerId = String.valueOf(player.getGameProfile().getId());
 	}
 	

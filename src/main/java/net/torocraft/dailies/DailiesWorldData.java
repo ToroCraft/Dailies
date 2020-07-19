@@ -3,9 +3,10 @@ package net.torocraft.dailies;
 import java.util.HashSet;
 import java.util.Set;
 
-import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.nbt.NBTTagList;
+import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.nbt.ListNBT;
 import net.minecraft.world.World;
+import net.minecraft.world.storage.MapData;
 import net.minecraft.world.storage.WorldSavedData;
 import net.torocraft.dailies.quests.DailyQuest;
 
@@ -24,12 +25,12 @@ public class DailiesWorldData extends WorldSavedData {
 	}
 
 	@Override
-	public void readFromNBT(NBTTagCompound nbt) {
+	public void read(CompoundNBT nbt) {
 		dailyQuests = readQuestList(nbt, "dailies");
 	}
 
 	@Override
-	public NBTTagCompound writeToNBT(NBTTagCompound nbt) {
+	public CompoundNBT write(CompoundNBT nbt) {
 		writeQuestsList(nbt, "dailies", dailyQuests);
 		return nbt;
 	}
@@ -43,38 +44,28 @@ public class DailiesWorldData extends WorldSavedData {
 		markDirty();
 	}
 
-	private void writeQuestsList(NBTTagCompound c, String key, Set<DailyQuest> quests) {
-		NBTTagList list = new NBTTagList();
+	private void writeQuestsList(CompoundNBT c, String key, Set<DailyQuest> quests) {
+		ListNBT list = new ListNBT();
 		for (DailyQuest quest : quests) {
-			list.appendTag(quest.writeNBT());
+			list.add(quest.writeNBT());
 		}
-		c.setTag(key, list);
+		c.put(key, list);
 	}
 
-	private Set<DailyQuest> readQuestList(NBTTagCompound b, String key) {
+	private Set<DailyQuest> readQuestList(CompoundNBT b, String key) {
 		Set<DailyQuest> quests = new HashSet<DailyQuest>();
-		NBTTagList list = (NBTTagList) b.getTag(key);
+		ListNBT list = (ListNBT) b.get(key);
 
 		if (list == null) {
 			return quests;
 		}
 
-		for (int i = 0; i < list.tagCount(); i++) {
+		for (int i = 0; i < list.size(); i++) {
 			DailyQuest quest = new DailyQuest();
-			quest.readNBT(list.getCompoundTagAt(i));
+			quest.readNBT(list.getCompound(i));
 			quests.add(quest);
 		}
 
 		return quests;
 	}
-
-	public static DailiesWorldData get(World world) {
-		DailiesWorldData data = (DailiesWorldData) world.loadData(DailiesWorldData.class, MODNAME);
-		if (data == null) {
-			data = new DailiesWorldData();
-			world.setData(MODNAME, data);
-		}
-		return data;
-	}
-
 }

@@ -1,9 +1,9 @@
 package net.torocraft.dailies;
 
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.inventory.Container;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.inventory.container.Container;
 import net.minecraft.inventory.IInventory;
-import net.minecraft.inventory.Slot;
+import net.minecraft.inventory.container.Slot;
 import net.minecraft.item.ItemStack;
 import net.minecraft.world.World;
 
@@ -37,13 +37,15 @@ public class DailiesContainer extends Container {
 	private final int OUTPUT_ITEM_YPOS = 17;
 	
 	private final BaileyInventory baileyInventory;
-	
-	public DailiesContainer(EntityPlayer player, BaileyInventory baileyInventory, World world) {
+
+	public DailiesContainer(PlayerEntity player, BaileyInventory baileyInventory, World world) {
+		//CHECK THIS LATER
+		super(null, 0);
 		this.baileyInventory = baileyInventory;
 		this.baileyInventory.openInventory(player);
 		
 		for (int x = 0; x < HOTBAR_SLOT_COUNT; x++) {
-			addSlotToContainer(new Slot(player.inventory, x, HOTBAR_XPOS + SLOT_X_SPACING * x, HOTBAR_YPOS));
+			addSlot(new Slot(player.inventory, x, HOTBAR_XPOS + SLOT_X_SPACING * x, HOTBAR_YPOS));
 		}
 		
 		for (int x = 0; x < INVENTORY_ROW_COUNT; x++) {
@@ -51,7 +53,7 @@ public class DailiesContainer extends Container {
 				int slotNumber = HOTBAR_SLOT_COUNT + x * INVENTORY_COLUMN_COUNT + y;
 				int xPos = INVENTORY_XPOS + y * SLOT_X_SPACING;
 				int yPos = INVENTORY_YPOS + x * SLOT_Y_SPACING;
-				addSlotToContainer(new Slot(player.inventory, slotNumber,  xPos, yPos));
+				addSlot(new Slot(player.inventory, slotNumber,  xPos, yPos));
 			}
 		}
 		
@@ -60,15 +62,16 @@ public class DailiesContainer extends Container {
 				int slotNumber = x * SUBMIT_ITEM_COLUMN_COUNT + y;
 				int xPos = SUBMIT_ITEM_XPOS + y * SLOT_X_SPACING;
 				int yPos = SUBMIT_ITEM_YPOS + x * SLOT_Y_SPACING;
-				addSlotToContainer(new Slot(baileyInventory, slotNumber, xPos, yPos));
+				addSlot(new Slot(baileyInventory, slotNumber, xPos, yPos));
 			}
 		}
-		
-		addSlotToContainer(new SlotOutput(baileyInventory, 3, OUTPUT_ITEM_XPOS, OUTPUT_ITEM_YPOS));
+
+
+		addSlot(new SlotOutput(baileyInventory, 3, OUTPUT_ITEM_XPOS, OUTPUT_ITEM_YPOS));
 	}
 	
 	@Override
-	public ItemStack transferStackInSlot(EntityPlayer player, int index) {
+	public ItemStack transferStackInSlot(PlayerEntity player, int index) {
 		Slot slot = (Slot)this.inventorySlots.get(index);
         if(slot == null || !slot.getHasStack()) {
         	return ItemStack.EMPTY;
@@ -116,12 +119,12 @@ public class DailiesContainer extends Container {
 	}
 	
 	@Override
-	public boolean canInteractWith(EntityPlayer playerIn) {
+	public boolean canInteractWith(PlayerEntity playerIn) {
 		return true;
 	}
 	
 	@Override
-	public void onContainerClosed(EntityPlayer player) {
+	public void onContainerClosed(PlayerEntity player) {
 		super.onContainerClosed(player);
 		this.baileyInventory.closeInventory(player);
 	}
@@ -131,7 +134,7 @@ public class DailiesContainer extends Container {
 		super.detectAndSendChanges();
 		this.baileyInventory.checkForReward();
 	}
-	
+
 	public class SlotOutput extends Slot {
 
 		public SlotOutput(IInventory inventoryIn, int index, int xPosition, int yPosition) {

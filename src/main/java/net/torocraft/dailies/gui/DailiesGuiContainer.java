@@ -1,5 +1,5 @@
 package net.torocraft.dailies.gui;
-
+/*
 import java.awt.Color;
 
 import net.minecraft.client.Minecraft;
@@ -60,3 +60,5 @@ public class DailiesGuiContainer extends GuiContainer {
         this.renderHoveredToolTip(mouseX, mouseY);
     }
 }
+*/
+

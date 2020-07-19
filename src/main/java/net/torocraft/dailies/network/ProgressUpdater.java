@@ -1,13 +1,13 @@
 package net.torocraft.dailies.network;
 
-import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.PlayerEntity;
 import net.torocraft.dailies.DailiesException;
 
 public class ProgressUpdater {
 
 	private static final String path_progress = "/progress/";
 	private static final String requestMethod = "POST";
-	private final EntityPlayer player;
+	private final PlayerEntity player;
 	private final String username;
 	private final String questId;
 	private final int progress;
@@ -15,9 +15,9 @@ public class ProgressUpdater {
 	private DailiesRequest request;
 	private DailiesTransmitter transmitter;
 	
-	public ProgressUpdater(EntityPlayer player, String questId, int progress) {
+	public ProgressUpdater(PlayerEntity player, String questId, int progress) {
 		this.player = player;
-		this.username = player.getName();
+		this.username = player.getName().toString();
 		this.questId = questId;
 		this.progress = progress;
 	}

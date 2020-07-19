@@ -1,5 +1,5 @@
 package net.torocraft.dailies.gui;
-
+/*
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -7,6 +7,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
 import org.lwjgl.input.Mouse;
 
 import net.minecraft.client.Minecraft;
@@ -29,7 +31,7 @@ import net.torocraft.dailies.messages.RequestAcceptedQuests;
 import net.torocraft.dailies.messages.RequestAvailableQuests;
 import net.torocraft.dailies.quests.DailyQuest;
 
-@SideOnly(Side.CLIENT)
+@OnlyIn(Dist.CLIENT)
 public class GuiDailyProgressIndicators {
 
 	private static final int MOUSE_COOLDOWN = 200;
@@ -250,3 +252,4 @@ public class GuiDailyProgressIndicators {
 		this.quest = quest;
 	}
 }
+*/

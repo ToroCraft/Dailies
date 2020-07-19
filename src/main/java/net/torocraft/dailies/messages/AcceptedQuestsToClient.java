@@ -1,5 +1,5 @@
 package net.torocraft.dailies.messages;
-
+/*
 import java.util.HashSet;
 import java.util.Set;
 
@@ -92,3 +92,4 @@ public class AcceptedQuestsToClient implements IMessage {
 		}
 	}
 }
+*/

@@ -1,18 +1,18 @@
 package net.torocraft.dailies.quests;
 
-import net.minecraft.entity.item.EntityItem;
-import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.item.ItemEntity;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 
 public class Reward extends TypedInteger {
 
-	public void reward(EntityPlayer player) {
+	public void reward(PlayerEntity player) {
 		ItemStack stack = new ItemStack(Item.getItemById(type));
 		for (int i = 0; i < quantity; i++) {
-			EntityItem dropItem = new EntityItem(player.world, player.posX, player.posY, player.posZ, stack.copy());
+			ItemEntity dropItem = new ItemEntity(player.world, player.getPosX(), player.getPosY(), player.getPosZ(), stack.copy());
 			dropItem.setNoPickupDelay();
-			player.world.spawnEntity(dropItem);
+			player.world.addEntity(dropItem);
 		}
 	}
 

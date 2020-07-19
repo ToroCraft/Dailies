@@ -1,5 +1,5 @@
 package net.torocraft.dailies.messages;
-
+/*
 import io.netty.buffer.ByteBuf;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.world.WorldServer;
@@ -77,3 +77,4 @@ public class AbandonQuestRequest implements IMessage {
 		}
 	}
 }
+*/

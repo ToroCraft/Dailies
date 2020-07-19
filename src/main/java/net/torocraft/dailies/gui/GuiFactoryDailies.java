@@ -1,9 +1,9 @@
 package net.torocraft.dailies.gui;
-
+/*
 import java.util.Set;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiScreen;
+import net.minecraft.client.gui.
 import net.minecraftforge.fml.client.IModGuiFactory;
 
 public class GuiFactoryDailies implements IModGuiFactory {
@@ -28,3 +28,4 @@ public class GuiFactoryDailies implements IModGuiFactory {
 		return new GuiConfigDailies(parentScreen);
 	}
 }
+ */

@@ -5,14 +5,14 @@ import java.util.Set;
 
 import com.google.gson.GsonBuilder;
 
-import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.PlayerEntity;
 import net.torocraft.dailies.DailiesException;
 import net.torocraft.dailies.quests.DailyQuest;
 
 public class QuestInventoryFetcher {
 	
 	private static final String requestMethod = "POST";
-	private final EntityPlayer player;
+	private final PlayerEntity player;
 	private final String username;
 	private String path;
 	private DailiesRequest request;
@@ -20,9 +20,9 @@ public class QuestInventoryFetcher {
 	private Set<DailyQuest> quests;
 	private DailiesTransmitter transmitter;
 	
-	public QuestInventoryFetcher(EntityPlayer player) {
+	public QuestInventoryFetcher(PlayerEntity player) {
 		this.player = player;
-		this.username = player.getName();
+		this.username = player.getName().getString();
 	}
 
 	public Set<DailyQuest> getQuestInventory() throws DailiesException {

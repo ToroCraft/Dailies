@@ -1,12 +1,12 @@
 package net.torocraft.dailies.gui;
-
+/*
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.world.World;
-import net.minecraftforge.fml.common.network.IGuiHandler;
+import net.minecraftforge.fml.network.simple.IGuiHandler;
 import net.torocraft.dailies.BaileyInventory;
 import net.torocraft.dailies.DailiesContainer;
 
-public class DailiesGuiHandler implements IGuiHandler {
+public class DailiesGuiHandler implements IGuiHandler{
 	
 	private static final int BAILEY_GUI_ID = 69;
 	public static int getGuiID() {return BAILEY_GUI_ID;}
@@ -27,3 +27,5 @@ public class DailiesGuiHandler implements IGuiHandler {
 		return null;
 	}
 }
+
+ */

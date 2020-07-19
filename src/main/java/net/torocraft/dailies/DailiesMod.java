@@ -1,51 +1,70 @@
 package net.torocraft.dailies;
 
+import net.minecraft.entity.ai.attributes.*;
+import net.minecraft.entity.merchant.villager.VillagerEntity;
+import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.eventbus.api.EventPriority;
+import net.minecraftforge.eventbus.api.IEventBus;
+import net.minecraftforge.fml.DistExecutor;
+import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.common.Mod.EventHandler;
-import net.minecraftforge.fml.common.Mod.Instance;
-import net.minecraftforge.fml.common.ModMetadata;
-import net.minecraftforge.fml.common.SidedProxy;
-import net.minecraftforge.fml.common.event.FMLInitializationEvent;
-import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
-import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
-import net.minecraftforge.fml.common.event.FMLServerStartingEvent;
-import net.torocraft.dailies.config.ConfigurationHandler;
+import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
+import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
+import net.torocraft.dailies.capabilities.DailiesCapabilityProvider;
+import net.torocraft.dailies.entities.EntityRegistryHandler;
+import net.torocraft.dailies.entities.render.RenderRegistryHandler;
+import net.torocraft.dailies.events.Events;
+import net.torocraft.dailies.quests.DailyQuest;
+import net.torocraft.dailies.config.Config;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
-@Mod(modid = DailiesMod.MODID, guiFactory = "net.torocraft.dailies.gui.GuiFactoryDailies")
+@Mod(DailiesMod.MODID)
 public class DailiesMod {
 
 	public static final boolean devMode = false;
 	public static final String MODID = "dailies";
 	public static final Integer MAX_QUESTS_ACCEPTABLE = 10;
-	public static ModMetadata metadata;
 
-	@Instance(value = DailiesMod.MODID)
-	public static DailiesMod instance;
+	private static final Logger LOGGER = LogManager.getLogger(MODID + " Event Subscriber");
 
-	@SidedProxy(clientSide = "net.torocraft.dailies.ClientProxy", serverSide = "net.torocraft.dailies.ServerProxy")
-	public static CommonProxy proxy;
+	//public static GuiDailyProgressIndicators dailyGui = new GuiDailyProgressIndicators();
 
-	@EventHandler
-	public void serverLoad(FMLServerStartingEvent e) {
-		e.registerServerCommand(new DailiesCommand());
+	public DailiesMod() {
+		ModLoadingContext.get().registerConfig(net.minecraftforge.fml.config.ModConfig.Type.CLIENT, Config.CLIENT_CONFIG_SPEC);
+		IEventBus modEventBus = FMLJavaModLoadingContext.get().getModEventBus();
+		EntityRegistryHandler.init();
+		MinecraftForge.EVENT_BUS.register(Events.class);
+		FMLJavaModLoadingContext.get().getModEventBus().addListener(this::commonStart);
+		MinecraftForge.EVENT_BUS.register(this);
+		DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> clientStart(modEventBus));
 	}
 
-	@EventHandler
-	public void preInit(FMLPreInitializationEvent e) {
-		metadata = e.getModMetadata();
-		proxy.preInit(e);
-		ConfigurationHandler.init(e.getSuggestedConfigurationFile());
-		MinecraftForge.EVENT_BUS.register(new ConfigurationHandler());
+	private static void clientStart(IEventBus modEventBus) {
+		modEventBus.addListener(EventPriority.NORMAL, false, FMLClientSetupEvent.class, event -> {
+			RenderRegistryHandler.init();
+			//MinecraftForge.EVENT_BUS.register(dailyGui);
+		});
 	}
 
-	@EventHandler
-	public void init(FMLInitializationEvent e) {
-		proxy.init(e);
+	private void commonStart(FMLClientSetupEvent event) {
+		DailiesCapabilityProvider.register();
+		Config.apply();
+		//Fixes a null attribute map issue. Will need to rework later
+		GlobalEntityTypeAttributes.put(EntityRegistryHandler.BAILEY.get(), VillagerEntity.func_234551_eU_().func_233813_a_());
+		//DailiesPacketHandler.init();
+
+		//modEventBus.addListener(EventPriority.NORMAL, false, FMLServerStartingEvent.class, event -> {
+			//NetworkRegistry.INSTANCE.registerGuiHandler(DailiesMod.instance, new DailiesGuiHandler());
+			//MapGenStructureIO.registerStructureComponent(BaileysShopVillagePiece.class, "baileyshop");
+			//VillagerRegistry.instance().registerVillageCreationHandler(new VillageHandlerBailey());
+		//});
 	}
 
-	@EventHandler
-	public void postInit(FMLPostInitializationEvent e) {
-		proxy.postInit(e);
+
+
+	public static void displayQuestProgress(DailyQuest quest) {
+		//dailyGui.setQuest(quest);
 	}
 }

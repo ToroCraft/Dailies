@@ -1,6 +1,6 @@
 package net.torocraft.dailies.messages;
 
-import java.util.HashSet;
+/*import java.util.HashSet;
 import java.util.Set;
 
 import io.netty.buffer.ByteBuf;
@@ -74,4 +74,4 @@ public class RequestAcceptedQuests implements IMessage {
 			return set != null && set.size() > 0;
 		}
 	}
-}
+}*/
