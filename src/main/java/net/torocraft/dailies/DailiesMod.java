@@ -1,6 +1,7 @@
 package net.torocraft.dailies;
 
-import net.minecraft.entity.ai.attributes.*;
+import java.util.Set;
+import net.minecraft.entity.ai.attributes.GlobalEntityTypeAttributes;
 import net.minecraft.entity.merchant.villager.VillagerEntity;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.common.MinecraftForge;
@@ -12,11 +13,11 @@ import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.torocraft.dailies.capabilities.DailiesCapabilityProvider;
+import net.torocraft.dailies.config.Config;
 import net.torocraft.dailies.entities.EntityRegistryHandler;
 import net.torocraft.dailies.entities.render.RenderRegistryHandler;
 import net.torocraft.dailies.events.Events;
 import net.torocraft.dailies.quests.DailyQuest;
-import net.torocraft.dailies.config.Config;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -26,6 +27,9 @@ public class DailiesMod {
 	public static final boolean devMode = false;
 	public static final String MODID = "dailies";
 	public static final Integer MAX_QUESTS_ACCEPTABLE = 10;
+
+	public static Set<DailyQuest> availableQuests;
+	public static Set<DailyQuest> acceptedQuests;
 
 	private static final Logger LOGGER = LogManager.getLogger(MODID + " Event Subscriber");
 
