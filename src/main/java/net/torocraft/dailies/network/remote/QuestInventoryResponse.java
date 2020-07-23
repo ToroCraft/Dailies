@@ -1,7 +1,6 @@
-package net.torocraft.dailies.network;
+package net.torocraft.dailies.network.remote;
 
 import java.util.Set;
-
 import net.torocraft.dailies.quests.DailyQuest;
 
 public class QuestInventoryResponse extends DailiesResponse {

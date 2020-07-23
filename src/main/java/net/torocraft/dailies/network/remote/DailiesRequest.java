@@ -1,10 +1,8 @@
-package net.torocraft.dailies.network;
+package net.torocraft.dailies.network.remote;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-
 import net.minecraft.entity.player.PlayerEntity;
-import net.torocraft.dailies.DailiesMod;
 
 public class DailiesRequest {
 	

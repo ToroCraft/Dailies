@@ -1,10 +1,8 @@
-package net.torocraft.dailies.network;
-
-import java.util.HashSet;
-import java.util.Set;
+package net.torocraft.dailies.network.remote;
 
 import com.google.gson.GsonBuilder;
-
+import java.util.HashSet;
+import java.util.Set;
 import net.minecraft.entity.player.PlayerEntity;
 import net.torocraft.dailies.DailiesException;
 import net.torocraft.dailies.quests.DailyQuest;

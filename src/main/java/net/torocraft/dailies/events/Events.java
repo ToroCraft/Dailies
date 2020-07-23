@@ -1,10 +1,10 @@
 package net.torocraft.dailies.events;
 
+import static net.torocraft.dailies.DailiesMod.MODID;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
@@ -22,15 +22,13 @@ import net.torocraft.dailies.DailiesException;
 import net.torocraft.dailies.capabilities.DailiesCapabilityProvider;
 import net.torocraft.dailies.capabilities.IDailiesCapability;
 import net.torocraft.dailies.commands.DailiesCommand;
-import net.torocraft.dailies.network.DailiesNetworkException;
-import net.torocraft.dailies.network.QuestInventoryFetcher;
+import net.torocraft.dailies.config.Config;
+import net.torocraft.dailies.network.remote.DailiesNetworkException;
+import net.torocraft.dailies.network.remote.QuestInventoryFetcher;
 import net.torocraft.dailies.quests.DailyQuest;
 import net.torocraft.dailies.quests.RandomQuestGenerator;
-import net.torocraft.dailies.config.Config;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
-import static net.torocraft.dailies.DailiesMod.MODID;
 
 @Mod.EventBusSubscriber(bus=Mod.EventBusSubscriber.Bus.MOD)
 public class Events {

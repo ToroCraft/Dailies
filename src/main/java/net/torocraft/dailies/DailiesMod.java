@@ -17,6 +17,7 @@ import net.torocraft.dailies.config.Config;
 import net.torocraft.dailies.entities.EntityRegistryHandler;
 import net.torocraft.dailies.entities.render.RenderRegistryHandler;
 import net.torocraft.dailies.events.Events;
+import net.torocraft.dailies.network.PacketHandler;
 import net.torocraft.dailies.quests.DailyQuest;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -57,7 +58,7 @@ public class DailiesMod {
 		Config.apply();
 		//Fixes a null attribute map issue. Will need to rework later
 		GlobalEntityTypeAttributes.put(EntityRegistryHandler.BAILEY.get(), VillagerEntity.func_234551_eU_().func_233813_a_());
-		//DailiesPacketHandler.init();
+		PacketHandler.init();
 
 		//modEventBus.addListener(EventPriority.NORMAL, false, FMLServerStartingEvent.class, event -> {
 			//NetworkRegistry.INSTANCE.registerGuiHandler(DailiesMod.instance, new DailiesGuiHandler());

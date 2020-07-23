@@ -4,14 +4,16 @@ import java.util.Calendar;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.Callable;
-
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.nbt.ListNBT;
 import net.torocraft.dailies.DailiesException;
 import net.torocraft.dailies.DailiesMod;
-import net.torocraft.dailies.network.QuestActionHandler;
+import net.torocraft.dailies.network.PacketHandler;
+import net.torocraft.dailies.network.packets.GetQuestsPacket.QuestsFilter;
+import net.torocraft.dailies.network.remote.QuestActionHandler;
 import net.torocraft.dailies.quests.DailyQuest;
 
 public class DailiesCapabilityImpl implements IDailiesCapability {
@@ -46,7 +48,9 @@ public class DailiesCapabilityImpl implements IDailiesCapability {
 	}
 
 	@Override
-	public void hunt(PlayerEntity player, LivingEntity mob) {
+	public void hunt(PlayerEntity playerIn, LivingEntity mob) {
+		ServerPlayerEntity player = (ServerPlayerEntity) playerIn;
+
 		DailyQuest quest = huntNextQuest(player, mob);
 
 		if (quest == null) {
@@ -57,10 +61,9 @@ public class DailiesCapabilityImpl implements IDailiesCapability {
 			quest.reward(player);
 			completeQuest(player, quest);
 		} else {
-			//DailiesPacketHandler.INSTANCE.sendTo(new QuestProgressToClient(quest), (PlayerEntity)player);
+			PacketHandler.questProgressUpdate(player, quest);
 		}
-
-		//DailiesPacketHandler.INSTANCE.sendTo(new AcceptedQuestsToClient(getAcceptedQuests()), (EntityPlayerMP)player);
+		PacketHandler.questsUpdate(player, QuestsFilter.ACCEPTED, getAcceptedQuests());
 	}
 
 	private DailyQuest huntNextQuest(PlayerEntity player, LivingEntity mob) {
@@ -100,7 +103,7 @@ public class DailiesCapabilityImpl implements IDailiesCapability {
 		completedQuests = readQuestList(b, "completedQuests");
 	}
 
-	private void writeQuestsList(CompoundNBT c, String key, Set<DailyQuest> quests) {
+	public static void writeQuestsList(CompoundNBT c, String key, Set<DailyQuest> quests) {
 		ListNBT list = new ListNBT();
 		if (quests != null) {
 			for (DailyQuest quest : quests) {
@@ -110,7 +113,7 @@ public class DailiesCapabilityImpl implements IDailiesCapability {
 		c.put(key, list);
 	}
 
-	private Set<DailyQuest> readQuestList(CompoundNBT b, String key) {
+	public static Set<DailyQuest> readQuestList(CompoundNBT b, String key) {
 		Set<DailyQuest> quests = new HashSet<DailyQuest>();
 		ListNBT list = (ListNBT) b.get(key);
 

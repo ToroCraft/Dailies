@@ -1,18 +1,13 @@
 package net.torocraft.dailies.quests;
 
-import net.minecraft.client.resources.I18n;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityClassification;
-import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.item.ItemEntity;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.nbt.INBT;
 import net.torocraft.dailies.DailiesException;
-import net.torocraft.dailies.network.ProgressUpdater;
+import net.torocraft.dailies.network.remote.ProgressUpdater;
 
 public class DailyQuest {
 
@@ -212,6 +207,11 @@ public class DailyQuest {
 		} else if (!id.equals(other.id))
 			return false;
 		return true;
+	}
+
+	@Override
+	public String toString() {
+		return getDisplayName();
 	}
 
 	private boolean isSet(String s) {
