@@ -20,10 +20,11 @@ import net.minecraft.world.World;
 import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.common.util.NonNullConsumer;
 import net.minecraftforge.fml.network.NetworkHooks;
+import net.torocraft.dailies.BaileyInventory;
+import net.torocraft.dailies.DailiesContainer;
 import net.torocraft.dailies.capabilities.DailiesCapabilityProvider;
 import net.torocraft.dailies.capabilities.IDailiesCapability;
 import net.torocraft.dailies.entities.EntityRegistryHandler;
-import net.torocraft.dailies.gui.BaileyInventoryContainer;
 import net.torocraft.dailies.quests.DailyQuest;
 
 import javax.annotation.Nonnull;
@@ -41,14 +42,15 @@ public class DailiesCommand {
 
     public static void register(CommandDispatcher<CommandSource> dispatcher) {
         dispatcher.register(Commands.literal("spawn")
-                .then(Commands.literal("bailey").executes((y) -> spawnBailey(y.getSource()))));
+                .then(Commands.literal("bailey").executes((c) -> spawnBailey(c.getSource()))));
 
         dispatcher.register(Commands.literal("dailies")
-                .then(Commands.literal("list").executes((y) -> listDailyQuests(y.getSource())))
+                .then(Commands.literal("list").executes((c) -> listDailyQuests(c.getSource())))
                 .then(Commands.literal("accept")
                         .then(Commands.argument("Quest Number", new QuestNumberArgument()).executes((a) -> acceptQuest(a.getSource(), a.getArgument("Quest Number", Integer.class)))))
                 .then(Commands.literal("abandon")
                         .then(Commands.argument("Quest Number", new QuestNumberArgument()).executes((a) -> abandonQuest(a.getSource(), a.getArgument("Quest Number", Integer.class)))))
+                .then(Commands.literal("gui").executes((c) -> openBaileyGui(c.getSource())))
         );
     }
 
@@ -177,21 +179,23 @@ public class DailiesCommand {
         return Integer.toString(index);
     }
 
-    private void openBaileyGui(CommandSource source) throws CommandSyntaxException {
+    private static int openBaileyGui(CommandSource source) throws CommandSyntaxException {
         World world = source.getWorld();
 
         if(!world.isRemote()) {
             ServerPlayerEntity player = source.asPlayer();
-            NetworkHooks.openGui((ServerPlayerEntity) player, new INamedContainerProvider() {
+            NetworkHooks.openGui(player, new INamedContainerProvider() {
                 @Override
                 public ITextComponent getDisplayName()
                 { return new TranslationTextComponent("Bailey GUI"); }
 
                 @Override
                 public Container createMenu(int id, PlayerInventory inventory, PlayerEntity player)
-                { return new BaileyInventoryContainer(id, inventory, player); }
+                { return new DailiesContainer(id, inventory); }
             });
         }
+
+        return 0;
     }
 
     /* Command Argument Classes */

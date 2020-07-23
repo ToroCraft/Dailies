@@ -1,13 +1,17 @@
 package net.torocraft.dailies;
 
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.inventory.container.Container;
 import net.minecraft.inventory.IInventory;
+import net.minecraft.inventory.container.ContainerType;
 import net.minecraft.inventory.container.Slot;
 import net.minecraft.item.ItemStack;
-import net.minecraft.world.World;
+import net.minecraft.util.ResourceLocation;
 
 public class DailiesContainer extends Container {
+
+	public static final ContainerType<DailiesContainer> CT_DAILIESCONTAINER = register(DailiesContainer::new, "ct_dailiescontainer");
 
 	private final int HOTBAR_SLOT_COUNT = 9;
 	private final int INVENTORY_ROW_COUNT = 3;
@@ -38,14 +42,17 @@ public class DailiesContainer extends Container {
 	
 	private final BaileyInventory baileyInventory;
 
-	public DailiesContainer(PlayerEntity player, BaileyInventory baileyInventory, World world) {
-		//CHECK THIS LATER
-		super(null, 0);
+	public DailiesContainer(int id, PlayerInventory playerInventory){
+		this(id, playerInventory, new BaileyInventory());
+	}
+
+	public DailiesContainer(int id, PlayerInventory playerInventory, BaileyInventory baileyInventory) {
+		super(DailiesContainer.CT_DAILIESCONTAINER, id);
 		this.baileyInventory = baileyInventory;
-		this.baileyInventory.openInventory(player);
+		this.baileyInventory.openInventory(playerInventory.player);
 		
 		for (int x = 0; x < HOTBAR_SLOT_COUNT; x++) {
-			addSlot(new Slot(player.inventory, x, HOTBAR_XPOS + SLOT_X_SPACING * x, HOTBAR_YPOS));
+			addSlot(new Slot(playerInventory.player.inventory, x, HOTBAR_XPOS + SLOT_X_SPACING * x, HOTBAR_YPOS));
 		}
 		
 		for (int x = 0; x < INVENTORY_ROW_COUNT; x++) {
@@ -53,7 +60,7 @@ public class DailiesContainer extends Container {
 				int slotNumber = HOTBAR_SLOT_COUNT + x * INVENTORY_COLUMN_COUNT + y;
 				int xPos = INVENTORY_XPOS + y * SLOT_X_SPACING;
 				int yPos = INVENTORY_YPOS + x * SLOT_Y_SPACING;
-				addSlot(new Slot(player.inventory, slotNumber,  xPos, yPos));
+				addSlot(new Slot(playerInventory.player.inventory, slotNumber,  xPos, yPos));
 			}
 		}
 		
@@ -65,7 +72,6 @@ public class DailiesContainer extends Container {
 				addSlot(new Slot(baileyInventory, slotNumber, xPos, yPos));
 			}
 		}
-
 
 		addSlot(new SlotOutput(baileyInventory, 3, OUTPUT_ITEM_XPOS, OUTPUT_ITEM_YPOS));
 	}
@@ -145,5 +151,12 @@ public class DailiesContainer extends Container {
 		public boolean isItemValid(ItemStack stack) {
 			return false;
 		}
+	}
+
+	private static <T extends Container> ContainerType<T> register(ContainerType.IFactory<T> factory, String regname)
+	{
+		ContainerType<T> container_type = new ContainerType<T>(factory);
+		container_type.setRegistryName(new ResourceLocation(DailiesMod.MODID, regname));
+		return container_type;
 	}
 }

@@ -26,7 +26,6 @@ import net.torocraft.dailies.network.DailiesNetworkException;
 import net.torocraft.dailies.network.QuestInventoryFetcher;
 import net.torocraft.dailies.quests.DailyQuest;
 import net.torocraft.dailies.quests.RandomQuestGenerator;
-import net.torocraft.dailies.config.Config;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -172,10 +171,5 @@ public class Events {
 			player.sendMessage(e.getMessageAsTextComponent(), player.getUniqueID());
 		}
 		return quests;
-	}
-
-	@SubscribeEvent
-	public static void onConfigLoad(net.minecraftforge.fml.config.ModConfig.Loading event) {
-		Config.onLoad(event.getConfig());
 	}
 }

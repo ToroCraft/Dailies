@@ -1,5 +1,6 @@
 package net.torocraft.dailies;
 
+import net.minecraft.client.Minecraft;
 import net.minecraft.entity.ai.attributes.*;
 import net.minecraft.entity.merchant.villager.VillagerEntity;
 import net.minecraftforge.api.distmarker.Dist;
@@ -15,6 +16,7 @@ import net.torocraft.dailies.capabilities.DailiesCapabilityProvider;
 import net.torocraft.dailies.entities.EntityRegistryHandler;
 import net.torocraft.dailies.entities.render.RenderRegistryHandler;
 import net.torocraft.dailies.events.Events;
+import net.torocraft.dailies.events.ForgeEvents;
 import net.torocraft.dailies.quests.DailyQuest;
 import net.torocraft.dailies.config.Config;
 import org.apache.logging.log4j.LogManager;
@@ -36,6 +38,7 @@ public class DailiesMod {
 		IEventBus modEventBus = FMLJavaModLoadingContext.get().getModEventBus();
 		EntityRegistryHandler.init();
 		MinecraftForge.EVENT_BUS.register(Events.class);
+		MinecraftForge.EVENT_BUS.register(ForgeEvents.class);
 		FMLJavaModLoadingContext.get().getModEventBus().addListener(this::commonStart);
 		MinecraftForge.EVENT_BUS.register(this);
 		DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> clientStart(modEventBus));

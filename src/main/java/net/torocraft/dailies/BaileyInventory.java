@@ -8,6 +8,7 @@ import net.minecraft.inventory.IInventory;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.JsonToNBT;
+import net.minecraftforge.common.util.LazyOptional;
 import net.torocraft.dailies.capabilities.DailiesCapabilityProvider;
 import net.torocraft.dailies.capabilities.IDailiesCapability;
 import net.torocraft.dailies.network.ProgressUpdater;
@@ -27,7 +28,7 @@ public class BaileyInventory implements IInventory {
 	private int lastModifiedIndex = 0;
 	
 	private PlayerEntity player = null;
-	private IDailiesCapability playerDailiesCapability = null;
+	private LazyOptional<IDailiesCapability> playerDailiesCapability;
 	private Set<DailyQuest> acceptedQuests;
 	
 	public BaileyInventory() {
@@ -115,7 +116,7 @@ public class BaileyInventory implements IInventory {
 	@Override
 	public void openInventory(PlayerEntity player) {
 		this.player = player;
-		this.playerDailiesCapability = (IDailiesCapability) player.getCapability(DailiesCapabilityProvider.DAILIES_CAPABILITY, null);
+		this.playerDailiesCapability = player.getCapability(DailiesCapabilityProvider.DAILIES_CAPABILITY, null);
 	}
 
 	@Override
@@ -168,8 +169,8 @@ public class BaileyInventory implements IInventory {
 		}
 		
 		lastModifiedStack = this.itemStacks[lastModifiedIndex];
-		acceptedQuests = playerDailiesCapability.getAcceptedQuests();
-		
+		playerDailiesCapability.ifPresent((cap) -> acceptedQuests = cap.getAcceptedQuests());
+
 		if (DailiesMod.devMode) {
 			logItemStack(lastModifiedStack);
 		}
@@ -219,7 +220,7 @@ public class BaileyInventory implements IInventory {
 		
 		if(quest.isComplete()) {
 			quest.rewardFulfilled = true;
-			playerDailiesCapability.completeQuest(player, quest);
+			playerDailiesCapability.ifPresent((cap) -> cap.completeQuest(player, quest));
 			buildReward(quest.reward);
 		} else {
 			syncProgress(quest.id, quest.progress);
@@ -270,7 +271,7 @@ public class BaileyInventory implements IInventory {
 	}
 	
 	private void updateClient(final PlayerEntity player) {
-		playerDailiesCapability.sendAcceptedQuestsToClient(player);
+		playerDailiesCapability.ifPresent((cap) -> cap.sendAcceptedQuestsToClient(player));
 	}
 	
 	private boolean rewardStackExists() {
