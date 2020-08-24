@@ -1,4 +1,4 @@
-package net.torocraft.dailies.network;
+package net.torocraft.dailies.network.remote;
 
 public class DailiesResponse {
 	

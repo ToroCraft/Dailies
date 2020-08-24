@@ -11,7 +11,7 @@ import net.minecraft.util.ResourceLocation;
 
 public class DailiesContainer extends Container {
 
-	public static final ContainerType<DailiesContainer> CT_DAILIESCONTAINER = register(DailiesContainer::new, "ct_dailiescontainer");
+	public static final ContainerType<DailiesContainer> CT_DAILIESCONTAINER = register(DailiesContainer::new, "ct-dailiescontainer");
 
 	private final int HOTBAR_SLOT_COUNT = 9;
 	private final int INVENTORY_ROW_COUNT = 3;

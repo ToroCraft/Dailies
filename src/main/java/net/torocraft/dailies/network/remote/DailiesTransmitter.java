@@ -1,18 +1,15 @@
-package net.torocraft.dailies.network;
+package net.torocraft.dailies.network.remote;
 
+import com.google.gson.GsonBuilder;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.ProtocolException;
 import java.net.URL;
-
 import net.torocraft.dailies.DailiesException;
 import net.torocraft.dailies.DailiesMod;
-
 import org.apache.commons.io.IOUtils;
-
-import com.google.gson.GsonBuilder;
 
 public class DailiesTransmitter {
 
@@ -101,7 +98,7 @@ public class DailiesTransmitter {
 	private void writeRequestToConnection() throws IOException {
 		if (conn.getRequestMethod().equals("POST")) {
 			conn.setDoOutput(true);
-			IOUtils.write(jsonRequest, conn.getOutputStream());
+			IOUtils.write(jsonRequest, conn.getOutputStream(), "utf8");
 		}
 	}
 	
@@ -118,7 +115,7 @@ public class DailiesTransmitter {
 	}
 	
 	private void getJsonResponseFromStream() throws IOException {
-		jsonResponse = IOUtils.toString(responseStream);
+		jsonResponse = IOUtils.toString(responseStream, "utf8");
 	}
 	
 	private void checkResponseForError() throws DailiesException {

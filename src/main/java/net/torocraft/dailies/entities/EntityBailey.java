@@ -11,7 +11,11 @@ import net.minecraft.entity.merchant.villager.VillagerData;
 import net.minecraft.entity.merchant.villager.VillagerEntity;
 import net.minecraft.entity.merchant.villager.VillagerProfession;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.entity.player.PlayerInventory;
+import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.entity.villager.IVillagerDataHolder;
+import net.minecraft.inventory.container.Container;
+import net.minecraft.inventory.container.INamedContainerProvider;
 import net.minecraft.item.MerchantOffer;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.pathfinding.PathNodeType;
@@ -21,10 +25,13 @@ import net.minecraft.util.ActionResultType;
 import net.minecraft.util.Hand;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.StringTextComponent;
+import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.IWorld;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.*;
+import net.minecraftforge.fml.network.NetworkHooks;
+import net.torocraft.dailies.DailiesContainer;
 
 import javax.annotation.Nullable;
 
@@ -65,8 +72,17 @@ public class EntityBailey extends VillagerEntity {
 	public ActionResultType func_230254_b_(PlayerEntity player, Hand hand) {
 		if (this.isAlive() && !this.isChild()) {
 			if (!this.world.isRemote) {
-				//player.openGui(DailiesMod.instance, DailiesGuiHandler.getGuiID(), this.world,
-				//player.getPosition().getX(), player.getPosition().getY(), player.getPosition().getZ());
+				NetworkHooks.openGui((ServerPlayerEntity)player, new INamedContainerProvider() {
+					@Override
+					public ITextComponent getDisplayName() {
+						return new TranslationTextComponent("Bailey's Dailies");
+					}
+
+					@Override
+					public Container createMenu(int id, PlayerInventory inventory, PlayerEntity player) {
+						return new DailiesContainer(id, inventory);
+					}
+				});
 			}
 
 			player.addStat(TALKED_TO_VILLAGER);

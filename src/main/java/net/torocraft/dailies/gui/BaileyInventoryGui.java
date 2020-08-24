@@ -1,6 +1,7 @@
 package net.torocraft.dailies.gui;
 
 import com.mojang.blaze3d.matrix.MatrixStack;
+import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.gui.screen.inventory.ContainerScreen;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
@@ -14,24 +15,35 @@ import net.torocraft.dailies.DailiesMod;
 @OnlyIn(Dist.CLIENT)
 public class BaileyInventoryGui extends ContainerScreen<DailiesContainer> {
 
-    ResourceLocation texture = new ResourceLocation(DailiesMod.MODID, "textures/gui/bailey_gui.png");
+    ResourceLocation texture = new ResourceLocation(DailiesMod.MODID + ":textures/gui/bailey_gui.png");
 
     private final PlayerEntity player;
+    private final int numRows;
 
     public BaileyInventoryGui(DailiesContainer screenContainer, PlayerInventory inv, ITextComponent titleIn) {
         super(screenContainer, inv, titleIn);
+        numRows = screenContainer.inventorySlots.size();
         player = inv.player;
     }
 
     @Override
-    public void func_230430_a_(MatrixStack p_230430_1_, int p_230430_2_, int p_230430_3_, float p_230430_4_) {
-        super.func_230430_a_(p_230430_1_, p_230430_2_, p_230430_3_, p_230430_4_);
+    public void render(MatrixStack matrixStack, int mouseX, int mouseY, float partialTicks) {
+        super.render(matrixStack, mouseX, mouseY, partialTicks);
+        getContainer().detectAndSendChanges();
     }
 
     @Override
-    protected void func_230450_a_(MatrixStack p_230450_1_, float p_230450_2_, int p_230450_3_, int p_230450_4_) {
-        this.field_230706_i_.getTextureManager().bindTexture(texture);
-        int i = this.guiLeft;
-        int j = this.guiTop;
+    protected void drawGuiContainerForegroundLayer(MatrixStack matrixStack, int x, int y) {
+        super.drawGuiContainerForegroundLayer(matrixStack, x, y);
+    }
+
+    @Override
+    protected void drawGuiContainerBackgroundLayer(MatrixStack matrixStack, float partialTicks, int x, int y) {
+        RenderSystem.color4f(1.0F, 1.0F, 1.0F, 1.0F);
+        this.minecraft.getTextureManager().bindTexture(texture);
+        int i = (this.width - this.xSize) / 2;
+        int j = (this.height - this.ySize) / 2;
+        this.blit(matrixStack, i, j, 0, 0, this.xSize, this.numRows * 18 + 17);
+        this.blit(matrixStack, i, j + this.numRows * 18 + 17, 0, 126, this.xSize, 96);
     }
 }

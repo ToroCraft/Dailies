@@ -25,6 +25,9 @@ import net.torocraft.dailies.DailiesContainer;
 import net.torocraft.dailies.capabilities.DailiesCapabilityProvider;
 import net.torocraft.dailies.capabilities.IDailiesCapability;
 import net.torocraft.dailies.entities.EntityRegistryHandler;
+import net.torocraft.dailies.gui.BaileyInventoryContainer;
+import net.torocraft.dailies.network.PacketHandler;
+import net.torocraft.dailies.network.packets.GetQuestsPacket.QuestsFilter;
 import net.torocraft.dailies.quests.DailyQuest;
 
 import javax.annotation.Nonnull;
@@ -41,6 +44,9 @@ public class DailiesCommand {
     }
 
     public static void register(CommandDispatcher<CommandSource> dispatcher) {
+        dispatcher.register(Commands.literal("test")
+                .then(Commands.literal("one").executes((y) -> test(y.getSource()))));
+
         dispatcher.register(Commands.literal("spawn")
                 .then(Commands.literal("bailey").executes((c) -> spawnBailey(c.getSource()))));
 
@@ -52,6 +58,11 @@ public class DailiesCommand {
                         .then(Commands.argument("Quest Number", new QuestNumberArgument()).executes((a) -> abandonQuest(a.getSource(), a.getArgument("Quest Number", Integer.class)))))
                 .then(Commands.literal("gui").executes((c) -> openBaileyGui(c.getSource())))
         );
+    }
+
+    private static int test(CommandSource source) {
+        PacketHandler.getQuests(QuestsFilter.AVAILABLE);
+        return 0;
     }
 
     private static int spawnBailey(CommandSource source) throws CommandSyntaxException {

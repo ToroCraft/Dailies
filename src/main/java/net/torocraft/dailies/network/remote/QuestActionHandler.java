@@ -1,4 +1,4 @@
-package net.torocraft.dailies.network;
+package net.torocraft.dailies.network.remote;
 
 import net.minecraft.entity.player.PlayerEntity;
 import net.torocraft.dailies.DailiesException;

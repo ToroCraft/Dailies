@@ -2,7 +2,6 @@ package net.torocraft.dailies;
 
 import java.util.Arrays;
 import java.util.Set;
-
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.item.Item;
@@ -11,7 +10,7 @@ import net.minecraft.nbt.JsonToNBT;
 import net.minecraftforge.common.util.LazyOptional;
 import net.torocraft.dailies.capabilities.DailiesCapabilityProvider;
 import net.torocraft.dailies.capabilities.IDailiesCapability;
-import net.torocraft.dailies.network.ProgressUpdater;
+import net.torocraft.dailies.network.remote.ProgressUpdater;
 import net.torocraft.dailies.quests.DailyQuest;
 import net.torocraft.dailies.quests.Reward;
 
