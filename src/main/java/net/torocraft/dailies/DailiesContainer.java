@@ -1,17 +1,14 @@
 package net.torocraft.dailies;
 
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.entity.player.PlayerInventory;
-import net.minecraft.inventory.container.Container;
-import net.minecraft.inventory.IInventory;
-import net.minecraft.inventory.container.ContainerType;
-import net.minecraft.inventory.container.Slot;
-import net.minecraft.item.ItemStack;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.Container;
+import net.minecraft.world.inventory.Slot;
+import net.minecraft.world.item.ItemStack;
+import net.torocraft.dailies.gui.MenuRegistryHandler;
 
-public class DailiesContainer extends Container {
-
-	public static final ContainerType<DailiesContainer> CT_DAILIESCONTAINER = register(DailiesContainer::new, "ct-dailiescontainer");
+public class DailiesContainer extends AbstractContainerMenu {
 
 	private final int HOTBAR_SLOT_COUNT = 9;
 	private final int INVENTORY_ROW_COUNT = 3;
@@ -42,28 +39,25 @@ public class DailiesContainer extends Container {
 	
 	private final BaileyInventory baileyInventory;
 
-	public DailiesContainer(int id, PlayerInventory playerInventory){
+	public DailiesContainer(int id, Inventory playerInventory) {
 		this(id, playerInventory, new BaileyInventory());
 	}
 
-	public DailiesContainer(int id, PlayerInventory playerInventory, BaileyInventory baileyInventory) {
-		super(DailiesContainer.CT_DAILIESCONTAINER, id);
+	public DailiesContainer(int id, Inventory playerInventory, BaileyInventory baileyInventory) {
+		super(MenuRegistryHandler.DAILIES_CONTAINER.get(), id);
 		this.baileyInventory = baileyInventory;
-		this.baileyInventory.openInventory(playerInventory.player);
-		
+		this.baileyInventory.startOpen(playerInventory.player);
 		for (int x = 0; x < HOTBAR_SLOT_COUNT; x++) {
-			addSlot(new Slot(playerInventory.player.inventory, x, HOTBAR_XPOS + SLOT_X_SPACING * x, HOTBAR_YPOS));
+			addSlot(new Slot(playerInventory, x, HOTBAR_XPOS + SLOT_X_SPACING * x, HOTBAR_YPOS));
 		}
-		
 		for (int x = 0; x < INVENTORY_ROW_COUNT; x++) {
 			for (int y = 0; y < INVENTORY_COLUMN_COUNT; y++) {
 				int slotNumber = HOTBAR_SLOT_COUNT + x * INVENTORY_COLUMN_COUNT + y;
 				int xPos = INVENTORY_XPOS + y * SLOT_X_SPACING;
 				int yPos = INVENTORY_YPOS + x * SLOT_Y_SPACING;
-				addSlot(new Slot(playerInventory.player.inventory, slotNumber,  xPos, yPos));
+				addSlot(new Slot(playerInventory, slotNumber,  xPos, yPos));
 			}
 		}
-		
 		for (int x = 0; x < SUBMIT_ITEM_ROW_COUNT; x++) {
 			for(int y = 0; y < SUBMIT_ITEM_COLUMN_COUNT; y++) {
 				int slotNumber = x * SUBMIT_ITEM_COLUMN_COUNT + y;
@@ -72,44 +66,39 @@ public class DailiesContainer extends Container {
 				addSlot(new Slot(baileyInventory, slotNumber, xPos, yPos));
 			}
 		}
-
 		addSlot(new SlotOutput(baileyInventory, 3, OUTPUT_ITEM_XPOS, OUTPUT_ITEM_YPOS));
 	}
 	
 	@Override
-	public ItemStack transferStackInSlot(PlayerEntity player, int index) {
-		Slot slot = (Slot)this.inventorySlots.get(index);
-        if(slot == null || !slot.getHasStack()) {
-        	return ItemStack.EMPTY;
-        }
-        
-        ItemStack sourceStack = slot.getStack();
-        ItemStack copyOfSourceStack = sourceStack.copy();
-        
-        if(indexIsForAVanillaSlot(index)) {
-        	if(!mergeItemStack(sourceStack, BAILEY_INVENTORY_FIRST_SLOT_INDEX, BAILEY_INVENTORY_FIRST_SLOT_INDEX + BAILEY_INVENTORY_SLOT_COUNT, false)) {
-        		return ItemStack.EMPTY;
-        	}
-        } else if(indexIsForABaileyInventorySlot(index) || indexIsForBaileyOutputSlot(index)) {
-        	if(!mergeStackFromBaileyToPlayer(sourceStack)) {
-        		return ItemStack.EMPTY;
-        	}
-        } else {
-        	return ItemStack.EMPTY;
-        }
-        
-        if(sourceStack.getCount() == 0) {
-        	slot.putStack(ItemStack.EMPTY);
-        } else {
-        	slot.onSlotChanged();
-        }
-        
-        slot.onTake(player, sourceStack);
-        return copyOfSourceStack;
+	public ItemStack quickMoveStack(Player player, int index) {
+		Slot slot = this.slots.get(index);
+		if(slot == null || !slot.hasItem()) {
+			return ItemStack.EMPTY;
+		}
+		ItemStack sourceStack = slot.getItem();
+		ItemStack copyOfSourceStack = sourceStack.copy();
+		if(indexIsForAVanillaSlot(index)) {
+			if(!moveItemStackTo(sourceStack, BAILEY_INVENTORY_FIRST_SLOT_INDEX, BAILEY_INVENTORY_FIRST_SLOT_INDEX + BAILEY_INVENTORY_SLOT_COUNT, false)) {
+				return ItemStack.EMPTY;
+			}
+		} else if(indexIsForABaileyInventorySlot(index) || indexIsForBaileyOutputSlot(index)) {
+			if(!mergeStackFromBaileyToPlayer(sourceStack)) {
+				return ItemStack.EMPTY;
+			}
+		} else {
+			return ItemStack.EMPTY;
+		}
+		if(sourceStack.getCount() == 0) {
+			slot.set(ItemStack.EMPTY);
+		} else {
+			slot.setChanged();
+		}
+		slot.onTake(player, sourceStack);
+		return copyOfSourceStack;
 	}
 
 	private boolean mergeStackFromBaileyToPlayer(ItemStack sourceStack) {
-		return mergeItemStack(sourceStack, VANILLA_FIRST_SLOT_INDEX, VANILLA_FIRST_SLOT_INDEX + VANILLA_SLOT_COUNT, false);
+		return moveItemStackTo(sourceStack, VANILLA_FIRST_SLOT_INDEX, VANILLA_FIRST_SLOT_INDEX + VANILLA_SLOT_COUNT, false);
 	}
 
 	private boolean indexIsForAVanillaSlot(int index) {
@@ -125,38 +114,31 @@ public class DailiesContainer extends Container {
 	}
 	
 	@Override
-	public boolean canInteractWith(PlayerEntity playerIn) {
+	public boolean stillValid(Player player) {
 		return true;
 	}
 	
 	@Override
-	public void onContainerClosed(PlayerEntity player) {
-		super.onContainerClosed(player);
-		this.baileyInventory.closeInventory(player);
+	public void removed(Player player) {
+		super.removed(player);
+		this.baileyInventory.stopOpen(player);
 	}
 	
 	@Override
-	public void detectAndSendChanges() {
-		super.detectAndSendChanges();
+	public void broadcastChanges() {
+		super.broadcastChanges();
 		this.baileyInventory.checkForReward();
 	}
 
 	public class SlotOutput extends Slot {
 
-		public SlotOutput(IInventory inventoryIn, int index, int xPosition, int yPosition) {
+		public SlotOutput(Container inventoryIn, int index, int xPosition, int yPosition) {
 			super(inventoryIn, index, xPosition, yPosition);
 		}
 		
 		@Override
-		public boolean isItemValid(ItemStack stack) {
+		public boolean mayPlace(ItemStack stack) {
 			return false;
 		}
-	}
-
-	private static <T extends Container> ContainerType<T> register(ContainerType.IFactory<T> factory, String regname)
-	{
-		ContainerType<T> container_type = new ContainerType<T>(factory);
-		container_type.setRegistryName(new ResourceLocation(DailiesMod.MODID, regname));
-		return container_type;
 	}
 }

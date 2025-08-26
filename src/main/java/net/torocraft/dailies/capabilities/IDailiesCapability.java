@@ -2,26 +2,25 @@ package net.torocraft.dailies.capabilities;
 
 import java.util.Set;
 
-import net.minecraft.command.arguments.NBTCompoundTagArgument;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.nbt.CompoundTag;
 import net.torocraft.dailies.DailiesException;
 import net.torocraft.dailies.quests.DailyQuest;
 
 public interface IDailiesCapability {
 
-	void hunt(PlayerEntity player, LivingEntity mob);
+	void hunt(Player player, LivingEntity mob);
 
-	CompoundNBT writeNBT();
+	CompoundTag writeNBT();
 
-	void readNBT(CompoundNBT c);
+	void readNBT(CompoundTag c);
 
-	void acceptQuest(PlayerEntity player, DailyQuest quest) throws DailiesException;
+	void acceptQuest(Player player, DailyQuest quest) throws DailiesException;
 
-	void abandonQuest(PlayerEntity player, DailyQuest quest);
+	void abandonQuest(Player player, DailyQuest quest);
 	
-	void completeQuest(PlayerEntity player, DailyQuest quest);
+	void completeQuest(Player player, DailyQuest quest);
 
 	Set<DailyQuest> getAcceptedQuests();
 
@@ -39,6 +38,6 @@ public interface IDailiesCapability {
 
 	DailyQuest getAvailableQuestById(String questId);
 
-	void sendAcceptedQuestsToClient(PlayerEntity player);
+	void sendAcceptedQuestsToClient(Player player);
 
 }

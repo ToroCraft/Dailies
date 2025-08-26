@@ -1,6 +1,6 @@
 package net.torocraft.dailies.network.remote;
 
-import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.world.entity.player.Player;
 import net.torocraft.dailies.DailiesException;
 
 public class QuestActionHandler {
@@ -10,7 +10,7 @@ public class QuestActionHandler {
 	}
 	
 	private static final String requestMethod = "POST";
-	private final PlayerEntity player;
+	private final Player player;
 	private final String username;
 	private final String questId;
 	private Action action;
@@ -18,7 +18,7 @@ public class QuestActionHandler {
 	private DailiesRequest request;
 	private DailiesTransmitter transmitter;
 	
-	public QuestActionHandler(PlayerEntity player, String questId) {
+	public QuestActionHandler(Player player, String questId) {
 		this.player = player;
 		this.username = player.getName().getString();
 		this.questId = questId;

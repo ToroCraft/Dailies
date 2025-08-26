@@ -1,31 +1,26 @@
 package net.torocraft.dailies.commands;
 
 import com.mojang.brigadier.CommandDispatcher;
-import com.mojang.brigadier.StringReader;
-import com.mojang.brigadier.arguments.ArgumentType;
+import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
-import net.minecraft.command.CommandSource;
-import net.minecraft.command.Commands;
-import net.minecraft.entity.SpawnReason;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.entity.player.PlayerInventory;
-import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.inventory.container.Container;
-import net.minecraft.inventory.container.INamedContainerProvider;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.text.ITextComponent;
-import net.minecraft.util.text.StringTextComponent;
-import net.minecraft.util.text.TranslationTextComponent;
-import net.minecraft.world.World;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.commands.Commands;
+import net.minecraft.world.entity.MobSpawnType;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.level.Level;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.MenuProvider;
+import net.minecraft.core.BlockPos;
+import net.minecraft.network.chat.Component;
 import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.common.util.NonNullConsumer;
-import net.minecraftforge.fml.network.NetworkHooks;
-import net.torocraft.dailies.BaileyInventory;
+import net.minecraftforge.network.NetworkHooks;
 import net.torocraft.dailies.DailiesContainer;
 import net.torocraft.dailies.capabilities.DailiesCapabilityProvider;
 import net.torocraft.dailies.capabilities.IDailiesCapability;
 import net.torocraft.dailies.entities.EntityRegistryHandler;
-import net.torocraft.dailies.gui.BaileyInventoryContainer;
 import net.torocraft.dailies.network.PacketHandler;
 import net.torocraft.dailies.network.packets.GetQuestsPacket.QuestsFilter;
 import net.torocraft.dailies.quests.DailyQuest;
@@ -37,56 +32,54 @@ import java.util.List;
 public class DailiesCommand {
 
     public static class PlayerDailyQuests {
-        public PlayerEntity player = null;
+    public ServerPlayer player = null;
         public LazyOptional<IDailiesCapability> playerDailiesCapability;
         public List<DailyQuest> openDailyQuests = null;
         public List<DailyQuest> acceptedDailyQuests = null;
     }
 
-    public static void register(CommandDispatcher<CommandSource> dispatcher) {
-        dispatcher.register(Commands.literal("test")
-                .then(Commands.literal("one").executes((y) -> test(y.getSource()))));
+    public static void register(CommandDispatcher<CommandSourceStack> dispatcher) {
+    dispatcher.register(Commands.literal("test")
+        .then(Commands.literal("one").executes((y) -> test(y.getSource()))));
 
-        dispatcher.register(Commands.literal("spawn")
-                .then(Commands.literal("bailey").executes((c) -> spawnBailey(c.getSource()))));
+    dispatcher.register(Commands.literal("spawn")
+        .then(Commands.literal("bailey").executes((c) -> spawnBailey(c.getSource()))));
 
-        dispatcher.register(Commands.literal("dailies")
-                .then(Commands.literal("list").executes((c) -> listDailyQuests(c.getSource())))
-                .then(Commands.literal("accept")
-                        .then(Commands.argument("Quest Number", new QuestNumberArgument()).executes((a) -> acceptQuest(a.getSource(), a.getArgument("Quest Number", Integer.class)))))
-                .then(Commands.literal("abandon")
-                        .then(Commands.argument("Quest Number", new QuestNumberArgument()).executes((a) -> abandonQuest(a.getSource(), a.getArgument("Quest Number", Integer.class)))))
-                .then(Commands.literal("gui").executes((c) -> openBaileyGui(c.getSource())))
-        );
+    dispatcher.register(Commands.literal("dailies")
+        .then(Commands.literal("list").executes((c) -> listDailyQuests(c.getSource())))
+        .then(Commands.literal("accept")
+            .then(Commands.argument("Quest Number", IntegerArgumentType.integer(0)).executes((a) -> acceptQuest(a.getSource(), IntegerArgumentType.getInteger(a, "Quest Number")))))
+        .then(Commands.literal("abandon")
+            .then(Commands.argument("Quest Number", IntegerArgumentType.integer(0)).executes((a) -> abandonQuest(a.getSource(), IntegerArgumentType.getInteger(a, "Quest Number")))))
+        .then(Commands.literal("gui").executes((c) -> openBaileyGui(c.getSource())))
+    );
     }
 
-    private static int test(CommandSource source) {
+    private static int test(CommandSourceStack source) {
         PacketHandler.getQuests(QuestsFilter.AVAILABLE);
         return 0;
     }
 
-    private static int spawnBailey(CommandSource source) throws CommandSyntaxException {
-        ServerPlayerEntity player = source.asPlayer();
-        World world = player.world;
-        if(!world.isRemote) {
-            BlockPos pos = new BlockPos(player.getPosX(), player.getPosY(), player.getPosZ());
-            EntityRegistryHandler.BAILEY.get().spawn(world, null, null, pos, SpawnReason.COMMAND, false, false);
+    private static int spawnBailey(CommandSourceStack source) throws CommandSyntaxException {
+        ServerPlayer player = source.getPlayerOrException();
+        net.minecraft.server.level.ServerLevel world = (net.minecraft.server.level.ServerLevel) player.level;
+        if(!world.isClientSide) {
+            BlockPos pos = new BlockPos(player.getX(), player.getY(), player.getZ());
+            EntityRegistryHandler.BAILEY.get().spawn(world, null, null, pos, MobSpawnType.COMMAND, false, false);
         }
-
         return 0;
     }
 
-    private static int listDailyQuests(CommandSource source) throws CommandSyntaxException {
+    private static int listDailyQuests(CommandSourceStack source) throws CommandSyntaxException {
         PlayerDailyQuests questData = setupQuestsData(source);
         String dailiesList = buildDailiesListText(questData);
-        questData.player.sendMessage(new StringTextComponent(dailiesList), questData.player.getUniqueID());
+    questData.player.sendSystemMessage(Component.literal(dailiesList));
 
         return 0;
     }
 
-    private static PlayerDailyQuests setupQuestsData(CommandSource source) throws CommandSyntaxException {
-        ServerPlayerEntity player = null;
-        player = source.asPlayer();
+    private static PlayerDailyQuests setupQuestsData(CommandSourceStack source) throws CommandSyntaxException {
+        ServerPlayer player = source.getPlayerOrException();
 
         if (player == null)
             return null;
@@ -98,7 +91,7 @@ public class DailiesCommand {
 
         d.playerDailiesCapability.ifPresent(new NonNullConsumer<IDailiesCapability>() {
             @Override
-            public void accept(@Nonnull IDailiesCapability iDailiesCapability) {
+            public void accept(IDailiesCapability iDailiesCapability) {
                 d.openDailyQuests = new ArrayList<DailyQuest>(iDailiesCapability.getAvailableQuests());
                 d.acceptedDailyQuests = new ArrayList<DailyQuest>(iDailiesCapability.getAcceptedQuests());
             }
@@ -136,8 +129,8 @@ public class DailiesCommand {
         return builder.toString();
     }
 
-    private static int abandonQuest(CommandSource source, int questId) throws CommandSyntaxException {
-        ServerPlayerEntity player = source.asPlayer();
+    private static int abandonQuest(CommandSourceStack source, int questId) throws CommandSyntaxException {
+        ServerPlayer player = source.getPlayerOrException();
         PlayerDailyQuests d = setupQuestsData(source);
         DailyQuest quest = null;
 
@@ -150,19 +143,19 @@ public class DailiesCommand {
                 try {
                     DailyQuest q = d.acceptedDailyQuests.get(questId);
                     x.abandonQuest(player, q);
-                    d.player.sendMessage(new StringTextComponent("Quest " + fromIndex(questId) + " " + q.getDisplayName() + " abandoned"), d.player.getUniqueID());
+                    d.player.sendSystemMessage(Component.literal("Quest " + fromIndex(questId) + " " + q.getDisplayName() + " abandoned"));
                 } catch (Exception ex) {
-                    d.player.sendMessage(new StringTextComponent("Error occured when trying to abandon quest"), d.player.getUniqueID());
+                    d.player.sendSystemMessage(Component.literal("Error occured when trying to abandon quest"));
                 }
             });
         } else {
-            d.player.sendMessage(new StringTextComponent("Quest Not Accepted"), d.player.getUniqueID());
+            d.player.sendSystemMessage(Component.literal("Quest Not Accepted"));
         }
         return 0;
     }
 
-    private static int acceptQuest(CommandSource source, int questId) throws CommandSyntaxException {
-        ServerPlayerEntity player = source.asPlayer();
+    private static int acceptQuest(CommandSourceStack source, int questId) throws CommandSyntaxException {
+        ServerPlayer player = source.getPlayerOrException();
         PlayerDailyQuests d = setupQuestsData(source);
         DailyQuest quest = null;
 
@@ -175,13 +168,13 @@ public class DailiesCommand {
                 try {
                     DailyQuest q = d.openDailyQuests.get(questId);
                     x.acceptQuest(player, q);
-                    d.player.sendMessage(new StringTextComponent("Quest " + fromIndex(questId) + " " + q.getDisplayName() + " accepted"), d.player.getUniqueID());
+                    d.player.sendSystemMessage(Component.literal("Quest " + fromIndex(questId) + " " + q.getDisplayName() + " accepted"));
                 } catch (Exception ex) {
-                    d.player.sendMessage(new StringTextComponent("Error occured when trying to accept quest"), d.player.getUniqueID());
+                    d.player.sendSystemMessage(Component.literal("Error occured when trying to accept quest"));
                 }
             });
         } else {
-            d.player.sendMessage(new StringTextComponent("Quest Already Accepted"), d.player.getUniqueID());
+            d.player.sendSystemMessage(Component.literal("Quest Already Accepted"));
         }
         return 0;
     }
@@ -190,31 +183,19 @@ public class DailiesCommand {
         return Integer.toString(index);
     }
 
-    private static int openBaileyGui(CommandSource source) throws CommandSyntaxException {
-        World world = source.getWorld();
-
-        if(!world.isRemote()) {
-            ServerPlayerEntity player = source.asPlayer();
-            NetworkHooks.openGui(player, new INamedContainerProvider() {
+    private static int openBaileyGui(CommandSourceStack source) throws CommandSyntaxException {
+        Level world = source.getLevel();
+        if(!world.isClientSide()) {
+            ServerPlayer player = source.getPlayerOrException();
+            NetworkHooks.openScreen(player, new MenuProvider() {
                 @Override
-                public ITextComponent getDisplayName()
-                { return new TranslationTextComponent("Bailey GUI"); }
-
+                public Component getDisplayName() { return Component.translatable("Bailey GUI"); }
                 @Override
-                public Container createMenu(int id, PlayerInventory inventory, PlayerEntity player)
-                { return new DailiesContainer(id, inventory); }
+                public AbstractContainerMenu createMenu(int id, @Nonnull Inventory inventory, @Nonnull Player player) { 
+                    return new DailiesContainer(id, inventory); 
+                }
             });
         }
-
         return 0;
-    }
-
-    /* Command Argument Classes */
-
-    public static class QuestNumberArgument implements ArgumentType<Integer> {
-        @Override
-        public Integer parse(StringReader reader) throws CommandSyntaxException {
-            return reader.readInt();
-        }
     }
 }

@@ -3,14 +3,14 @@ package net.torocraft.dailies.network.remote;
 import com.google.gson.GsonBuilder;
 import java.util.HashSet;
 import java.util.Set;
-import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.world.entity.player.Player;
 import net.torocraft.dailies.DailiesException;
 import net.torocraft.dailies.quests.DailyQuest;
 
 public class QuestInventoryFetcher {
 	
 	private static final String requestMethod = "POST";
-	private final PlayerEntity player;
+	private final Player player;
 	private final String username;
 	private String path;
 	private DailiesRequest request;
@@ -18,7 +18,7 @@ public class QuestInventoryFetcher {
 	private Set<DailyQuest> quests;
 	private DailiesTransmitter transmitter;
 	
-	public QuestInventoryFetcher(PlayerEntity player) {
+	public QuestInventoryFetcher(Player player) {
 		this.player = player;
 		this.username = player.getName().getString();
 	}
@@ -50,11 +50,22 @@ public class QuestInventoryFetcher {
 		if (jsonResponse == null) {
 			return;
 		}
+		
+		// Log the actual response for debugging
+		System.out.println("DAILIES JSON Response: " + jsonResponse);
+		
 		GsonBuilder gson = new GsonBuilder();
 		try {
-			quests = gson.create().fromJson(jsonResponse, QuestInventoryResponse.class).quests;
+			QuestInventoryResponse response = gson.create().fromJson(jsonResponse, QuestInventoryResponse.class);
+			if (response != null && response.quests != null) {
+				quests = response.quests;
+			}
 		} catch (Exception e) {
-			throw DailiesException.SYSTEM_ERROR(e);
+			// Instead of throwing an exception that shows in chat, log the error and use network exception
+			// This will trigger the fallback to random quest generation
+			System.err.println("DAILIES JSON parsing failed: " + e.getMessage());
+			System.err.println("Response was: " + jsonResponse);
+			throw new DailiesNetworkException(e);
 		}
 		
 	}

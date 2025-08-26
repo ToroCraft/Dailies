@@ -1,8 +1,8 @@
 package net.torocraft.dailies.network.packets;
 
 import java.util.function.Supplier;
-import net.minecraft.network.PacketBuffer;
-import net.minecraftforge.fml.network.NetworkEvent.Context;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraftforge.network.NetworkEvent.Context;
 import net.torocraft.dailies.network.IDailiesPacket;
 import net.torocraft.dailies.quests.DailyQuest;
 
@@ -20,15 +20,15 @@ public class QuestProgressPacket implements IDailiesPacket<QuestProgressPacket.M
   }
 
   @Override
-  public Message decode(PacketBuffer buf) {
+  public Message decode(FriendlyByteBuf buf) {
     DailyQuest quest = new DailyQuest();
-    quest.readNBT(buf.readCompoundTag());
+    quest.readNBT(buf.readNbt());
     return new Message(quest);
   }
 
   @Override
-  public void encode(Message message, PacketBuffer buf) {
-    buf.writeCompoundTag(message.quest.writeNBT());
+  public void encode(Message message, FriendlyByteBuf buf) {
+    buf.writeNbt(message.quest.writeNBT());
   }
 
   @Override

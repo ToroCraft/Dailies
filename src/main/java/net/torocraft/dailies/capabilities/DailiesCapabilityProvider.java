@@ -1,40 +1,42 @@
 package net.torocraft.dailies.capabilities;
 
-import net.minecraft.nbt.INBT;
-import net.minecraft.util.Direction;
-import net.minecraftforge.common.capabilities.*;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.core.Direction;
+import net.minecraftforge.common.capabilities.Capability;
+import net.minecraftforge.common.capabilities.CapabilityManager;
+import net.minecraftforge.common.capabilities.CapabilityToken;
+import net.minecraftforge.common.capabilities.ICapabilityProvider;
 import net.minecraftforge.common.util.LazyOptional;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-public class DailiesCapabilityProvider implements ICapabilitySerializable<INBT> {
+public class DailiesCapabilityProvider implements ICapabilityProvider, net.minecraftforge.common.capabilities.ICapabilitySerializable<CompoundTag> {
 
 	public static final String NAME = "dailiescapability";
 
-	@CapabilityInject(IDailiesCapability.class)
-	public static Capability<IDailiesCapability> DAILIES_CAPABILITY = null;
+	public static final Capability<IDailiesCapability> DAILIES_CAPABILITY = CapabilityManager.get(new CapabilityToken<>() {});
 
-	private LazyOptional<IDailiesCapability> instance = LazyOptional.of(DailiesCapabilityImpl::new);
+	private final LazyOptional<IDailiesCapability> instance = LazyOptional.of(DailiesCapabilityImpl::new);
 
 	public static void register() {
-		CapabilityManager.INSTANCE.register(IDailiesCapability.class, new DailiesStorage(), DailiesCapabilityImpl::new);
+		// Registration is now handled via CapabilityToken in 1.18.2+
+		// If a Codec is needed for sync, add here. Otherwise, this is sufficient.
 	}
 
 	@Nonnull
 	@Override
-	public <T> LazyOptional<T> getCapability(@Nonnull Capability<T> capability, @Nullable Direction side) {
-		return capability == DAILIES_CAPABILITY ? instance.cast() : LazyOptional.empty();
-	}
-
-
-	@Override
-	public INBT serializeNBT() {
-		return DAILIES_CAPABILITY.getStorage().writeNBT(DAILIES_CAPABILITY, this.instance.orElseThrow(() -> new IllegalArgumentException("LazyOptional must not be empty!")), null);
+	public <T> LazyOptional<T> getCapability(@Nonnull Capability<T> cap, @Nullable Direction side) {
+		return cap == DAILIES_CAPABILITY ? instance.cast() : LazyOptional.empty();
 	}
 
 	@Override
-	public void deserializeNBT(INBT nbt) {
-		DAILIES_CAPABILITY.getStorage().readNBT(DAILIES_CAPABILITY, this.instance.orElseThrow(() -> new IllegalArgumentException("LazyOptional must not be empty!")), null, nbt);
+	public CompoundTag serializeNBT() {
+		return instance.orElseThrow(() -> new IllegalArgumentException("LazyOptional must not be empty!")).writeNBT();
+	}
+
+	@Override
+	public void deserializeNBT(CompoundTag nbt) {
+		instance.orElseThrow(() -> new IllegalArgumentException("LazyOptional must not be empty!")).readNBT(nbt);
 	}
 }

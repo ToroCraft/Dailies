@@ -4,10 +4,10 @@ import java.util.Collections;
 import java.util.Set;
 import java.util.function.Supplier;
 import net.minecraft.client.Minecraft;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.network.PacketBuffer;
-import net.minecraftforge.fml.network.NetworkEvent.Context;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraftforge.network.NetworkEvent.Context;
 import net.torocraft.dailies.DailiesMod;
 import net.torocraft.dailies.capabilities.DailiesCapabilityImpl;
 import net.torocraft.dailies.network.IDailiesPacket;
@@ -33,23 +33,22 @@ public class QuestsPacket implements IDailiesPacket<QuestsPacket.Message> {
   }
 
   @Override
-  public Message decode(PacketBuffer buf) {
-    QuestsFilter filter = buf.readEnumValue(QuestsFilter.class);
-    CompoundNBT c = buf.readCompoundTag();
+  public Message decode(FriendlyByteBuf buf) {
+    QuestsFilter filter = buf.readEnum(QuestsFilter.class);
+    CompoundTag c = buf.readNbt();
     return new Message(filter, DailiesCapabilityImpl.readQuestList(c, "q"));
   }
 
   @Override
-  public void encode(Message message, PacketBuffer buf) {
+  public void encode(Message message, FriendlyByteBuf buf) {
     Set<DailyQuest> quests = message.quests;
     if (quests == null) {
       quests = Collections.emptySet();
     }
-    CompoundNBT c = new CompoundNBT();
+    CompoundTag c = new CompoundTag();
     DailiesCapabilityImpl.writeQuestsList(c, "q", quests);
-
-    buf.writeEnumValue(message.filter);
-    buf.writeCompoundTag(c);
+    buf.writeEnum(message.filter);
+    buf.writeNbt(c);
   }
 
   @Override
@@ -60,10 +59,11 @@ public class QuestsPacket implements IDailiesPacket<QuestsPacket.Message> {
         return;
       }
       Minecraft client = Minecraft.getInstance();
-      PlayerEntity player = client.player;
-      if (player != null) {
+      Player player = client.player;
+      if (player == null) {
         return;
       }
+      // TODO: Replace static quest fields with a proper client quest cache or capability
       if (QuestsFilter.ACCEPTED.equals(message.filter)) {
         DailiesMod.acceptedQuests = message.quests;
       } else {

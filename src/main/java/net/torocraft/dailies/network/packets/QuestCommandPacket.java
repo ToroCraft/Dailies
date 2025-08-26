@@ -1,10 +1,10 @@
 package net.torocraft.dailies.network.packets;
 
 import java.util.function.Supplier;
-import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.network.PacketBuffer;
-import net.minecraft.util.Util;
-import net.minecraftforge.fml.network.NetworkEvent.Context;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.Util;
+import net.minecraftforge.network.NetworkEvent.Context;
 import net.torocraft.dailies.DailiesException;
 import net.torocraft.dailies.capabilities.DailiesCapabilityProvider;
 import net.torocraft.dailies.network.IDailiesPacket;
@@ -27,35 +27,31 @@ public class QuestCommandPacket implements IDailiesPacket<QuestCommandPacket.Mes
   }
 
   @Override
-  public Message decode(PacketBuffer buf) {
-    String questId = buf.readString();
-    QuestCommand command = buf.readEnumValue(QuestCommand.class);
+  public Message decode(FriendlyByteBuf buf) {
+    String questId = buf.readUtf();
+    QuestCommand command = buf.readEnum(QuestCommand.class);
     return new Message(questId, command);
   }
 
   @Override
-  public void encode(Message message, PacketBuffer buf) {
-    buf.writeString(message.questId);
-    buf.writeEnumValue(message.command);
+  public void encode(Message message, FriendlyByteBuf buf) {
+    buf.writeUtf(message.questId);
+    buf.writeEnum(message.command);
   }
 
   @Override
   public void handle(Message message, Supplier<Context> ctx) {
     System.out.println("************** QuestCommandPacket");
     ctx.get().enqueueWork(() -> {
-
-      ServerPlayerEntity player = ctx.get().getSender();
+      ServerPlayer player = ctx.get().getSender();
       if(player == null) {
         return;
       }
-      
       player.getCapability(DailiesCapabilityProvider.DAILIES_CAPABILITY, null).ifPresent(d -> {
         DailyQuest quest = d.getAcceptedQuestById(message.questId);
-
         if (quest == null) {
           return;
         }
-        
         try {
           if (QuestCommand.ABANDON.equals(message.command)) {
             d.abandonQuest(player, quest);
@@ -63,7 +59,7 @@ public class QuestCommandPacket implements IDailiesPacket<QuestCommandPacket.Mes
             d.acceptQuest(player, quest);
           }
         } catch (DailiesException e) {
-          player.sendMessage(e.getMessageAsTextComponent(), Util.DUMMY_UUID);
+          player.sendSystemMessage(e.getMessageAsTextComponent());
         }
 
         PacketHandler.questsUpdate(player, QuestsFilter.ACCEPTED, d.getAcceptedQuests());

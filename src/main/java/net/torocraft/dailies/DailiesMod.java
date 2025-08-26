@@ -1,8 +1,12 @@
 package net.torocraft.dailies;
 
 import java.util.Set;
-import net.minecraft.entity.ai.attributes.GlobalEntityTypeAttributes;
-import net.minecraft.entity.merchant.villager.VillagerEntity;
+// Imports for 1.19.2 (correct package structure)
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
+import net.minecraft.world.entity.npc.Villager;
+import net.minecraftforge.event.entity.EntityAttributeCreationEvent;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.eventbus.api.EventPriority;
@@ -17,8 +21,9 @@ import net.torocraft.dailies.config.Config;
 import net.torocraft.dailies.entities.EntityRegistryHandler;
 import net.torocraft.dailies.entities.render.RenderRegistryHandler;
 import net.torocraft.dailies.events.Events;
+import net.torocraft.dailies.gui.MenuRegistryHandler;
+import net.torocraft.dailies.items.ItemRegistryHandler;
 import net.torocraft.dailies.network.PacketHandler;
-import net.torocraft.dailies.events.ForgeEvents;
 import net.torocraft.dailies.quests.DailyQuest;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -38,36 +43,30 @@ public class DailiesMod {
 	//public static GuiDailyProgressIndicators dailyGui = new GuiDailyProgressIndicators();
 
 	public DailiesMod() {
-		ModLoadingContext.get().registerConfig(net.minecraftforge.fml.config.ModConfig.Type.CLIENT, Config.CLIENT_CONFIG_SPEC);
-		IEventBus modEventBus = FMLJavaModLoadingContext.get().getModEventBus();
-		EntityRegistryHandler.init();
-		MinecraftForge.EVENT_BUS.register(Events.class);
-		MinecraftForge.EVENT_BUS.register(ForgeEvents.class);
-		FMLJavaModLoadingContext.get().getModEventBus().addListener(this::commonStart);
-		MinecraftForge.EVENT_BUS.register(this);
-		DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> clientStart(modEventBus));
+	ModLoadingContext.get().registerConfig(net.minecraftforge.fml.config.ModConfig.Type.CLIENT, Config.CLIENT_CONFIG_SPEC);
+	// TODO: Register config screen for Mods menu using ModLoadingContext.get().registerExtensionPoint with DisplayTest or other modern Forge method (see Forge 1.18.2+ docs)
+	IEventBus modEventBus = FMLJavaModLoadingContext.get().getModEventBus();
+	EntityRegistryHandler.init();
+	MenuRegistryHandler.init(modEventBus);
+	ItemRegistryHandler.init(modEventBus);
+	PacketHandler.init(); // Initialize network packets during mod loading
+	MinecraftForge.EVENT_BUS.register(Events.class);
+	modEventBus.addListener(this::onEntityAttributeCreation);
+	DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> clientStart(modEventBus));
 	}
 
 	private static void clientStart(IEventBus modEventBus) {
 		modEventBus.addListener(EventPriority.NORMAL, false, FMLClientSetupEvent.class, event -> {
-			RenderRegistryHandler.init();
+			// RenderRegistryHandler uses @SubscribeEvent annotations - no need to call init()
 			//MinecraftForge.EVENT_BUS.register(dailyGui);
 		});
 	}
 
-	private void commonStart(FMLClientSetupEvent event) {
-		DailiesCapabilityProvider.register();
-		Config.apply();
-		//Fixes a null attribute map issue. Will need to rework later
-		GlobalEntityTypeAttributes.put(EntityRegistryHandler.BAILEY.get(), VillagerEntity.registerAttributes().create());
-		PacketHandler.init();
 
-		//modEventBus.addListener(EventPriority.NORMAL, false, FMLServerStartingEvent.class, event -> {
-			//NetworkRegistry.INSTANCE.registerGuiHandler(DailiesMod.instance, new DailiesGuiHandler());
-			//MapGenStructureIO.registerStructureComponent(BaileysShopVillagePiece.class, "baileyshop");
-			//VillagerRegistry.instance().registerVillageCreationHandler(new VillageHandlerBailey());
-		//});
-	}
+	   private void onEntityAttributeCreation(EntityAttributeCreationEvent event) {
+		   // Register attributes for custom entities
+		   event.put(EntityRegistryHandler.BAILEY.get(), Villager.createAttributes().build());
+	   }
 
 
 

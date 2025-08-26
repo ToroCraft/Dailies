@@ -56,10 +56,6 @@ public class GuiDailyProgressIndicators {
 
 	public GuiDailyProgressIndicators() {
 		mc = Minecraft.getMinecraft();
-	}
-
-	@SubscribeEvent
-	public void drawProgressIndicatorsInInventory(BackgroundDrawnEvent event) {
 		if (ConfigurationHandler.showQuestsInPlayerInventory && mc.currentScreen instanceof GuiInventory) {
 			buildQuestInventoryGui(event);
 		} else if (mc.currentScreen instanceof DailiesGuiContainer) {

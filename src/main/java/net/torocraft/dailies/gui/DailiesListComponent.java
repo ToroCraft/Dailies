@@ -28,10 +28,6 @@ public class BadgeDisplay {
 
     }
 
-    public void drawStringWithShadow(MatrixStack matrices, FontRenderer textRenderer, String text, int x, int y, int color) {
-        gui.func_238476_c_(matrices, textRenderer, text, x, y, color);
-    }
-
     public void drawTexture(MatrixStack matrices, int x, int y, int u, int v, int width, int height) {
         gui.func_238474_b_(matrices, x, y, u, v, width, height);
     }

@@ -1,90 +1,73 @@
 package net.torocraft.dailies.gui;
-/*
-import java.util.ArrayList;
-import java.util.List;
 
+import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.AbstractGui;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.client.gui.GuiComponent;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.gui.Font;
+import net.minecraft.resources.ResourceLocation;
 import net.torocraft.dailies.quests.DailyQuest;
+import java.util.List;
+import java.util.Arrays;
 
-public class GuiDailyBadge extends AbstractGui {
-	
-	private static ResourceLocation badgeTexture = new ResourceLocation("dailiesmod", "textures/gui/badge_bg.png");
-
+public class GuiDailyBadge extends GuiComponent {
+	private static final ResourceLocation BADGE_TEXTURE = new ResourceLocation("dailies", "textures/gui/badge_bg.png");
 	private final DailyQuest quest;
-	private final Minecraft mc;
-	private final int x;
-	private final int y;
-	private List<String> hoverLines;
+	private final int x, y, width = 120, height = 28;
+	private final Minecraft mc = Minecraft.getInstance();
 
-	private int width = 120;
-	private int height = 28;
-	private int screenWidth;
-	private int screenHeight;
-
-	public GuiDailyBadge(final DailyQuest quest, final Minecraft mc, int x, int y) {
+	public GuiDailyBadge(DailyQuest quest, int x, int y) {
 		this.quest = quest;
-		this.mc = mc;
 		this.x = x;
 		this.y = y;
-
-		buildHoverLines();
-		draw();
 	}
 
-
-	private void buildHoverLines() {
-		hoverLines = new ArrayList<String>();
-		hoverLines.add(quest.name);
-		hoverLines.add(quest.description);
-	}
-
-	public void draw() {
-		mc.renderEngine.bindTexture(badgeTexture);
-
-		drawTexturedModalRect(x, y, 0, 0, width, height);
-		drawTexturedModalRect(x + 6, y + 14, 0, 76, 108, 10);
+	public void render(PoseStack poseStack, int mouseX, int mouseY, int screenWidth, int screenHeight) {
+		RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
+		mc.getTextureManager().bindForSetup(BADGE_TEXTURE);
+		blit(poseStack, x, y, 0, 0, width, height);
+		blit(poseStack, x + 6, y + 14, 0, 76, 108, 10);
 		int progress = (int) Math.ceil(108 * ((double) quest.progress / (double) quest.target.quantity));
-		drawTexturedModalRect(x + 6, y + 14, 0, 86, progress, 10);
+		blit(poseStack, x + 6, y + 14, 0, 86, progress, 10);
 
-		String formattedQuestName = mc.fontRenderer.trimStringToWidth(quest.name, 110);
-		drawCenteredString(mc.fontRenderer, formattedQuestName, x + 60, y + 5, 0xffffff);
+		Font font = mc.font;
+		String formattedQuestName = font.plainSubstrByWidth(quest.name, 110);
+		drawCenteredString(poseStack, font, formattedQuestName, x + 60, y + 5, 0xffffff);
 		String barText = buildQuestProgressRatioString();
-		if (Minecraft.getSystemTime() % 6000 < 3000) {
-			barText = mc.fontRenderer.trimStringToWidth(quest.description, 110);
+		if (mc.level.getGameTime() % 120 < 60) {
+			barText = font.plainSubstrByWidth(quest.description, 110);
 		}
-		drawCenteredString(mc.fontRenderer, barText, x + 60, y + 15, 0xffffff);
-	}
-	
-	public void checkForHover(int mouseX, int mouseY) {
-		if (mouseX >= x && mouseX <= x + width && mouseY >= y && mouseY <= y + height) {
-			drawHoverText(mouseX, mouseY);
-		}
-	}
+		drawCenteredString(poseStack, font, barText, x + 60, y + 15, 0xffffff);
 
-	private void drawHoverText(int mouseX, int mouseY) {
-		GuiUtils.drawHoveringText(hoverLines, mouseX, mouseY, screenWidth, screenHeight, 110, mc.fontRenderer);
+		if (mouseX >= x && mouseX <= x + width && mouseY >= y && mouseY <= y + height) {
+			renderTooltip(poseStack, Arrays.asList(quest.name, quest.description), mouseX, mouseY, font);
+		}
 	}
 
 	private String buildQuestProgressRatioString() {
-		StringBuilder sb = new StringBuilder();
-		sb.append(quest.progress);
-		sb.append("/");
-		sb.append(quest.target.quantity);
-		return sb.toString();
+		return quest.progress + "/" + quest.target.quantity;
 	}
-	
-	public void drawAccept() {
-		mc.renderEngine.bindTexture(badgeTexture);
 
-		drawTexturedModalRect(x, y, 0, 0, width, height);
-		drawTexturedModalRect(x + 6, y + 14, 0, 76, 108, 10);
+	public void renderAccept(PoseStack poseStack) {
+		mc.getTextureManager().bindForSetup(BADGE_TEXTURE);
+		blit(poseStack, x, y, 0, 0, width, height);
+		blit(poseStack, x + 6, y + 14, 0, 76, 108, 10);
+		Font font = mc.font;
+		String formattedQuestName = font.plainSubstrByWidth(quest.name, 110);
+		String questDescription = font.plainSubstrByWidth(quest.description, 110);
+		drawCenteredString(poseStack, font, formattedQuestName, x + 60, y + 5, 0xffffff);
+		drawCenteredString(poseStack, font, questDescription, x + 60, y + 15, 0xffffff);
+	}
 
-		String formattedQuestName = mc.fontRenderer.trimStringToWidth(quest.name, 110);
-		String questDescription = mc.fontRenderer.trimStringToWidth(quest.description, 110);
-		drawCenteredString(mc.fontRenderer, formattedQuestName, x + 60, y + 5, 0xffffff);
-		drawCenteredString(mc.fontRenderer, questDescription, x + 60, y + 15, 0xffffff);
+	private void renderTooltip(PoseStack poseStack, List<String> lines, int mouseX, int mouseY, Font font) {
+		Screen screen = mc.screen;
+		if (screen != null) {
+			// Convert strings to Components for modern tooltip rendering
+			List<net.minecraft.network.chat.Component> components = lines.stream()
+				.map(net.minecraft.network.chat.Component::literal)
+				.collect(java.util.stream.Collectors.toList());
+			screen.renderComponentTooltip(poseStack, components, mouseX, mouseY, font);
+		}
 	}
 }
- */

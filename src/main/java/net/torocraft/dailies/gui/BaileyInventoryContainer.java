@@ -1,18 +1,12 @@
 package net.torocraft.dailies.gui;
 
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.entity.player.PlayerInventory;
-import net.minecraft.inventory.container.Container;
-import net.minecraft.inventory.container.ContainerType;
-import net.minecraft.util.ResourceLocation;
-import net.torocraft.dailies.BaileyInventory;
-import net.torocraft.dailies.DailiesMod;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.inventory.AbstractContainerMenu;
 
 import javax.annotation.Nullable;
 
-public class BaileyInventoryContainer extends Container {
-
-    public static final ContainerType<BaileyInventoryContainer> CT_BAILEYCONTAINER = register(BaileyInventoryContainer::new, "ct_baileycontainer");
+public class BaileyInventoryContainer extends AbstractContainerMenu {
 
     private final int HOTBAR_SLOT_COUNT = 9;
     private final int INVENTORY_ROW_COUNT = 3;
@@ -41,30 +35,29 @@ public class BaileyInventoryContainer extends Container {
     private final int OUTPUT_ITEM_XPOS = 117;
     private final int OUTPUT_ITEM_YPOS = 17;
 
-    private PlayerEntity player;
-    private PlayerInventory inventory;
+    private Player player;
+    private Inventory inventory;
 
-    public BaileyInventoryContainer(int id, PlayerInventory playerInventory){
-        this(id, playerInventory, playerInventory.player);
+    public BaileyInventoryContainer(int id, Inventory playerInventory) {
+        super(net.torocraft.dailies.gui.MenuRegistryHandler.BAILEY_CONTAINER.get(), id);
+        this.inventory = playerInventory;
+        this.player = playerInventory.player;
     }
 
-    public BaileyInventoryContainer(int id, PlayerInventory inventory, PlayerEntity player) {
-        super(null, id);
-    }
-
-    protected BaileyInventoryContainer(@Nullable ContainerType<?> type, int id) {
+    protected BaileyInventoryContainer(@Nullable net.minecraft.world.inventory.MenuType<?> type, int id) {
         super(type, id);
     }
 
     @Override
-    public boolean canInteractWith(PlayerEntity playerIn) {
+    public boolean stillValid(Player playerIn) {
         return playerIn == this.player;
     }
 
-    private static <T extends Container> ContainerType<T> register(ContainerType.IFactory<T> factory, String regname)
-    {
-        ContainerType<T> container_type = new ContainerType<T>(factory);
-        container_type.setRegistryName(new ResourceLocation(DailiesMod.MODID, regname));
-        return container_type;
+    @Override
+    public net.minecraft.world.item.ItemStack quickMoveStack(Player player, int index) {
+        // TODO: Implement proper shift-click behavior for the container
+        return net.minecraft.world.item.ItemStack.EMPTY;
     }
+
+    // Registration helper removed; use DeferredRegister in your mod init class for MenuType registration.
 }

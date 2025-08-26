@@ -2,9 +2,9 @@ package net.torocraft.dailies.network.packets;
 
 import java.util.Set;
 import java.util.function.Supplier;
-import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.network.PacketBuffer;
-import net.minecraftforge.fml.network.NetworkEvent.Context;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraftforge.network.NetworkEvent.Context;
 import net.torocraft.dailies.capabilities.DailiesCapabilityProvider;
 import net.torocraft.dailies.network.IDailiesPacket;
 import net.torocraft.dailies.network.PacketHandler;
@@ -23,24 +23,24 @@ public class GetQuestsPacket implements IDailiesPacket<GetQuestsPacket.Message> 
   }
 
   @Override
-  public Message decode(PacketBuffer buf) {
-    return new Message(buf.readEnumValue(QuestsFilter.class));
+  public Message decode(FriendlyByteBuf buf) {
+    return new Message(buf.readEnum(QuestsFilter.class));
   }
 
   @Override
-  public void encode(Message message, PacketBuffer buf) {
-    buf.writeEnumValue(message.filter);
+  public void encode(Message message, FriendlyByteBuf buf) {
+    buf.writeEnum(message.filter);
   }
 
   @Override
   public void handle(Message message, Supplier<Context> ctx) {
     System.out.println("************** GetQuestsPacket");
     ctx.get().enqueueWork(() -> {
-      ServerPlayerEntity player = ctx.get().getSender();
+      ServerPlayer player = ctx.get().getSender();
       if(player == null) {
         return;
       }
-      player.getCapability(DailiesCapabilityProvider.DAILIES_CAPABILITY, null).ifPresent(d -> {
+      player.getCapability(DailiesCapabilityProvider.DAILIES_CAPABILITY).ifPresent(d -> {
         Set<DailyQuest> quests;
         if (QuestsFilter.ACCEPTED.equals(message.filter)) {
           quests = d.getAcceptedQuests();

@@ -1,6 +1,6 @@
 package net.torocraft.dailies;
 
-import net.minecraft.util.text.StringTextComponent;
+import net.minecraft.network.chat.Component;
 
 public class DailiesException extends Exception {
 	private static final long serialVersionUID = 521954328281793833L;
@@ -21,8 +21,8 @@ public class DailiesException extends Exception {
 		return new DailiesException("Error from Dailies Service: " + message);
 	}
 	
-	public StringTextComponent getMessageAsTextComponent() {
-		return new StringTextComponent(getMessage());
+	public Component getMessageAsTextComponent() {
+		return Component.literal(getMessage());
 	}
 
 }

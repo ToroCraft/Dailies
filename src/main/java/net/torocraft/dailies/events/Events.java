@@ -5,20 +5,19 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.util.DamageSource;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.text.StringTextComponent;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.network.chat.Component;
 import net.minecraftforge.event.AttachCapabilitiesEvent;
 import net.minecraftforge.event.RegisterCommandsEvent;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.event.server.FMLServerStartingEvent;
 import net.torocraft.dailies.DailiesException;
 import net.torocraft.dailies.capabilities.DailiesCapabilityProvider;
 import net.torocraft.dailies.capabilities.IDailiesCapability;
@@ -44,25 +43,20 @@ public class Events {
 
 	@SubscribeEvent
 	public static void onHunt(LivingDeathEvent event) {
-
-		PlayerEntity player = null;
-
-		LivingEntity e = (LivingEntity) event.getEntity();
+		Player player = null;
+		LivingEntity e = event.getEntity();
 		DamageSource source = event.getSource();
-
-		if (source.getTrueSource() instanceof PlayerEntity) {
-			player = (PlayerEntity) source.getTrueSource();
+		Entity attacker = source.getEntity();
+		if (attacker instanceof Player) {
+			player = (Player) attacker;
 		}
-
 		if (player == null) {
 			return;
 		}
-
 		IDailiesCapability dailies = getCapability(player);
 		if (dailies == null) {
 			return;
 		}
-
 		dailies.hunt(player, e);
 	}
 
@@ -71,80 +65,65 @@ public class Events {
 		if (!event.isWasDeath()) {
 			return;
 		}
-
-		IDailiesCapability newDailies = getCapability(event.getPlayer());
+		IDailiesCapability newDailies = getCapability(event.getEntity());
 		IDailiesCapability originalDailies = getCapability(event.getOriginal());
-
 		if (newDailies == null || originalDailies == null) {
 			return;
 		}
-
 		newDailies.readNBT(originalDailies.writeNBT());
 	}
 
 	@SubscribeEvent
 	public static void onSave(PlayerEvent.SaveToFile event) {
-		IDailiesCapability dailies = getCapability(event.getPlayer());
+		IDailiesCapability dailies = getCapability(event.getEntity());
 		if (dailies == null) {
 			return;
 		}
-		event.getPlayer().getPersistentData().put(DailiesCapabilityProvider.NAME, dailies.writeNBT());
+		event.getEntity().getPersistentData().put(DailiesCapabilityProvider.NAME, dailies.writeNBT());
 	}
 
 	@SubscribeEvent
 	public static void onLoad(PlayerEvent.LoadFromFile event) {
-		IDailiesCapability dailies = getCapability(event.getPlayer());
+		IDailiesCapability dailies = getCapability(event.getEntity());
 		if (dailies == null) {
 			return;
 		}
-		dailies.readNBT((CompoundNBT) event.getPlayer().getPersistentData().get(DailiesCapabilityProvider.NAME));
+		dailies.readNBT((CompoundTag) event.getEntity().getPersistentData().get(DailiesCapabilityProvider.NAME));
 	}
 
-	private static IDailiesCapability getCapability(PlayerEntity player) {
+	private static IDailiesCapability getCapability(Player player) {
 		if (isMissingCapability(player)) {
 			return null;
 		}
-        return player.getCapability(DailiesCapabilityProvider.DAILIES_CAPABILITY, null).orElse(null);
+		return player.getCapability(DailiesCapabilityProvider.DAILIES_CAPABILITY, null).orElse(null);
 	}
 
-	private static boolean isMissingCapability(PlayerEntity player) {
+	private static boolean isMissingCapability(Player player) {
 		return player == null || !player.getCapability(DailiesCapabilityProvider.DAILIES_CAPABILITY, null).isPresent();
 	}
 
 	@SubscribeEvent
 	public static void onEntityLoad(AttachCapabilitiesEvent<Entity> event) {
-
-		if (!(event.getObject() instanceof PlayerEntity)) {
+		if (!(event.getObject() instanceof Player)) {
 			return;
 		}
-
 		event.addCapability(new ResourceLocation(DailiesCapabilityProvider.NAME), new DailiesCapabilityProvider());
 	}
 
 
 	@SubscribeEvent
 	public static void onPlayerLogin(PlayerEvent.PlayerLoggedInEvent event) {
-		final PlayerEntity player = event.getPlayer();
-		
-		new Thread(new Runnable() {
-
-			@Override
-			public void run() {
-				setupDailiesData(player);
-			}
-		}).start();
+		final Player player = event.getEntity();
+		new Thread(() -> setupDailiesData(player)).start();
 	}
-	
-	private static void setupDailiesData(PlayerEntity player) {;
+
+	private static void setupDailiesData(Player player) {
 		IDailiesCapability cap = player.getCapability(DailiesCapabilityProvider.DAILIES_CAPABILITY, null).orElse(null);
-		if(cap == null)
+		if (cap == null)
 			return;
-
 		Set<DailyQuest> serversDailyQuests = getDailyQuests(player);
-		
-		List<DailyQuest> openDailyQuests = new ArrayList<DailyQuest>();
-		List<DailyQuest> acceptedDailyQuests = new ArrayList<DailyQuest>();
-
+		List<DailyQuest> openDailyQuests = new ArrayList<>();
+		List<DailyQuest> acceptedDailyQuests = new ArrayList<>();
 		for (DailyQuest quest : serversDailyQuests) {
 			if ("available".equals(quest.status)) {
 				openDailyQuests.add(quest);
@@ -152,23 +131,20 @@ public class Events {
 				acceptedDailyQuests.add(quest);
 			}
 		}
-		
-		cap.setAvailableQuests(new HashSet<DailyQuest>(openDailyQuests));
-		cap.setAcceptedQuests(new HashSet<DailyQuest>(acceptedDailyQuests));
-		
+		cap.setAvailableQuests(new HashSet<>(openDailyQuests));
+		cap.setAcceptedQuests(new HashSet<>(acceptedDailyQuests));
 		cap.writeNBT();
 	}
-	
-	private static Set<DailyQuest> getDailyQuests(PlayerEntity player) {
-		Set<DailyQuest> quests = new HashSet<DailyQuest>();
+
+	private static Set<DailyQuest> getDailyQuests(Player player) {
+		Set<DailyQuest> quests = new HashSet<>();
 		try {
 			quests = new QuestInventoryFetcher(player).getQuestInventory();
 		} catch (DailiesNetworkException e) {
-			player.sendMessage(e.getMessageAsTextComponent(), player.getUniqueID());
-			player.sendMessage(new StringTextComponent("Randomly generating quests instead."), player.getUniqueID());
+			player.sendSystemMessage(Component.literal("Randomly generating quests instead."));
 			quests = new RandomQuestGenerator().generateQuests();
 		} catch (DailiesException e) {
-			player.sendMessage(e.getMessageAsTextComponent(), player.getUniqueID());
+			player.sendSystemMessage(Component.literal(e.getMessage()));
 		}
 		return quests;
 	}

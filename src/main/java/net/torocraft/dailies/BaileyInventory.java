@@ -2,11 +2,15 @@ package net.torocraft.dailies;
 
 import java.util.Arrays;
 import java.util.Set;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.inventory.IInventory;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.JsonToNBT;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.Container;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.TagParser;
+import net.minecraft.network.chat.Component;
+import net.minecraft.core.Registry;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.common.util.LazyOptional;
 import net.torocraft.dailies.capabilities.DailiesCapabilityProvider;
 import net.torocraft.dailies.capabilities.IDailiesCapability;
@@ -14,7 +18,7 @@ import net.torocraft.dailies.network.remote.ProgressUpdater;
 import net.torocraft.dailies.quests.DailyQuest;
 import net.torocraft.dailies.quests.Reward;
 
-public class BaileyInventory implements IInventory {
+public class BaileyInventory implements Container {
 
 	private static final int SUBMIT_ITEM_COUNT = 3;
 	private static final int OUTPUT_ITEM_COUNT = 1;
@@ -26,110 +30,105 @@ public class BaileyInventory implements IInventory {
 	private ItemStack lastModifiedStack = ItemStack.EMPTY;
 	private int lastModifiedIndex = 0;
 	
-	private PlayerEntity player = null;
+	private Player player = null;
 	private LazyOptional<IDailiesCapability> playerDailiesCapability;
 	private Set<DailyQuest> acceptedQuests;
 	
 	public BaileyInventory() {
-		clear();
+		clearContent();
 	}
 
-	//@Override
-	public String getName() {
-		return "Bailey's Inventory";
+
+	public Component getDisplayName() {
+		return Component.literal("Bailey's Inventory");
 	}
 
-	/*@Override
-	public boolean hasCustomName() {
-		return false;
-	}*/
-
-	/*@Override
-	public ITextComponent getDisplayName() {
-		return new StringTextComponent(this.getName());
-	}*/
 
 	@Override
-	public int getSizeInventory() {
+	public int getContainerSize() {
 		return itemStacks.length;
 	}
 
 	@Override
-	public ItemStack getStackInSlot(int index) {
+	public ItemStack getItem(int index) {
 		return itemStacks[index];
 	}
 
+
 	@Override
-	public ItemStack decrStackSize(int index, int count) {
-		ItemStack slotStack = getStackInSlot(index);
-		if(slotStack == null) {
+	public ItemStack removeItem(int index, int count) {
+		if (count <= 0 || index < 0 || index >= itemStacks.length) {
 			return ItemStack.EMPTY;
 		}
-		
-		ItemStack stackRemoved;
-		if(slotStack.getCount() <= count) {
-			stackRemoved = slotStack;
-			setInventorySlotContents(index, ItemStack.EMPTY);
-			
+		ItemStack stackInSlot = itemStacks[index];
+		if (stackInSlot.isEmpty()) {
+			return ItemStack.EMPTY;
+		}
+		if (stackInSlot.getCount() <= count) {
+			ItemStack removed = stackInSlot;
+			itemStacks[index] = ItemStack.EMPTY;
+			setChanged();
+			return removed;
 		} else {
-			stackRemoved = slotStack.split(count);
-			if(slotStack.getCount() == 0) {
-				setInventorySlotContents(index, ItemStack.EMPTY);
+			ItemStack removed = stackInSlot.split(count);
+			if (stackInSlot.getCount() == 0) {
+				itemStacks[index] = ItemStack.EMPTY;
 			}
+			setChanged();
+			return removed;
 		}
-		
-		markDirty();
-		
-		return stackRemoved;
 	}
 
-	@Override
-	public ItemStack removeStackFromSlot(int index) {
-		ItemStack itemStack = getStackInSlot(index);
-		if(itemStack != null) {
-			setInventorySlotContents(index, ItemStack.EMPTY);
-		}
-		
-		return itemStack;
-	}
 
 	@Override
-	public void setInventorySlotContents(int index, ItemStack stack) {
+	public ItemStack removeItemNoUpdate(int index) {
+		ItemStack stack = itemStacks[index];
+		if (!stack.isEmpty()) {
+			itemStacks[index] = ItemStack.EMPTY;
+			setChanged();
+			return stack;
+		}
+		return ItemStack.EMPTY;
+	}
+
+
+	@Override
+	public void setItem(int index, ItemStack stack) {
 		itemStacks[index] = stack;
-		if(stack != null && stack.getCount() > getInventoryStackLimit()) {
-			stack.setCount(getInventoryStackLimit());
+		if (!stack.isEmpty() && stack.getCount() > getMaxStackSize()) {
+			stack.setCount(getMaxStackSize());
 		}
-		
-		if(stack != null && index != REWARD_OUTPUT_INDEX) {
+		if (!stack.isEmpty() && index != REWARD_OUTPUT_INDEX) {
 			this.lastModifiedIndex = index;
 		}
-		
-		markDirty();
+		setChanged();
 	}
 
+
 	@Override
-	public int getInventoryStackLimit() {
+	public int getMaxStackSize() {
 		return 64;
 	}
 	
-	@Override
-	public void openInventory(PlayerEntity player) {
+
+	public void startOpen(Player player) {
 		this.player = player;
 		this.playerDailiesCapability = player.getCapability(DailiesCapabilityProvider.DAILIES_CAPABILITY, null);
 	}
 
+
 	@Override
-	public void closeInventory(PlayerEntity player) {
-		
-		for(int x = 0; x < getSizeInventory(); x++) {
-			if(itemStacks[x] != null) {
-				player.dropItem(itemStacks[x], false);
+	public void stopOpen(Player player) {
+		for (int x = 0; x < getContainerSize(); x++) {
+			if (!itemStacks[x].isEmpty()) {
+				player.drop(itemStacks[x], false);
 			}
 		}
 	}
 
+
 	@Override
-	public boolean isItemValidForSlot(int index, ItemStack stack) {
+	public boolean canPlaceItem(int index, ItemStack stack) {
 		return true;
 	}
 
@@ -147,19 +146,22 @@ public class BaileyInventory implements IInventory {
 		return 0;
 	}*/
 
+
 	@Override
-	public void clear() {
+	public void clearContent() {
 		Arrays.fill(itemStacks, ItemStack.EMPTY);
 	}
 	
-	@Override
-	public void markDirty() {
-		
-	}
 
 	@Override
-	public boolean isUsableByPlayer(PlayerEntity player) {
-		return false;
+	public void setChanged() {
+		// No-op or add logic if needed
+	}
+
+
+	@Override
+	public boolean stillValid(Player player) {
+		return true;
 	}
 
 	public void checkForReward() {
@@ -175,8 +177,8 @@ public class BaileyInventory implements IInventory {
 		}
 		
 		if(canSearchForReward()) {
-			int itemId = Item.getIdFromItem(lastModifiedStack.getItem());
-			int subType = 1;//lastModifiedStack.getItem().;
+			ResourceLocation itemId = net.minecraftforge.registries.ForgeRegistries.ITEMS.getKey(lastModifiedStack.getItem());
+			int subType = lastModifiedStack.getDamageValue();
 			DailyQuest quest = checkForMatchingQuest(itemId, subType);
 			
 			if(quest != null) {
@@ -190,20 +192,18 @@ public class BaileyInventory implements IInventory {
 			return;
 		}
 		System.out.println("LOGGING ITEM STACK");
-		System.out.println("type:" + Item.getIdFromItem(stack.getItem()));
+		System.out.println("type:" + net.minecraftforge.registries.ForgeRegistries.ITEMS.getKey(stack.getItem()));
 		//System.out.println("subType:" + stack.getMetadata());
 		//System.out.println("NBT: " + String.valueOf(stack.getTagCompound()));
 	}
 	
-	private DailyQuest checkForMatchingQuest(int itemId, int itemSubType) {
+	private DailyQuest checkForMatchingQuest(ResourceLocation itemId, int itemSubType) {
 		DailyQuest quest = null;
-		
-		for(DailyQuest q : acceptedQuests) {
-			if(q.isGatherQuest() && itemId == q.target.type && !q.rewardFulfilled && q.target.subType == itemSubType) {
+		for (DailyQuest q : acceptedQuests) {
+			if (q.isGatherQuest() && itemId.equals(q.target.type) && !q.rewardFulfilled && q.target.subType == itemSubType) {
 				quest = q;
 			}
 		}
-		
 		return quest;
 	}
 	
@@ -227,31 +227,31 @@ public class BaileyInventory implements IInventory {
 		
 		if (leftOver > 0) {
 			stack.setCount(leftOver);
-			setInventorySlotContents(index, stack);
+			setItem(index, stack);
 		} else {
-			removeStackFromSlot(index);
+			removeItemNoUpdate(index);
 		}
 		
 		updateClient(player);
 	}
 	
 	private void buildReward(Reward reward) {
-		Item rewardItem = Item.getItemById(reward.type);
+		// TODO: Fix this - using integer IDs for items is deprecated
+		// Should use ResourceLocation strings instead of integers
+		Item rewardItem = Item.byId(reward.type); // This will need to be updated
 		ItemStack rewardStack = new ItemStack(rewardItem, reward.quantity);
-		
 		if (reward.subType > 0) {
-			rewardStack.setDamage(reward.subType);
+			rewardStack.setDamageValue(reward.subType);
 		}
-		
 		if (reward.nbt != null) {
 			try {
-				rewardStack.setTag(JsonToNBT.getTagFromJson(reward.nbt));
+				CompoundTag tag = TagParser.parseTag(reward.nbt);
+				rewardStack.setTag(tag);
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
 		}
-		
-		setInventorySlotContents(REWARD_OUTPUT_INDEX, rewardStack);
+		setItem(REWARD_OUTPUT_INDEX, rewardStack);
 	}
 	
 	private void syncProgress(final String questId, final int progress) {
@@ -269,22 +269,16 @@ public class BaileyInventory implements IInventory {
 		}).start();
 	}
 	
-	private void updateClient(final PlayerEntity player) {
+	private void updateClient(final Player player) {
 		playerDailiesCapability.ifPresent((cap) -> cap.sendAcceptedQuestsToClient(player));
 	}
 	
 	private boolean rewardStackExists() {
-		if(!itemStacks[REWARD_OUTPUT_INDEX].equals(ItemStack.EMPTY)) {
-			return true;
-		}
-		return false;
+	return !itemStacks[REWARD_OUTPUT_INDEX].isEmpty();
 	}
 	
 	private boolean canSearchForReward() {
-		if(rewardStackExists() || lastModifiedStack == null || acceptedQuests == null || acceptedQuests.isEmpty()) {
-			return false;
-		}
-		return true;
+	return !(rewardStackExists() || lastModifiedStack == null || acceptedQuests == null || acceptedQuests.isEmpty());
 	}
 
 

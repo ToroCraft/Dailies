@@ -1,64 +1,45 @@
 package net.torocraft.dailies.gui;
-/*
-import java.awt.Color;
 
+import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.inventory.GuiContainer;
-import net.minecraft.client.renderer.GlStateManager;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.world.World;
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
-import net.torocraft.dailies.BaileyInventory;
+import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.player.Inventory;
 import net.torocraft.dailies.DailiesContainer;
-import net.torocraft.dailies.messages.DailiesPacketHandler;
-import net.torocraft.dailies.messages.RequestAcceptedQuests;
-import net.torocraft.dailies.messages.RequestAvailableQuests;
 
-@SideOnly(Side.CLIENT)
-public class DailiesGuiContainer extends GuiContainer {
+public class DailiesGuiContainer extends AbstractContainerScreen<DailiesContainer> {
 
-	ResourceLocation texture = new ResourceLocation("dailiesmod", "textures/gui/bailey_gui.png");
+	private static final ResourceLocation TEXTURE = new ResourceLocation("dailies", "textures/gui/bailey_gui.png");
 
-	public DailiesGuiContainer() {
-		this(null, null, null);
-	}
-	
-	public DailiesGuiContainer(EntityPlayer player, BaileyInventory baileyInventory, World world) {
-		super(new DailiesContainer(player, baileyInventory, world));
-		xSize = 175;
-		ySize = 130;
-		
-		syncWithServer();
-	}
-	
-	private void syncWithServer() {
-		DailiesPacketHandler.INSTANCE.sendToServer(new RequestAvailableQuests());
-		DailiesPacketHandler.INSTANCE.sendToServer(new RequestAcceptedQuests());
+	public DailiesGuiContainer(DailiesContainer container, Inventory playerInventory, Component title) {
+		super(container, playerInventory, title);
+		this.imageWidth = 175;
+		this.imageHeight = 130;
 	}
 
 	@Override
-	protected void drawGuiContainerBackgroundLayer(float partialTicks, int mouseX, int mouseY) {
-		Minecraft.getMinecraft().getTextureManager().bindTexture(texture);
-		GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
-		drawTexturedModalRect(guiLeft, guiTop, 0, 0, xSize, ySize);
+	protected void renderBg(PoseStack poseStack, float partialTicks, int mouseX, int mouseY) {
+		RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
+		Minecraft mc = Minecraft.getInstance();
+		if (mc != null) {
+			mc.getTextureManager().bindForSetup(TEXTURE);
+		}
+		blit(poseStack, leftPos, topPos, 0, 0, this.imageWidth, this.imageHeight);
 	}
-	
+
 	@Override
-	protected void drawGuiContainerForegroundLayer(int mouseX, int mouseY) {
-		super.drawGuiContainerForegroundLayer(mouseX, mouseY);
-		final int LABEL_XPOS = 5;
-		final int LABEL_YPOS = 5;
-		fontRenderer.drawString("Bailey's Dailies", LABEL_XPOS, LABEL_YPOS, Color.darkGray.getRGB());
+	protected void renderLabels(PoseStack poseStack, int mouseX, int mouseY) {
+		this.font.draw(poseStack, "Bailey's Dailies", 5, 5, 0x404040);
+		this.font.draw(poseStack, "Quests & Trading", 5, 15, 0x808080);
 	}
-	
-    public void drawScreen(int mouseX, int mouseY, float partialTicks)
-    {
-        this.drawDefaultBackground();
-        super.drawScreen(mouseX, mouseY, partialTicks);
-        this.renderHoveredToolTip(mouseX, mouseY);
-    }
+
+	@Override
+	public void render(PoseStack poseStack, int mouseX, int mouseY, float partialTicks) {
+		this.renderBackground(poseStack);
+		super.render(poseStack, mouseX, mouseY, partialTicks);
+		this.renderTooltip(poseStack, mouseX, mouseY);
+	}
 }
-*/
 

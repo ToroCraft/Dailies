@@ -5,39 +5,36 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 
-import net.minecraft.entity.*;
-import net.minecraft.entity.merchant.villager.AbstractVillagerEntity;
-import net.minecraft.entity.merchant.villager.VillagerData;
-import net.minecraft.entity.merchant.villager.VillagerEntity;
-import net.minecraft.entity.merchant.villager.VillagerProfession;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.entity.player.PlayerInventory;
-import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.entity.villager.IVillagerDataHolder;
-import net.minecraft.inventory.container.Container;
-import net.minecraft.inventory.container.INamedContainerProvider;
-import net.minecraft.item.MerchantOffer;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.pathfinding.PathNodeType;
-import net.minecraft.scoreboard.ScorePlayerTeam;
-import net.minecraft.scoreboard.Team;
-import net.minecraft.util.ActionResultType;
-import net.minecraft.util.Hand;
-import net.minecraft.util.text.ITextComponent;
-import net.minecraft.util.text.StringTextComponent;
-import net.minecraft.util.text.TranslationTextComponent;
+import net.minecraft.world.entity.*;
+import net.minecraft.world.entity.npc.Villager;
+import net.minecraft.world.entity.npc.VillagerData;
+import net.minecraft.world.entity.npc.VillagerProfession;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.Container;
+import net.minecraft.world.item.trading.MerchantOffer;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.DifficultyInstance;
-import net.minecraft.world.IWorld;
-import net.minecraft.world.World;
-import net.minecraft.world.biome.*;
-import net.minecraftforge.fml.network.NetworkHooks;
+import net.minecraft.world.scores.PlayerTeam;
+import net.minecraft.world.scores.Team;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.network.chat.Component;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.biome.Biome;
+import net.minecraft.core.Holder;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.world.level.biome.Biomes;
+import net.minecraftforge.network.NetworkHooks;
 import net.torocraft.dailies.DailiesContainer;
 
 import javax.annotation.Nullable;
 
 import static net.minecraft.stats.Stats.TALKED_TO_VILLAGER;
 
-public class EntityBailey extends VillagerEntity {
+public class EntityBailey extends Villager {
 
 	public static enum BaileyVariant {
 		TAIGA, PLAINS, DESERT, SAVANNA;
@@ -53,9 +50,8 @@ public class EntityBailey extends VillagerEntity {
 	public BaileyVariant variant;
 
 
-	public EntityBailey(EntityType<? extends VillagerEntity> type, World worldIn) {
+	public EntityBailey(EntityType<? extends Villager> type, Level worldIn) {
 		super(type, worldIn);
-
 	}
 
 	public static void init(int entityId) {
@@ -69,69 +65,71 @@ public class EntityBailey extends VillagerEntity {
 	}
 
 	@Override
-	public ActionResultType func_230254_b_(PlayerEntity player, Hand hand) {
-		if (this.isAlive() && !this.isChild()) {
-			if (!this.world.isRemote) {
-				NetworkHooks.openGui((ServerPlayerEntity)player, new INamedContainerProvider() {
-					@Override
-					public ITextComponent getDisplayName() {
-						return new TranslationTextComponent("Bailey's Dailies");
-					}
+	public InteractionResult mobInteract(Player player, InteractionHand hand) {
+		if (this.isAlive() && !this.isBaby()) {
+			if (!this.level.isClientSide) {
+				   NetworkHooks.openScreen((ServerPlayer)player, new net.minecraft.world.MenuProvider() {
+					   @Override
+					   public Component getDisplayName() {
+						   return Component.literal("Bailey's Dailies");
+					   }
 
-					@Override
-					public Container createMenu(int id, PlayerInventory inventory, PlayerEntity player) {
-						return new DailiesContainer(id, inventory);
-					}
-				});
+					   @Override
+					   public net.minecraft.world.inventory.AbstractContainerMenu createMenu(int id, net.minecraft.world.entity.player.Inventory inventory, Player player) {
+						   return new net.torocraft.dailies.DailiesContainer(id, inventory);
+					   }
+				   });
 			}
-
-			player.addStat(TALKED_TO_VILLAGER);
-			return ActionResultType.FAIL;
+			player.awardStat(TALKED_TO_VILLAGER);
+			return InteractionResult.SUCCESS;
 		} else {
-			return super.func_230254_b_(player, hand);
+			return super.mobInteract(player, hand);
 		}
 	}
 
 	@Override
-	public ITextComponent getDisplayName() {
-		Team team = this.getTeam();
-		//String name = this.getCustomName().toString();
-
-		//if (name == null || name.length() == 0) {
-			//name = "Bailey";
-		//}
-
-		StringTextComponent textcomponentstring = new StringTextComponent("bailey");//new StringTextComponent(ScorePlayerTeam.func_237500_a_(team, new StringTextComponent("name")).toString());
-		//textcomponentstring.getStyle().setHoverEvent(this.getHoverEvent());
-		//textcomponentstring.getStyle().setInsertion(this.getCachedUniqueIdString());
-		return textcomponentstring;
-	}
+	   public Component getDisplayName() {
+		   return Component.literal("bailey");
+	   }
 
 	@Override
-	public ILivingEntityData onInitialSpawn(IWorld worldIn, DifficultyInstance difficultyIn, SpawnReason reason, @Nullable ILivingEntityData spawnDataIn, @Nullable CompoundNBT dataTag) {
-		ILivingEntityData data = super.onInitialSpawn(worldIn, difficultyIn, reason, spawnDataIn, dataTag);
+	public SpawnGroupData finalizeSpawn(
+			ServerLevelAccessor worldIn,
+			DifficultyInstance difficultyIn,
+			MobSpawnType reason,
+			@Nullable SpawnGroupData spawnDataIn,
+			@Nullable CompoundTag dataTag) {
+		SpawnGroupData data = super.finalizeSpawn(worldIn, difficultyIn, reason, spawnDataIn, dataTag);
 		setVariantByCurrentBiome();
 		return data;
 	}
 
-	private void setVariantByCurrentBiome() {
-		Biome biome = world.getBiome(getPositionUnderneath());
-		if (biome instanceof TaigaBiome) {
-			variant = BaileyVariant.TAIGA;
-		} else if (biome instanceof DesertBiome) {
-			variant = BaileyVariant.DESERT;
-		} else if (biome instanceof PlainsBiome) {
-			variant = BaileyVariant.PLAINS;
-		} else if (biome instanceof SavannaBiome) {
-			variant = BaileyVariant.SAVANNA;
-		} else {
-			variant = BaileyVariant.random();
+	   private void setVariantByCurrentBiome() {
+		   Holder<Biome> biomeHolder = this.level.getBiome(this.blockPosition());
+		   ResourceKey<Biome> biomeKey = biomeHolder.unwrap().left().orElse(null);
+		   if (biomeKey == Biomes.TAIGA) {
+			   variant = BaileyVariant.TAIGA;
+		   } else if (biomeKey == Biomes.DESERT) {
+			   variant = BaileyVariant.DESERT;
+		   } else if (biomeKey == Biomes.SAVANNA) {
+			   variant = BaileyVariant.SAVANNA;
+		   } else {
+			   variant = BaileyVariant.PLAINS;
+		   }
+	   }
+	
+	// NBT read/write methods should be implemented using addAdditionalSaveData and readAdditionalSaveData in 1.18.2+
+	@Override
+	public void addAdditionalSaveData(CompoundTag compound) {
+		super.addAdditionalSaveData(compound);
+		if (variant != null) {
+			compound.putString("BaileyVariant", variant.toString());
 		}
 	}
-	
-	/*@Override
-	public void read(CompoundNBT compound) {
-		super.read(compound);
+
+	@Override
+	public void readAdditionalSaveData(CompoundTag compound) {
+		super.readAdditionalSaveData(compound);
 		try {
 			variant = BaileyVariant.valueOf(compound.getString("BaileyVariant"));
 		} catch (Exception e) {
@@ -140,26 +138,4 @@ public class EntityBailey extends VillagerEntity {
 	}
 
 
-
-	@Override
-	public void writeAdditional(CompoundNBT compound) {
-		super.writeAdditional(compound);
-		if (variant != null) {
-			compound.putString("BaileyVariant", variant.toString());
-		}
-	}*/
-
-	/*@Override
-	public void writeSpawnData(ByteBuf buffer) {
-		ByteBufUtils.writeUTF8String(buffer, String.valueOf(variant));
-	}
-
-	@Override
-	public void readSpawnData(ByteBuf additionalData) {
-		try {
-			variant = BaileyVariant.valueOf(ByteBufUtils.readUTF8String(additionalData));
-		} catch (Exception e) {
-			setVariantByCurrentBiome();
-		}
-	}*/
 }

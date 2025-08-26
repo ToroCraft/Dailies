@@ -3,34 +3,25 @@ package net.torocraft.dailies;
 import java.util.HashSet;
 import java.util.Set;
 
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.nbt.ListNBT;
-import net.minecraft.world.World;
-import net.minecraft.world.storage.MapData;
-import net.minecraft.world.storage.WorldSavedData;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
+import net.minecraft.world.level.saveddata.SavedData;
 import net.torocraft.dailies.quests.DailyQuest;
 
-public class DailiesWorldData extends WorldSavedData {
+public class DailiesWorldData extends SavedData {
 
 	public static final String MODNAME = "DailiesMod";
 
 	private Set<DailyQuest> dailyQuests;
 
-	public DailiesWorldData() {
-		super(MODNAME);
-	}
 
-	public DailiesWorldData(String name) {
-		super(name);
-	}
 
-	@Override
-	public void read(CompoundNBT nbt) {
+	public void load(CompoundTag nbt) {
 		dailyQuests = readQuestList(nbt, "dailies");
 	}
 
 	@Override
-	public CompoundNBT write(CompoundNBT nbt) {
+	public CompoundTag save(CompoundTag nbt) {
 		writeQuestsList(nbt, "dailies", dailyQuests);
 		return nbt;
 	}
@@ -41,20 +32,20 @@ public class DailiesWorldData extends WorldSavedData {
 
 	public void setDailyQuests(Set<DailyQuest> dailies) {
 		this.dailyQuests = dailies;
-		markDirty();
+		setDirty();
 	}
 
-	private void writeQuestsList(CompoundNBT c, String key, Set<DailyQuest> quests) {
-		ListNBT list = new ListNBT();
+	private void writeQuestsList(CompoundTag c, String key, Set<DailyQuest> quests) {
+		ListTag list = new ListTag();
 		for (DailyQuest quest : quests) {
 			list.add(quest.writeNBT());
 		}
 		c.put(key, list);
 	}
 
-	private Set<DailyQuest> readQuestList(CompoundNBT b, String key) {
+	private Set<DailyQuest> readQuestList(CompoundTag b, String key) {
 		Set<DailyQuest> quests = new HashSet<DailyQuest>();
-		ListNBT list = (ListNBT) b.get(key);
+		ListTag list = (ListTag) b.get(key);
 
 		if (list == null) {
 			return quests;

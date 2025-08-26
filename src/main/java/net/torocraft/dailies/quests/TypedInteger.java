@@ -1,6 +1,6 @@
 package net.torocraft.dailies.quests;
 
-import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.nbt.CompoundTag;
 
 public class TypedInteger {
 	public int type;
@@ -8,8 +8,8 @@ public class TypedInteger {
 	public int quantity;
 	public String nbt;
 
-	public CompoundNBT writeNBT() {
-		CompoundNBT c = new CompoundNBT();
+	public CompoundTag writeNBT() {
+		CompoundTag c = new CompoundTag();
 		c.putInt("type", type);
 		c.putInt("subType", subType);
 		c.putInt("quantity", quantity);
@@ -19,7 +19,7 @@ public class TypedInteger {
 		return c;
 	}
 
-	public void readNBT(CompoundNBT c) {
+	public void readNBT(CompoundTag c) {
 		if (c == null) {
 			return;
 		}

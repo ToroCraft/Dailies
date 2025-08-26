@@ -1,11 +1,11 @@
 package net.torocraft.dailies.network;
 
 import java.util.Set;
-import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.util.ResourceLocation;
-import net.minecraftforge.fml.network.NetworkRegistry;
-import net.minecraftforge.fml.network.PacketDistributor;
-import net.minecraftforge.fml.network.simple.SimpleChannel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraftforge.network.NetworkRegistry;
+import net.minecraftforge.network.PacketDistributor;
+import net.minecraftforge.network.simple.SimpleChannel;
 import net.torocraft.dailies.DailiesMod;
 import net.torocraft.dailies.network.packets.GetQuestsPacket;
 import net.torocraft.dailies.network.packets.QuestCommandPacket;
@@ -17,7 +17,12 @@ import net.torocraft.dailies.quests.DailyQuest;
 
 public class PacketHandler {
 
-  public static void questsUpdate(ServerPlayerEntity player, QuestsFilter filterUsed, Set<DailyQuest> quests) {
+  private static final String PROTOCOL_VERSION = "1";
+  private static int id = 1;
+
+  private static SimpleChannel INSTANCE;
+
+  public static void questsUpdate(ServerPlayer player, QuestsFilter filterUsed, Set<DailyQuest> quests) {
     INSTANCE.send(PacketDistributor.PLAYER.with(() -> player), new QuestsPacket.Message(filterUsed, quests));
   }
 
@@ -25,38 +30,37 @@ public class PacketHandler {
     INSTANCE.sendToServer(new GetQuestsPacket.Message(filter));
   }
 
-  public static void questProgressUpdate(ServerPlayerEntity player, DailyQuest quest) {
+  public static void questProgressUpdate(ServerPlayer player, DailyQuest quest) {
     INSTANCE.send(PacketDistributor.PLAYER.with(() -> player), new QuestProgressPacket.Message(quest));
   }
 
   public static void questCommand(String questId, QuestCommand command) {
     INSTANCE.sendToServer(new QuestCommandPacket.Message(questId, command));
   }
-  
-  private static final String PROTOCOL_VERSION = "1";
-  private static int id = 1;
-
-  private static final SimpleChannel INSTANCE = NetworkRegistry.newSimpleChannel(
-      new ResourceLocation(DailiesMod.MODID, "main"),
-      () -> PROTOCOL_VERSION,
-      PROTOCOL_VERSION::equals,
-      PROTOCOL_VERSION::equals
-  );
 
   public static void init() {
+    // Initialize the network channel first
+    INSTANCE = NetworkRegistry.newSimpleChannel(
+        new ResourceLocation(DailiesMod.MODID, "main"),
+        () -> PROTOCOL_VERSION,
+        PROTOCOL_VERSION::equals,
+        PROTOCOL_VERSION::equals
+    );
+    
+    // Then register all packets
     register(GetQuestsPacket.class);
     register(QuestsPacket.class);
     register(QuestProgressPacket.class);
     register(QuestCommandPacket.class);
   }
 
-  private static <M, P extends IDailiesPacket<M>> void register(Class<P> clazz) {
+  @SuppressWarnings("unchecked")
+  private static <P extends IDailiesPacket> void register(Class<P> clazz) {
     try {
-      P packet = clazz.newInstance();
-      Class<M> messageClass = packet.getDataClass();
-      INSTANCE.registerMessage(id++, messageClass, packet::encode,  packet::decode, packet::handle);
-    }catch(Exception e){
-      throw new RuntimeException("Failed to register network message " + clazz, e);
+      P packet = clazz.getDeclaredConstructor().newInstance();
+      INSTANCE.registerMessage(id++, packet.getDataClass(), packet::encode, packet::decode, packet::handle);
+    } catch (Exception e) {
+      throw new RuntimeException("Failed to register packet: " + clazz.getSimpleName(), e);
     }
   }
 }
