@@ -64,30 +64,44 @@ public class DailyQuest {
 	private String targetItemName() {
 		if (targetName == null) {
 			if (isGatherQuest()) {
-				targetName = decodeItem(target.type);
+				targetName = decodeItem(target.getItemIdentifier());
 			} else if (isHuntQuest()) {
-				targetName = decodeMob(target.type);
+				targetName = decodeMob(target.getItemIdentifier());
 			}
 		}
 		return targetName;
 	}
 
-	private String decodeItem(int itemId) {
-		// Map legacy item ID to modern Item and get display name
-		Item item = getItemFromId(itemId);
-		if (item != null) {
-			return item.getDescription().getString();
+	private String decodeItem(String itemIdentifier) {
+		// Get Item from string identifier using modern Forge registry system
+		try {
+			net.minecraft.resources.ResourceLocation resourceLocation = new net.minecraft.resources.ResourceLocation(itemIdentifier);
+			net.minecraft.world.item.Item item = net.minecraftforge.registries.ForgeRegistries.ITEMS.getValue(resourceLocation);
+			if (item != null) {
+				return item.getDescription().getString();
+			}
+		} catch (Exception e) {
+			// Log error and fall back to identifier
+			System.err.println("Failed to resolve item identifier for display name: " + itemIdentifier);
 		}
-		return "Unknown Item";
+		// Fallback to identifier itself if resolution fails
+		return itemIdentifier;
 	}
 
-	private String decodeMob(int entityId) {
-		// Map legacy entity ID to modern EntityType and get display name
-		EntityType<?> entityType = getEntityTypeFromId(entityId);
-		if (entityType != null) {
-			return entityType.getDescription().getString();
+	private String decodeMob(String entityIdentifier) {
+		// Get EntityType from string identifier using modern Forge registry system
+		try {
+			net.minecraft.resources.ResourceLocation resourceLocation = new net.minecraft.resources.ResourceLocation(entityIdentifier);
+			net.minecraft.world.entity.EntityType<?> entityType = net.minecraftforge.registries.ForgeRegistries.ENTITY_TYPES.getValue(resourceLocation);
+			if (entityType != null) {
+				return entityType.getDescription().getString();
+			}
+		} catch (Exception e) {
+			// Log error and fall back to identifier
+			System.err.println("Failed to resolve entity identifier for display name: " + entityIdentifier);
 		}
-		return "Unknown Entity";
+		// Fallback to identifier itself if resolution fails
+		return entityIdentifier;
 	}
 	
 	/**
@@ -197,15 +211,21 @@ public class DailyQuest {
 
 	/**
 	 * Check if the given mob matches the target for this hunt quest
-	 * Maps legacy integer IDs to modern EntityType comparison
+	 * Uses string-based entity type comparison with modern EntityType system
 	 */
 	private boolean isTargetMob(LivingEntity mob) {
-		// Use our centralized entity type mapping
-		EntityType<?> targetType = getEntityTypeFromId(target.type);
-		if (targetType == null) {
-			return false; // Unknown entity type
+		try {
+			// Get the entity's ResourceLocation identifier
+			net.minecraft.resources.ResourceLocation mobId = net.minecraftforge.registries.ForgeRegistries.ENTITY_TYPES.getKey(mob.getType());
+			String mobIdentifier = mobId != null ? mobId.toString() : "";
+			
+			// Compare with target identifier
+			String targetIdentifier = target.getItemIdentifier();
+			return mobIdentifier.equals(targetIdentifier);
+		} catch (Exception e) {
+			System.err.println("Failed to match mob for quest: " + e.getMessage());
+			return false;
 		}
-		return mob.getType() == targetType;
 	}
 
 	public void reward(Player player) {

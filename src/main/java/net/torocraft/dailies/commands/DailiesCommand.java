@@ -74,7 +74,18 @@ public class DailiesCommand {
     private static int listDailyQuests(CommandSourceStack source) throws CommandSyntaxException {
         PlayerDailyQuests questData = setupQuestsData(source);
         String dailiesList = buildDailiesListText(questData);
-    questData.player.sendSystemMessage(Component.literal(dailiesList));
+        questData.player.sendSystemMessage(Component.literal(dailiesList));
+        
+        // Force synchronization with client GUI by sending updated quest data
+        questData.playerDailiesCapability.ifPresent(cap -> {
+            cap.sendAcceptedQuestsToClient(questData.player);
+            // Also send available quests to client
+            net.torocraft.dailies.network.PacketHandler.questsUpdate(
+                questData.player, 
+                net.torocraft.dailies.network.packets.GetQuestsPacket.QuestsFilter.AVAILABLE, 
+                cap.getAvailableQuests()
+            );
+        });
 
         return 0;
     }
@@ -145,6 +156,14 @@ public class DailiesCommand {
                     DailyQuest q = d.acceptedDailyQuests.get(questId);
                     x.abandonQuest(player, q);
                     d.player.sendSystemMessage(Component.literal("Quest " + fromIndex(questId) + " " + q.getDisplayName() + " abandoned"));
+                    
+                    // Force synchronization with client
+                    x.sendAcceptedQuestsToClient(player);
+                    net.torocraft.dailies.network.PacketHandler.questsUpdate(
+                        player, 
+                        net.torocraft.dailies.network.packets.GetQuestsPacket.QuestsFilter.AVAILABLE, 
+                        x.getAvailableQuests()
+                    );
                 } catch (Exception ex) {
                     d.player.sendSystemMessage(Component.literal("Error occured when trying to abandon quest"));
                 }
@@ -170,6 +189,14 @@ public class DailiesCommand {
                     DailyQuest q = d.openDailyQuests.get(questId);
                     x.acceptQuest(player, q);
                     d.player.sendSystemMessage(Component.literal("Quest " + fromIndex(questId) + " " + q.getDisplayName() + " accepted"));
+                    
+                    // Force synchronization with client
+                    x.sendAcceptedQuestsToClient(player);
+                    net.torocraft.dailies.network.PacketHandler.questsUpdate(
+                        player, 
+                        net.torocraft.dailies.network.packets.GetQuestsPacket.QuestsFilter.AVAILABLE, 
+                        x.getAvailableQuests()
+                    );
                 } catch (Exception ex) {
                     d.player.sendSystemMessage(Component.literal("Error occured when trying to accept quest"));
                 }

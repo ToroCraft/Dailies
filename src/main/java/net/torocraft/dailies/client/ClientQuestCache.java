@@ -42,6 +42,19 @@ public class ClientQuestCache {
      * Get available quests with option to auto-refresh
      */
     public Set<DailyQuest> getAvailableQuests(boolean autoRefresh) {
+        // Always try to get from player capability first for most up-to-date data
+        Player player = Minecraft.getInstance().player;
+        if (player != null) {
+            IDailiesCapability capability = player.getCapability(DailiesCapabilityProvider.DAILIES_CAPABILITY, null).orElse(new DailiesCapabilityImpl());
+            if (capability != null) {
+                Set<DailyQuest> capabilityQuests = capability.getAvailableQuests();
+                if (capabilityQuests != null && !capabilityQuests.isEmpty()) {
+                    cachedAvailableQuests = new HashSet<>(capabilityQuests);
+                    return new HashSet<>(cachedAvailableQuests);
+                }
+            }
+        }
+        
         if (autoRefresh && shouldRefreshCache()) {
             requestQuestsFromServer();
         }
@@ -100,7 +113,7 @@ public class ClientQuestCache {
             // Also update the player capability if available
             Player player = Minecraft.getInstance().player;
             if (player != null) {
-                IDailiesCapability capability = player.getCapability(DailiesCapabilityProvider.DAILIES_CAPABILITY, null).orElse(null);
+                IDailiesCapability capability = player.getCapability(DailiesCapabilityProvider.DAILIES_CAPABILITY, null).orElse(new DailiesCapabilityImpl());
                 if (capability != null) {
                     capability.setAcceptedQuests(new HashSet<>(quests));
                 }

@@ -28,9 +28,27 @@ public class BaileyInventoryGui extends AbstractContainerScreen<DailiesContainer
     // Scrolling variables
     private int availableQuestScroll = 0;
     private int acceptedQuestScroll = 0;
-    private static final int QUESTS_PER_PAGE = 3; // Number of quests visible at once
-    private static final int QUEST_ENTRY_HEIGHT = 35;
-    private static final int ACCEPTED_QUEST_ENTRY_HEIGHT = 40; // Taller for descriptions
+    private static final int QUESTS_PER_PAGE = 6; // Increased from 3 to 6 - Number of quests visible at once
+    private static final int QUEST_ENTRY_HEIGHT = 30; // Reduced from 35 to 30 for more compact layout
+    private static final int ACCEPTED_QUEST_ENTRY_HEIGHT = 35; // Reduced from 40 to 35 for more compact layout
+
+    /**
+     * Create a consistently ordered list from a quest set to ensure stable scrolling and button interactions
+     */
+    private List<DailyQuest> createOrderedQuestList(Set<DailyQuest> questSet) {
+        if (questSet == null || questSet.isEmpty()) {
+            return new ArrayList<>();
+        }
+        List<DailyQuest> quests = new ArrayList<>(questSet);
+        // Sort by quest ID for consistent ordering
+        quests.sort((q1, q2) -> {
+            if (q1.id == null && q2.id == null) return 0;
+            if (q1.id == null) return 1;
+            if (q2.id == null) return -1;
+            return q1.id.compareTo(q2.id);
+        });
+        return quests;
+    }
 
     public BaileyInventoryGui(DailiesContainer container, Inventory inv, Component title) {
         super(container, inv, title);
@@ -88,7 +106,7 @@ public class BaileyInventoryGui extends AbstractContainerScreen<DailiesContainer
         if (this.showingQuests) {
             // Check if mouse is over quest panel - use same logic as renderQuestPanel
             int panelWidth = 220;
-            int maxPanelHeight = 240;
+            int maxPanelHeight = 300; // Increased from 240 to 300 for more quest space
             int availableHeight = this.height - 20;
             int panelHeight = Math.min(maxPanelHeight, availableHeight);
             
@@ -117,8 +135,9 @@ public class BaileyInventoryGui extends AbstractContainerScreen<DailiesContainer
                     ClientQuestCache cache = ClientQuestCache.getInstance();
                     Set<DailyQuest> available = cache.getAvailableQuests();
                     if (available != null) {
+                        List<DailyQuest> quests = createOrderedQuestList(available);
                         int visibleQuests = Math.min(QUESTS_PER_PAGE, (availableSectionHeight - 20) / QUEST_ENTRY_HEIGHT);
-                        int maxScroll = Math.max(0, available.size() - visibleQuests);
+                        int maxScroll = Math.max(0, quests.size() - visibleQuests);
                         availableQuestScroll = Math.max(0, Math.min(maxScroll, 
                             availableQuestScroll - (int)(delta * 2)));
                     }
@@ -127,9 +146,10 @@ public class BaileyInventoryGui extends AbstractContainerScreen<DailiesContainer
                     ClientQuestCache cache = ClientQuestCache.getInstance();
                     Set<DailyQuest> accepted = cache.getAcceptedQuests();
                     if (accepted != null) {
+                        List<DailyQuest> quests = createOrderedQuestList(accepted);
                         int availableHeightForAccepted = panelHeight - (acceptedSectionStart - panelY) - 20;
                         int visibleQuests = Math.min(QUESTS_PER_PAGE, availableHeightForAccepted / ACCEPTED_QUEST_ENTRY_HEIGHT);
-                        int maxScroll = Math.max(0, accepted.size() - visibleQuests);
+                        int maxScroll = Math.max(0, quests.size() - visibleQuests);
                         acceptedQuestScroll = Math.max(0, Math.min(maxScroll, 
                             acceptedQuestScroll - (int)(delta * 2)));
                     }
@@ -143,7 +163,7 @@ public class BaileyInventoryGui extends AbstractContainerScreen<DailiesContainer
     private boolean handleQuestPanelClick(double mouseX, double mouseY) {
         // Calculate panel position (same logic as renderQuestPanel)
         int panelWidth = 220;
-        int panelHeight = 240; // Updated to match render method
+        int panelHeight = 300; // Updated to match render method (increased from 240)
         
         // Use same positioning strategy as render method
         int panelX, panelY;
@@ -172,9 +192,14 @@ public class BaileyInventoryGui extends AbstractContainerScreen<DailiesContainer
         ClientQuestCache cache = ClientQuestCache.getInstance();
         Set<DailyQuest> available = cache.getAvailableQuests();
         if (available != null && !available.isEmpty()) {
-            List<DailyQuest> quests = new ArrayList<>(available);
+            List<DailyQuest> quests = createOrderedQuestList(available);
+            int availableSectionHeight = (panelHeight - 40) / 2; // Split remaining space between sections
+            int visibleQuests = Math.min(QUESTS_PER_PAGE, (availableSectionHeight - 20) / QUEST_ENTRY_HEIGHT);
+            int startIndex = availableQuestScroll;
+            int endIndex = Math.min(startIndex + visibleQuests, quests.size());
             int yOffset = 20;
-            for (int i = 0; i < Math.min(3, quests.size()); i++) { // Updated to match render method
+            
+            for (int i = startIndex; i < endIndex; i++) {
                 DailyQuest quest = quests.get(i);
                 
                 // Accept button bounds (match renderQuestEntry)
@@ -188,16 +213,23 @@ public class BaileyInventoryGui extends AbstractContainerScreen<DailiesContainer
                     acceptQuest(quest);
                     return true;
                 }
-                yOffset += 35;
+                yOffset += QUEST_ENTRY_HEIGHT;
             }
         }
         
         // Check accepted quests cancel buttons
         Set<DailyQuest> accepted = cache.getAcceptedQuests();
         if (accepted != null && !accepted.isEmpty()) {
-            List<DailyQuest> quests = new ArrayList<>(accepted);
-            int yOffset = 150; // Updated to match render method
-            for (int i = 0; i < Math.min(2, quests.size()); i++) { // Updated to match render method
+            List<DailyQuest> quests = createOrderedQuestList(accepted);
+            int availableSectionHeight = (panelHeight - 40) / 2;
+            int acceptedSectionStart = 20 + availableSectionHeight + 15;
+            int availableHeightForAccepted = panelHeight - acceptedSectionStart - 20;
+            int visibleQuests = Math.min(QUESTS_PER_PAGE, availableHeightForAccepted / ACCEPTED_QUEST_ENTRY_HEIGHT);
+            int startIndex = acceptedQuestScroll;
+            int endIndex = Math.min(startIndex + visibleQuests, quests.size());
+            int yOffset = acceptedSectionStart + 15;
+            
+            for (int i = startIndex; i < endIndex; i++) {
                 DailyQuest quest = quests.get(i);
                 
                 // Cancel button bounds (match renderAcceptedQuestEntry)
@@ -241,7 +273,7 @@ public class BaileyInventoryGui extends AbstractContainerScreen<DailiesContainer
     private void renderQuestPanel(PoseStack poseStack, int mouseX, int mouseY) {
         // Calculate panel dimensions - make it more adaptive to screen size
         int panelWidth = 220;
-        int maxPanelHeight = 240;
+        int maxPanelHeight = 300; // Increased from 240 to 300 for more quest space
         
         // Calculate available vertical space and adjust panel height if needed
         int availableHeight = this.height - 20; // Leave 10px margin on top and bottom
@@ -286,7 +318,7 @@ public class BaileyInventoryGui extends AbstractContainerScreen<DailiesContainer
         int acceptedSectionStart = 20 + availableSectionHeight + 15; // Leave space for section header
         
         if (available != null && !available.isEmpty()) {
-            List<DailyQuest> quests = new ArrayList<>(available);
+            List<DailyQuest> quests = createOrderedQuestList(available);
             int yOffset = 20;
             int startIndex = availableQuestScroll;
             int visibleQuests = Math.min(QUESTS_PER_PAGE, (availableSectionHeight - 20) / QUEST_ENTRY_HEIGHT);
@@ -314,7 +346,7 @@ public class BaileyInventoryGui extends AbstractContainerScreen<DailiesContainer
         
         Set<DailyQuest> accepted = cache.getAcceptedQuests();
         if (accepted != null && !accepted.isEmpty()) {
-            List<DailyQuest> quests = new ArrayList<>(accepted);
+            List<DailyQuest> quests = createOrderedQuestList(accepted);
             int yOffset = acceptedSectionStart + 15;
             int startIndex = acceptedQuestScroll;
             int availableHeightForAccepted = panelHeight - acceptedSectionStart - 20;

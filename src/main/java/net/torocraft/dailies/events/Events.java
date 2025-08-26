@@ -170,6 +170,17 @@ public class Events {
 		
 		// Force save the updated data
 		player.getPersistentData().put(DailiesCapabilityProvider.NAME, cap.writeNBT());
+		
+		// Send synchronized quest data to client
+		if (player instanceof net.minecraft.server.level.ServerPlayer) {
+			net.minecraft.server.level.ServerPlayer serverPlayer = (net.minecraft.server.level.ServerPlayer) player;
+			cap.sendAcceptedQuestsToClient(serverPlayer);
+			net.torocraft.dailies.network.PacketHandler.questsUpdate(
+				serverPlayer, 
+				net.torocraft.dailies.network.packets.GetQuestsPacket.QuestsFilter.AVAILABLE, 
+				cap.getAvailableQuests()
+			);
+		}
 	}
 
 	private static Set<DailyQuest> getDailyQuests(Player player) {
@@ -247,11 +258,11 @@ public class Events {
 			return false;
 		}
 		
-		// Convert quest target's legacy integer ID to modern item for comparison
-		net.minecraft.world.item.Item targetItem = getItemFromType(quest.target.type);
-		ResourceLocation targetItemId = net.minecraftforge.registries.ForgeRegistries.ITEMS.getKey(targetItem);
+		// Get quest target's string identifier
+		String targetIdentifier = quest.target.getItemIdentifier();
+		String itemIdentifier = itemId.toString();
 		
-		return itemId.equals(targetItemId);
+		return itemIdentifier.equals(targetIdentifier);
 	}
 	
 	/**

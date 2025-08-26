@@ -254,18 +254,18 @@ public class BaileyInventory implements Container {
 				q.getDisplayName(), q.isGatherQuest(), q.rewardFulfilled, q.target.subType);
 			
 			if (q.isGatherQuest() && !q.rewardFulfilled && q.target.subType == itemSubType) {
-				// Convert quest target's legacy integer ID to modern item for comparison
-				Item targetItem = getItemFromType(q.target.type);
-				ResourceLocation targetItemId = net.minecraftforge.registries.ForgeRegistries.ITEMS.getKey(targetItem);
+				// Get quest target's string identifier
+				String targetIdentifier = q.target.getItemIdentifier();
+				String itemIdentifier = itemId.toString();
 				
-				LOGGER.info("[DEBUG] Quest target item ID: {}, actual item ID: {}", targetItemId, itemId);
+				LOGGER.info("[DEBUG] Quest target identifier: {}, actual item identifier: {}", targetIdentifier, itemIdentifier);
 				
-				if (itemId.equals(targetItemId)) {
+				if (itemIdentifier.equals(targetIdentifier)) {
 					LOGGER.info("[DEBUG] Found matching quest: {}", q.getDisplayName());
 					quest = q;
 					break;
 				} else {
-					LOGGER.info("[DEBUG] Quest item mismatch - expected: {}, actual: {}", targetItemId, itemId);
+					LOGGER.info("[DEBUG] Quest item mismatch - expected: {}, actual: {}", targetIdentifier, itemIdentifier);
 				}
 			} else {
 				LOGGER.info("[DEBUG] Quest skipped - not gather quest, reward fulfilled, or subtype mismatch");
@@ -313,12 +313,25 @@ public class BaileyInventory implements Container {
 	}
 	
 	private void buildReward(Reward reward) {
-		// Convert legacy integer ID to modern Item from registry
-		Item rewardItem = getItemFromType(reward.type);
+		// Get Item from string identifier using modern Forge registry system
+		String rewardIdentifier = reward.getItemIdentifier();
+		Item rewardItem;
+		try {
+			ResourceLocation resourceLocation = new ResourceLocation(rewardIdentifier);
+			rewardItem = net.minecraftforge.registries.ForgeRegistries.ITEMS.getValue(resourceLocation);
+			if (rewardItem == null) {
+				rewardItem = Items.DIRT; // Fallback
+			}
+		} catch (Exception e) {
+			System.err.println("Failed to resolve reward identifier: " + rewardIdentifier);
+			rewardItem = Items.DIRT; // Fallback
+		}
+		
 		ItemStack rewardStack = new ItemStack(rewardItem, reward.quantity);
 		if (reward.subType > 0) {
 			rewardStack.setDamageValue(reward.subType);
 		}
+		
 		if (reward.nbt != null) {
 			try {
 				CompoundTag tag = TagParser.parseTag(reward.nbt);

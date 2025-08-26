@@ -23,10 +23,10 @@ public class RandomQuestGenerator {
 		quest1.status = "available";
 		quest1.progress = 0;
 		quest1.target = new TypedInteger();
-		quest1.target.type = 54;
+		quest1.target.itemId = "minecraft:zombie"; // Updated to string-based identifier
 		quest1.target.quantity = 10;
 		quest1.reward = new Reward();
-		quest1.reward.type = 384;
+		quest1.reward.itemId = "minecraft:experience_bottle"; // Updated to string-based identifier
 		quest1.reward.quantity = 30;
 		questList.add(quest1);
 		
@@ -38,10 +38,10 @@ public class RandomQuestGenerator {
 		quest2.status = "available";
 		quest2.progress = 0;
 		quest2.target = new TypedInteger();
-		quest2.target.type = 51;
+		quest2.target.itemId = "minecraft:skeleton"; // Updated to string-based identifier
 		quest2.target.quantity = 10;
 		quest2.reward = new Reward();
-		quest2.reward.type = 384;
+		quest2.reward.itemId = "minecraft:experience_bottle"; // Updated to string-based identifier
 		quest2.reward.quantity = 30;
 		questList.add(quest2);
 		
@@ -53,10 +53,10 @@ public class RandomQuestGenerator {
 		quest3.status = "available";
 		quest3.progress = 0;
 		quest3.target = new TypedInteger();
-		quest3.target.type = 263;
+		quest3.target.itemId = "minecraft:coal"; // Updated to string-based identifier
 		quest3.target.quantity = 64;
 		quest3.reward = new Reward();
-		quest3.reward.type = 264;
+		quest3.reward.itemId = "minecraft:diamond"; // Updated to string-based identifier
 		quest3.reward.quantity = 2;
 		questList.add(quest3);
 		
@@ -68,10 +68,10 @@ public class RandomQuestGenerator {
 		quest4.status = "available";
 		quest4.progress = 0;
 		quest4.target = new TypedInteger();
-		quest4.target.type = 50;
+		quest4.target.itemId = "minecraft:creeper"; // Updated to string-based identifier
 		quest4.target.quantity = 10;
 		quest4.reward = new Reward();
-		quest4.reward.type = 264;
+		quest4.reward.itemId = "minecraft:diamond"; // Updated to string-based identifier
 		quest4.reward.quantity = 2;
 		questList.add(quest4);
 						
@@ -83,10 +83,10 @@ public class RandomQuestGenerator {
 		quest5.status = "available";
 		quest5.progress = 0;
 		quest5.target = new TypedInteger();
-		quest5.target.type = 388;
+		quest5.target.itemId = "minecraft:emerald"; // Updated to string-based identifier
 		quest5.target.quantity = 5;
 		quest5.reward = new Reward();
-		quest5.reward.type = 384;
+		quest5.reward.itemId = "minecraft:experience_bottle"; // Updated to string-based identifier
 		quest5.reward.quantity = 30;
 		questList.add(quest5);
 	}
