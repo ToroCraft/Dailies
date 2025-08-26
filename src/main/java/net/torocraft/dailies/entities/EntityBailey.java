@@ -7,18 +7,11 @@ import java.util.Random;
 
 import net.minecraft.world.entity.*;
 import net.minecraft.world.entity.npc.Villager;
-import net.minecraft.world.entity.npc.VillagerData;
-import net.minecraft.world.entity.npc.VillagerProfession;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.Container;
-import net.minecraft.world.item.trading.MerchantOffer;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.DifficultyInstance;
-import net.minecraft.world.scores.PlayerTeam;
-import net.minecraft.world.scores.Team;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.network.chat.Component;
@@ -28,8 +21,8 @@ import net.minecraft.core.Holder;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.level.biome.Biomes;
 import net.minecraftforge.network.NetworkHooks;
-import net.torocraft.dailies.DailiesContainer;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 import static net.minecraft.stats.Stats.TALKED_TO_VILLAGER;
@@ -64,8 +57,9 @@ public class EntityBailey extends Villager {
 		super.setHealth(10);
 	}
 
+	@Nonnull
 	@Override
-	public InteractionResult mobInteract(Player player, InteractionHand hand) {
+	public InteractionResult mobInteract(@Nonnull Player player, @Nonnull InteractionHand hand) {
 		if (this.isAlive() && !this.isBaby()) {
 			if (!this.level.isClientSide) {
 				   NetworkHooks.openScreen((ServerPlayer)player, new net.minecraft.world.MenuProvider() {
@@ -75,7 +69,8 @@ public class EntityBailey extends Villager {
 					   }
 
 					   @Override
-					   public net.minecraft.world.inventory.AbstractContainerMenu createMenu(int id, net.minecraft.world.entity.player.Inventory inventory, Player player) {
+					   @Nonnull
+				   public net.minecraft.world.inventory.AbstractContainerMenu createMenu(int id, @Nonnull net.minecraft.world.entity.player.Inventory inventory, @Nonnull Player player) {
 						   return new net.torocraft.dailies.DailiesContainer(id, inventory);
 					   }
 				   });
@@ -94,9 +89,9 @@ public class EntityBailey extends Villager {
 
 	@Override
 	public SpawnGroupData finalizeSpawn(
-			ServerLevelAccessor worldIn,
-			DifficultyInstance difficultyIn,
-			MobSpawnType reason,
+			@Nonnull ServerLevelAccessor worldIn,
+			@Nonnull DifficultyInstance difficultyIn,
+			@Nonnull MobSpawnType reason,
 			@Nullable SpawnGroupData spawnDataIn,
 			@Nullable CompoundTag dataTag) {
 		SpawnGroupData data = super.finalizeSpawn(worldIn, difficultyIn, reason, spawnDataIn, dataTag);
@@ -120,7 +115,7 @@ public class EntityBailey extends Villager {
 	
 	// NBT read/write methods should be implemented using addAdditionalSaveData and readAdditionalSaveData in 1.18.2+
 	@Override
-	public void addAdditionalSaveData(CompoundTag compound) {
+	public void addAdditionalSaveData(@Nonnull CompoundTag compound) {
 		super.addAdditionalSaveData(compound);
 		if (variant != null) {
 			compound.putString("BaileyVariant", variant.toString());
@@ -128,7 +123,7 @@ public class EntityBailey extends Villager {
 	}
 
 	@Override
-	public void readAdditionalSaveData(CompoundTag compound) {
+	public void readAdditionalSaveData(@Nonnull CompoundTag compound) {
 		super.readAdditionalSaveData(compound);
 		try {
 			variant = BaileyVariant.valueOf(compound.getString("BaileyVariant"));

@@ -8,8 +8,8 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraftforge.network.NetworkEvent.Context;
-import net.torocraft.dailies.DailiesMod;
 import net.torocraft.dailies.capabilities.DailiesCapabilityImpl;
+import net.torocraft.dailies.client.ClientQuestCache;
 import net.torocraft.dailies.network.IDailiesPacket;
 import net.torocraft.dailies.network.packets.GetQuestsPacket.QuestsFilter;
 import net.torocraft.dailies.quests.DailyQuest;
@@ -53,7 +53,6 @@ public class QuestsPacket implements IDailiesPacket<QuestsPacket.Message> {
 
   @Override
   public void handle(Message message, Supplier<Context> ctx) {
-    System.out.println("************** QuestsPacket");
     ctx.get().enqueueWork(() -> {
       if (!ctx.get().getDirection().getReceptionSide().isClient()) {
         return;
@@ -63,11 +62,13 @@ public class QuestsPacket implements IDailiesPacket<QuestsPacket.Message> {
       if (player == null) {
         return;
       }
-      // TODO: Replace static quest fields with a proper client quest cache or capability
+      
+      // Use ClientQuestCache instead of static fields
+      ClientQuestCache cache = ClientQuestCache.getInstance();
       if (QuestsFilter.ACCEPTED.equals(message.filter)) {
-        DailiesMod.acceptedQuests = message.quests;
+        cache.updateAcceptedQuests(message.quests);
       } else {
-        DailiesMod.availableQuests = message.quests;
+        cache.updateAvailableQuests(message.quests);
       }
     });
     ctx.get().setPacketHandled(true);

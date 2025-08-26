@@ -15,6 +15,8 @@ import net.torocraft.dailies.entities.EntityBailey.BaileyVariant;
 import net.torocraft.dailies.entities.model.ModelBailey;
 import net.torocraft.dailies.entities.model.ModelLayers;
 
+import javax.annotation.Nonnull;
+
 @OnlyIn(Dist.CLIENT)
 public class RenderBailey extends MobRenderer<EntityBailey, ModelBailey<EntityBailey>> {
 	private static final ResourceLocation baileyTextureSavanna = new ResourceLocation(DailiesMod.MODID, "textures/entity/baileysavanna.png");
@@ -35,8 +37,9 @@ public class RenderBailey extends MobRenderer<EntityBailey, ModelBailey<EntityBa
 		super(context, new ModelBailey<>(context.bakeLayer(ModelLayers.BAILEY)), 0.5F);
 	}
 
+	@Nonnull
 	@Override
-	public ResourceLocation getTextureLocation(EntityBailey entity) {
+	public ResourceLocation getTextureLocation(@Nonnull EntityBailey entity) {
 		if (entity.variant == null) {
 			return baileyTextureSavanna;
 		}
@@ -44,7 +47,7 @@ public class RenderBailey extends MobRenderer<EntityBailey, ModelBailey<EntityBa
 	}
 
 	@Override
-	protected void scale(EntityBailey entity, PoseStack poseStack, float partialTickTime) {
+	protected void scale(@Nonnull EntityBailey entity, @Nonnull PoseStack poseStack, float partialTickTime) {
 		float f = 0.9375F;
 		if (entity.getAge() < 0) {
 			f = (float) ((double) f * 0.5D);

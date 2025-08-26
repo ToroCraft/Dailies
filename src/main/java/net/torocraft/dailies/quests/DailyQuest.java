@@ -1,8 +1,11 @@
 package net.torocraft.dailies.quests;
 
+import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
@@ -69,27 +72,88 @@ public class DailyQuest {
 		return targetName;
 	}
 
-	private String decodeItem(int entityId) {
-		//return I18n.translateToLocal(Item.getItemById(entityId).getUnlocalizedName() + ".name");
-		return "";
+	private String decodeItem(int itemId) {
+		// Map legacy item ID to modern Item and get display name
+		Item item = getItemFromId(itemId);
+		if (item != null) {
+			return item.getDescription().getString();
+		}
+		return "Unknown Item";
 	}
 
 	private String decodeMob(int entityId) {
-		String langKey = entityIdToLangKey(entityId);
-		return "";
-		//return I18n.translateToLocal(langKey);
-	}
-
-	private String entityIdToLangKey(int entityId) {
-		/*Class<? extends Entity> entityClass = EntityList.getClassFromID(entityId);
-		String entityName = EntityList.getKey(entityClass).getResourcePath();
-
-		if (entityName == null || entityName.length() == 0) {
-			entityName = "generic";
+		// Map legacy entity ID to modern EntityType and get display name
+		EntityType<?> entityType = getEntityTypeFromId(entityId);
+		if (entityType != null) {
+			return entityType.getDescription().getString();
 		}
-
-		return "entity." + entityName + ".name";*/
-		return "";
+		return "Unknown Entity";
+	}
+	
+	/**
+	 * Maps legacy integer IDs to modern EntityType for name resolution
+	 */
+	private EntityType<?> getEntityTypeFromId(int entityId) {
+		switch (entityId) {
+			case 50: return EntityType.CREEPER;
+			case 51: return EntityType.SKELETON;
+			case 52: return EntityType.SPIDER;
+			case 54: return EntityType.ZOMBIE;
+			case 55: return EntityType.SLIME;
+			case 56: return EntityType.GHAST;
+			case 57: return EntityType.ZOMBIFIED_PIGLIN; // Was Zombie Pigman
+			case 58: return EntityType.ENDERMAN;
+			case 59: return EntityType.CAVE_SPIDER;
+			case 60: return EntityType.SILVERFISH;
+			case 61: return EntityType.BLAZE;
+			case 62: return EntityType.MAGMA_CUBE;
+			case 63: return EntityType.ENDER_DRAGON;
+			case 64: return EntityType.WITHER;
+			case 65: return EntityType.BAT;
+			case 66: return EntityType.WITCH;
+			case 67: return EntityType.ENDERMITE;
+			case 68: return EntityType.GUARDIAN;
+			case 90: return EntityType.PIG;
+			case 91: return EntityType.SHEEP;
+			case 92: return EntityType.COW;
+			case 93: return EntityType.CHICKEN;
+			case 94: return EntityType.SQUID;
+			case 95: return EntityType.WOLF;
+			case 96: return EntityType.MOOSHROOM; // Was MUSHROOM_COW
+			case 97: return EntityType.SNOW_GOLEM; // Was SNOWMAN
+			case 98: return EntityType.OCELOT;
+			case 99: return EntityType.IRON_GOLEM;
+			case 100: return EntityType.HORSE;
+			case 101: return EntityType.RABBIT;
+			case 120: return EntityType.VILLAGER;
+			default: return null;
+		}
+	}
+	
+	/**
+	 * Maps legacy integer IDs to modern Item for name resolution
+	 */
+	private Item getItemFromId(int itemId) {
+		// Map common item IDs to their modern equivalents (same as BaileyInventory)
+		switch (itemId) {
+			case 1: return Items.STONE;
+			case 2: return Items.GRASS_BLOCK;
+			case 3: return Items.DIRT;
+			case 4: return Items.COBBLESTONE;
+			case 5: return Items.OAK_PLANKS;
+			case 264: return Items.DIAMOND;
+			case 265: return Items.IRON_INGOT;
+			case 266: return Items.GOLD_INGOT;
+			case 287: return Items.STRING;
+			case 318: return Items.FLINT;
+			case 348: return Items.GLOWSTONE_DUST;
+			case 353: return Items.SUGAR;
+			case 354: return Items.CAKE;
+			case 367: return Items.ROTTEN_FLESH;
+			case 375: return Items.SPIDER_EYE;
+			case 376: return Items.FERMENTED_SPIDER_EYE;
+			default: return Items.DIRT; // Fallback
+		}
 	}
 
 	private void syncProgress(final Player player, final String questId, final int progress) {
@@ -121,17 +185,27 @@ public class DailyQuest {
 			return false;
 		}
 
-	// TODO: Replace with correct entity type comparison for 1.18.2+
-	// int mobId = mob.getEntityId();
-	// if (mobId != target.type) {
-	//     return false;
-	// }
-	// For now, always return true for demonstration (replace with actual logic)
-	// You should compare mob.getType() with the expected EntityType
+		// Compare entity type using modern EntityType system
+		if (!isTargetMob(mob)) {
+			return false;
+		}
 
-	progress++;
-	syncProgress(player, id, progress);
-	return true;
+		progress++;
+		syncProgress(player, id, progress);
+		return true;
+	}
+
+	/**
+	 * Check if the given mob matches the target for this hunt quest
+	 * Maps legacy integer IDs to modern EntityType comparison
+	 */
+	private boolean isTargetMob(LivingEntity mob) {
+		// Use our centralized entity type mapping
+		EntityType<?> targetType = getEntityTypeFromId(target.type);
+		if (targetType == null) {
+			return false; // Unknown entity type
+		}
+		return mob.getType() == targetType;
 	}
 
 	public void reward(Player player) {

@@ -3,7 +3,6 @@ package net.torocraft.dailies.network.packets;
 import java.util.function.Supplier;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.Util;
 import net.minecraftforge.network.NetworkEvent.Context;
 import net.torocraft.dailies.DailiesException;
 import net.torocraft.dailies.capabilities.DailiesCapabilityProvider;
@@ -41,17 +40,26 @@ public class QuestCommandPacket implements IDailiesPacket<QuestCommandPacket.Mes
 
   @Override
   public void handle(Message message, Supplier<Context> ctx) {
-    System.out.println("************** QuestCommandPacket");
     ctx.get().enqueueWork(() -> {
       ServerPlayer player = ctx.get().getSender();
       if(player == null) {
         return;
       }
       player.getCapability(DailiesCapabilityProvider.DAILIES_CAPABILITY, null).ifPresent(d -> {
-        DailyQuest quest = d.getAcceptedQuestById(message.questId);
+        DailyQuest quest = null;
+        
+        // For ACCEPT commands, look in available quests
+        // For ABANDON commands, look in accepted quests
+        if (QuestCommand.ACCEPT.equals(message.command)) {
+          quest = d.getAvailableQuestById(message.questId);
+        } else if (QuestCommand.ABANDON.equals(message.command)) {
+          quest = d.getAcceptedQuestById(message.questId);
+        }
+        
         if (quest == null) {
           return;
         }
+        
         try {
           if (QuestCommand.ABANDON.equals(message.command)) {
             d.abandonQuest(player, quest);

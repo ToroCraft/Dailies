@@ -5,20 +5,14 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiComponent;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.InventoryScreen;
-import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
-import net.minecraft.client.gui.components.Button;
-import net.minecraft.network.chat.Component;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.client.event.RenderGuiOverlayEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.torocraft.dailies.DailiesMod;
+import net.torocraft.dailies.client.ClientQuestCache;
 import net.torocraft.dailies.quests.DailyQuest;
-import net.torocraft.dailies.network.PacketHandler;
-import net.torocraft.dailies.network.packets.GetQuestsPacket.QuestsFilter;
-import net.torocraft.dailies.network.packets.QuestsPacket;
-import net.torocraft.dailies.network.packets.QuestProgressPacket;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -50,11 +44,11 @@ public class DailyProgressOverlay {
     }
 
     private static void renderAcceptedQuests(PoseStack poseStack, Minecraft mc, int mouseX, int mouseY) {
-        // TODO: Replace with correct client-side quest cache for 1.18.2+
-        // This is a placeholder. You should implement a client quest cache synced from the server.
-        Set<DailyQuest> accepted = DailiesMod.acceptedQuests; // Use DailiesMod static field
+        // Use ClientQuestCache instead of static fields
+        ClientQuestCache cache = ClientQuestCache.getInstance();
+        Set<DailyQuest> accepted = cache.getAcceptedQuests();
+        
         if (accepted == null || accepted.isEmpty()) {
-            PacketHandler.getQuests(QuestsFilter.ACCEPTED);
             return;
         }
         int x = mc.getWindow().getGuiScaledWidth() - BADGE_WIDTH - 22;
@@ -80,11 +74,11 @@ public class DailyProgressOverlay {
     }
 
     private static void renderAvailableQuests(PoseStack poseStack, Minecraft mc, int mouseX, int mouseY) {
-        // TODO: Replace with correct client-side quest cache for 1.18.2+
-        // This is a placeholder. You should implement a client quest cache synced from the server.
-        Set<DailyQuest> available = DailiesMod.availableQuests; // Use DailiesMod static field
+        // Use ClientQuestCache instead of static fields
+        ClientQuestCache cache = ClientQuestCache.getInstance();
+        Set<DailyQuest> available = cache.getAvailableQuests();
+        
         if (available == null || available.isEmpty()) {
-            PacketHandler.getQuests(QuestsFilter.AVAILABLE);
             return;
         }
         int x = 5;

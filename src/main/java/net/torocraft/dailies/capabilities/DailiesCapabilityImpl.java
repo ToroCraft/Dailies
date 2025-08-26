@@ -130,7 +130,7 @@ public class DailiesCapabilityImpl implements IDailiesCapability {
 	@Override
 	public void acceptQuest(Player player, DailyQuest quest) throws DailiesException {
 		if (acceptedQuests == null) {
-			return;
+			acceptedQuests = new HashSet<>();
 		}
 		
 		if (acceptedQuests.size() >= DailiesMod.MAX_QUESTS_ACCEPTABLE) {
@@ -139,28 +139,52 @@ public class DailiesCapabilityImpl implements IDailiesCapability {
 		
 		DailyQuest playerQuest = (DailyQuest) quest.clone();
 		playerQuest.date = System.currentTimeMillis();
+		playerQuest.status = "accepted"; // Ensure status is set
 		acceptedQuests.add(playerQuest);
 		availableQuests.remove(quest);
-		new QuestActionHandler(player, quest.id).accept();
+		
+		// Try remote action but don't fail if it doesn't work
+		try {
+			new QuestActionHandler(player, quest.id).accept();
+		} catch (Exception e) {
+			// Remote action failed, but local state is still valid
+			System.out.println("Remote quest action failed (normal for offline mode): " + e.getMessage());
+		}
+		
+		// Force save the capability data immediately
+		if (player instanceof net.minecraft.server.level.ServerPlayer) {
+			player.getPersistentData().put(DailiesCapabilityProvider.NAME, this.writeNBT());
+		}
 	}
 
 	@Override
 	public void abandonQuest(Player player, DailyQuest quest) {
 		if (acceptedQuests == null) {
-			return;
+			acceptedQuests = new HashSet<>();
 		}
 
 		quest.progress = 0;
+		quest.status = "available"; // Reset status
 		acceptedQuests.remove(quest);
 		
 		if (questWasAcceptedToday(quest)) {
+			if (availableQuests == null) {
+				availableQuests = new HashSet<>();
+			}
 			availableQuests.add(quest);
 		}
 		
+		// Try remote action but don't fail if it doesn't work
 		try {
 			new QuestActionHandler(player, quest.id).abandon();
-		} catch (DailiesException e) {
-			//player.sendMessage(e.getMessageAsTextComponent());
+		} catch (Exception e) {
+			// Remote action failed, but local state is still valid
+			System.out.println("Remote quest action failed (normal for offline mode): " + e.getMessage());
+		}
+		
+		// Force save the capability data immediately
+		if (player instanceof net.minecraft.server.level.ServerPlayer) {
+			player.getPersistentData().put(DailiesCapabilityProvider.NAME, this.writeNBT());
 		}
 	}
 	
@@ -233,7 +257,20 @@ public class DailiesCapabilityImpl implements IDailiesCapability {
 	
 	@Override
 	public void sendAcceptedQuestsToClient(Player player) {
-		//DailiesPacketHandler.INSTANCE.sendTo(new AcceptedQuestsToClient(getAcceptedQuests()), (EntityPlayerMP)player);
+		if (player instanceof net.minecraft.server.level.ServerPlayer) {
+			System.out.println("DailiesCapabilityImpl: Sending accepted quests to client. Quest count: " + 
+				(getAcceptedQuests() != null ? getAcceptedQuests().size() : "null"));
+			if (getAcceptedQuests() != null) {
+				for (DailyQuest quest : getAcceptedQuests()) {
+					System.out.println("DailiesCapabilityImpl: Sending quest: " + quest.name + " (" + quest.progress + "/" + quest.target.quantity + ")");
+				}
+			}
+			net.torocraft.dailies.network.PacketHandler.questsUpdate(
+				(net.minecraft.server.level.ServerPlayer) player, 
+				net.torocraft.dailies.network.packets.GetQuestsPacket.QuestsFilter.ACCEPTED, 
+				getAcceptedQuests()
+			);
+		}
 	}
 
 	private static class Factory implements Callable<IDailiesCapability> {

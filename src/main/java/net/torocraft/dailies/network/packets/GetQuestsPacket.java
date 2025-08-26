@@ -34,7 +34,6 @@ public class GetQuestsPacket implements IDailiesPacket<GetQuestsPacket.Message> 
 
   @Override
   public void handle(Message message, Supplier<Context> ctx) {
-    System.out.println("************** GetQuestsPacket");
     ctx.get().enqueueWork(() -> {
       ServerPlayer player = ctx.get().getSender();
       if(player == null) {

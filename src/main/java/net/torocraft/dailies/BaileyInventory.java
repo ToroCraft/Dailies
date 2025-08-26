@@ -2,14 +2,17 @@ package net.torocraft.dailies;
 
 import java.util.Arrays;
 import java.util.Set;
+import javax.annotation.Nonnull;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.Container;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.TagParser;
 import net.minecraft.network.chat.Component;
-import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.common.util.LazyOptional;
 import net.torocraft.dailies.capabilities.DailiesCapabilityProvider;
@@ -20,6 +23,7 @@ import net.torocraft.dailies.quests.Reward;
 
 public class BaileyInventory implements Container {
 
+	private static final Logger LOGGER = LogManager.getLogger(DailiesMod.MODID + " BaileyInventory");
 	private static final int SUBMIT_ITEM_COUNT = 3;
 	private static final int OUTPUT_ITEM_COUNT = 1;
 	private static final int REWARD_OUTPUT_INDEX = 3;
@@ -36,6 +40,19 @@ public class BaileyInventory implements Container {
 	
 	public BaileyInventory() {
 		clearContent();
+	}
+
+	/**
+	 * Ensures capability setup is complete, particularly important for creative mode
+	 */
+	private IDailiesCapability ensureCapabilitySetup(Player player) {
+		if (player == null) {
+			return null;
+		}
+		
+		// Get the capability - use resolve to handle nullable properly
+		LazyOptional<IDailiesCapability> capabilityOptional = player.getCapability(DailiesCapabilityProvider.DAILIES_CAPABILITY, null);
+		return capabilityOptional.resolve().orElse(null);
 	}
 
 
@@ -93,7 +110,7 @@ public class BaileyInventory implements Container {
 
 
 	@Override
-	public void setItem(int index, ItemStack stack) {
+	public void setItem(int index, @Nonnull ItemStack stack) {
 		itemStacks[index] = stack;
 		if (!stack.isEmpty() && stack.getCount() > getMaxStackSize()) {
 			stack.setCount(getMaxStackSize());
@@ -111,14 +128,14 @@ public class BaileyInventory implements Container {
 	}
 	
 
-	public void startOpen(Player player) {
+	public void startOpen(@Nonnull Player player) {
 		this.player = player;
 		this.playerDailiesCapability = player.getCapability(DailiesCapabilityProvider.DAILIES_CAPABILITY, null);
 	}
 
 
 	@Override
-	public void stopOpen(Player player) {
+	public void stopOpen(@Nonnull Player player) {
 		for (int x = 0; x < getContainerSize(); x++) {
 			if (!itemStacks[x].isEmpty()) {
 				player.drop(itemStacks[x], false);
@@ -128,7 +145,7 @@ public class BaileyInventory implements Container {
 
 
 	@Override
-	public boolean canPlaceItem(int index, ItemStack stack) {
+	public boolean canPlaceItem(int index, @Nonnull ItemStack stack) {
 		return true;
 	}
 
@@ -155,35 +172,66 @@ public class BaileyInventory implements Container {
 
 	@Override
 	public void setChanged() {
-		// No-op or add logic if needed
+		System.out.println("BaileyInventory: setChanged() called");
+		// Trigger quest checking when inventory changes
+		// This ensures it works in both creative and survival mode
+		checkForReward();
 	}
 
 
 	@Override
-	public boolean stillValid(Player player) {
+	public boolean stillValid(@Nonnull Player player) {
 		return true;
 	}
 
 	public void checkForReward() {
+		LOGGER.info("[DEBUG] checkForReward() called");
+		
+		// Use the enhanced capability setup method for better creative mode compatibility
+		if (player != null) {
+			IDailiesCapability capability = ensureCapabilitySetup(player);
+			if (capability != null) {
+				this.playerDailiesCapability = LazyOptional.of(() -> capability);
+			}
+		}
+		
 		if(playerDailiesCapability == null) {
-			return;
+			// Try to refresh capabilities in case they weren't loaded properly (common in creative mode)
+			if (player != null) {
+				this.playerDailiesCapability = player.getCapability(DailiesCapabilityProvider.DAILIES_CAPABILITY, null);
+			}
+			if(playerDailiesCapability == null) {
+				LOGGER.warn("[DEBUG] No capabilities found for player");
+				return;
+			}
 		}
 		
 		lastModifiedStack = this.itemStacks[lastModifiedIndex];
-		playerDailiesCapability.ifPresent((cap) -> acceptedQuests = cap.getAcceptedQuests());
+		playerDailiesCapability.ifPresent((cap) -> {
+			acceptedQuests = cap.getAcceptedQuests();
+			LOGGER.info("[DEBUG] Found {} accepted quests", acceptedQuests.size());
+		});
 
 		if (DailiesMod.devMode) {
 			logItemStack(lastModifiedStack);
 		}
 		
+		LOGGER.info("[DEBUG] Checking item at slot {}: {}", lastModifiedIndex, lastModifiedStack.getItem().toString());
+		
 		if(canSearchForReward()) {
 			ResourceLocation itemId = net.minecraftforge.registries.ForgeRegistries.ITEMS.getKey(lastModifiedStack.getItem());
 			int subType = lastModifiedStack.getDamageValue();
+			LOGGER.info("[DEBUG] Looking for quest matching item: {} (subType: {})", itemId, subType);
 			DailyQuest quest = checkForMatchingQuest(itemId, subType);
 			
 			if(quest != null) {
+				LOGGER.info("[DEBUG] Found matching quest: {}", quest.getDisplayName());
 				updateQuestProgress(quest, lastModifiedStack, lastModifiedIndex);
+			} else {
+				LOGGER.info("[DEBUG] No matching quest found for item: {}", itemId);
 			}
+		} else {
+			LOGGER.info("[DEBUG] Cannot search for reward - requirements not met");
 		}
 	}
 	
@@ -198,16 +246,42 @@ public class BaileyInventory implements Container {
 	}
 	
 	private DailyQuest checkForMatchingQuest(ResourceLocation itemId, int itemSubType) {
+		LOGGER.info("[DEBUG] checkForMatchingQuest() called with itemId: {}, subType: {}", itemId, itemSubType);
+		
 		DailyQuest quest = null;
 		for (DailyQuest q : acceptedQuests) {
-			if (q.isGatherQuest() && itemId.equals(q.target.type) && !q.rewardFulfilled && q.target.subType == itemSubType) {
-				quest = q;
+			LOGGER.info("[DEBUG] Checking quest: {} - isGather: {}, rewardFulfilled: {}, targetSubType: {}", 
+				q.getDisplayName(), q.isGatherQuest(), q.rewardFulfilled, q.target.subType);
+			
+			if (q.isGatherQuest() && !q.rewardFulfilled && q.target.subType == itemSubType) {
+				// Convert quest target's legacy integer ID to modern item for comparison
+				Item targetItem = getItemFromType(q.target.type);
+				ResourceLocation targetItemId = net.minecraftforge.registries.ForgeRegistries.ITEMS.getKey(targetItem);
+				
+				LOGGER.info("[DEBUG] Quest target item ID: {}, actual item ID: {}", targetItemId, itemId);
+				
+				if (itemId.equals(targetItemId)) {
+					LOGGER.info("[DEBUG] Found matching quest: {}", q.getDisplayName());
+					quest = q;
+					break;
+				} else {
+					LOGGER.info("[DEBUG] Quest item mismatch - expected: {}, actual: {}", targetItemId, itemId);
+				}
+			} else {
+				LOGGER.info("[DEBUG] Quest skipped - not gather quest, reward fulfilled, or subtype mismatch");
 			}
 		}
+		
+		if (quest == null) {
+			LOGGER.info("[DEBUG] No matching quest found after checking {} quests", acceptedQuests.size());
+		}
+		
 		return quest;
 	}
 	
 	private void updateQuestProgress(DailyQuest quest, ItemStack stack, int index) {
+		System.out.println("BaileyInventory: Updating quest progress for: " + quest.name + " (current: " + quest.progress + "/" + quest.target.quantity + ")");
+		
 		int remainingTarget = quest.target.quantity - quest.progress;
 		int leftOver = stack.getCount() - remainingTarget;
 		
@@ -216,6 +290,8 @@ public class BaileyInventory implements Container {
 		}
 		
 		quest.progress += stack.getCount() - leftOver;
+		
+		System.out.println("BaileyInventory: Quest progress updated to: " + quest.progress + "/" + quest.target.quantity);
 		
 		if(quest.isComplete()) {
 			quest.rewardFulfilled = true;
@@ -232,13 +308,13 @@ public class BaileyInventory implements Container {
 			removeItemNoUpdate(index);
 		}
 		
+		System.out.println("BaileyInventory: Calling updateClient to sync to client");
 		updateClient(player);
 	}
 	
 	private void buildReward(Reward reward) {
-		// TODO: Fix this - using integer IDs for items is deprecated
-		// Should use ResourceLocation strings instead of integers
-		Item rewardItem = Item.byId(reward.type); // This will need to be updated
+		// Convert legacy integer ID to modern Item from registry
+		Item rewardItem = getItemFromType(reward.type);
 		ItemStack rewardStack = new ItemStack(rewardItem, reward.quantity);
 		if (reward.subType > 0) {
 			rewardStack.setDamageValue(reward.subType);
@@ -278,7 +354,7 @@ public class BaileyInventory implements Container {
 	}
 	
 	private boolean canSearchForReward() {
-	return !(rewardStackExists() || lastModifiedStack == null || acceptedQuests == null || acceptedQuests.isEmpty());
+		return !(rewardStackExists() || lastModifiedStack == null || acceptedQuests == null || acceptedQuests.isEmpty());
 	}
 
 
@@ -291,5 +367,36 @@ public class BaileyInventory implements Container {
         }
 
         return true;
+	}
+
+	/**
+	 * Convert legacy integer item ID to modern Item from registry
+	 * This maintains compatibility with existing save data while using modern APIs
+	 */
+	private Item getItemFromType(int itemId) {
+		// For now, map common item IDs to their modern equivalents
+		// TODO: Consider migrating save data to use ResourceLocation strings instead of integers
+		switch (itemId) {
+			case 1: return Items.STONE;
+			case 2: return Items.GRASS_BLOCK;
+			case 3: return Items.DIRT;
+			case 4: return Items.COBBLESTONE;
+			case 5: return Items.OAK_PLANKS;
+			case 263: return Items.COAL;
+			case 264: return Items.DIAMOND;
+			case 265: return Items.IRON_INGOT;
+			case 266: return Items.GOLD_INGOT;
+			case 287: return Items.STRING;
+			case 318: return Items.FLINT;
+			case 348: return Items.GLOWSTONE_DUST;
+			case 353: return Items.SUGAR;
+			case 354: return Items.CAKE;
+			case 367: return Items.ROTTEN_FLESH;
+			case 375: return Items.SPIDER_EYE;
+			case 376: return Items.FERMENTED_SPIDER_EYE;
+			default: 
+				// Fallback to dirt if unknown ID
+				return Items.DIRT;
+		}
 	}
 }

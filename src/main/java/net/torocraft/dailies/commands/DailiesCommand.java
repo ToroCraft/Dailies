@@ -52,6 +52,7 @@ public class DailiesCommand {
         .then(Commands.literal("abandon")
             .then(Commands.argument("Quest Number", IntegerArgumentType.integer(0)).executes((a) -> abandonQuest(a.getSource(), IntegerArgumentType.getInteger(a, "Quest Number")))))
         .then(Commands.literal("gui").executes((c) -> openBaileyGui(c.getSource())))
+        .then(Commands.literal("config").executes((c) -> showConfigHelp(c.getSource())))
     );
     }
 
@@ -195,6 +196,21 @@ public class DailiesCommand {
                     return new DailiesContainer(id, inventory); 
                 }
             });
+        }
+        return 0;
+    }
+    
+    private static int showConfigHelp(CommandSourceStack source) {
+        try {
+            ServerPlayer player = source.getPlayerOrException();
+            player.sendSystemMessage(Component.literal("§6Dailies Configuration:"));
+            player.sendSystemMessage(Component.literal("§7Config file location: config/dailies-client.toml"));
+            player.sendSystemMessage(Component.literal("§7Available settings:"));
+            player.sendSystemMessage(Component.literal("§f- isOnline: Enable/disable online quest features"));
+            player.sendSystemMessage(Component.literal("§7Edit the config file and restart the game to apply changes."));
+            player.sendSystemMessage(Component.literal("§7Current Online Mode: §a" + net.torocraft.dailies.config.Config.isOnline));
+        } catch (Exception e) {
+            source.sendFailure(Component.literal("Error displaying config info."));
         }
         return 0;
     }
