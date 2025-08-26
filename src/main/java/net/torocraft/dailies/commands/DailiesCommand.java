@@ -165,7 +165,7 @@ public class DailiesCommand {
                         x.getAvailableQuests()
                     );
                 } catch (Exception ex) {
-                    d.player.sendSystemMessage(Component.literal("Error occured when trying to abandon quest"));
+                    d.player.sendSystemMessage(Component.literal("Error occurred when trying to abandon quest"));
                 }
             });
         } else {
@@ -198,7 +198,7 @@ public class DailiesCommand {
                         x.getAvailableQuests()
                     );
                 } catch (Exception ex) {
-                    d.player.sendSystemMessage(Component.literal("Error occured when trying to accept quest"));
+                    d.player.sendSystemMessage(Component.literal("Error occurred when trying to accept quest"));
                 }
             });
         } else {
