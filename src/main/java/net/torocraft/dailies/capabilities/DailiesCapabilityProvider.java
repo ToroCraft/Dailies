@@ -1,42 +1,34 @@
 package net.torocraft.dailies.capabilities;
 
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.core.Direction;
-import net.minecraftforge.common.capabilities.Capability;
-import net.minecraftforge.common.capabilities.CapabilityManager;
-import net.minecraftforge.common.capabilities.CapabilityToken;
-import net.minecraftforge.common.capabilities.ICapabilityProvider;
-import net.minecraftforge.common.util.LazyOptional;
+import net.neoforged.neoforge.attachment.AttachmentType;
+import net.neoforged.neoforge.registries.DeferredRegister;
+import net.neoforged.neoforge.registries.NeoForgeRegistries;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-
-public class DailiesCapabilityProvider implements ICapabilityProvider, net.minecraftforge.common.capabilities.ICapabilitySerializable<CompoundTag> {
+public class DailiesCapabilityProvider {
 
 	public static final String NAME = "dailiescapability";
 
-	public static final Capability<IDailiesCapability> DAILIES_CAPABILITY = CapabilityManager.get(new CapabilityToken<>() {});
+	// DeferredRegister for attachment types
+	public static final DeferredRegister<AttachmentType<?>> ATTACHMENT_TYPES = 
+		DeferredRegister.create(NeoForgeRegistries.ATTACHMENT_TYPES, "dailies");
 
-	private final LazyOptional<IDailiesCapability> instance = LazyOptional.of(DailiesCapabilityImpl::new);
+	// AttachmentType replaces the old Capability system
+	public static final net.neoforged.neoforge.registries.DeferredHolder<AttachmentType<?>, AttachmentType<DailiesCapabilityImpl>> DAILIES_DATA = 
+		ATTACHMENT_TYPES.register("dailies_data", () -> AttachmentType.builder(DailiesCapabilityImpl::new).build());
 
 	public static void register() {
-		// Registration is now handled via CapabilityToken in 1.18.2+
-		// If a Codec is needed for sync, add here. Otherwise, this is sufficient.
+		// Registration is handled by DeferredRegister
 	}
 
-	@Nonnull
-	@Override
-	public <T> LazyOptional<T> getCapability(@Nonnull Capability<T> cap, @Nullable Direction side) {
-		return cap == DAILIES_CAPABILITY ? instance.cast() : LazyOptional.empty();
+	public static DailiesCapabilityImpl getDailiesData(net.minecraft.world.entity.Entity entity) {
+		return entity.getData(DAILIES_DATA.get());
 	}
 
-	@Override
-	public CompoundTag serializeNBT() {
-		return instance.orElseThrow(() -> new IllegalArgumentException("LazyOptional must not be empty!")).writeNBT();
+	public static boolean hasDailiesData(net.minecraft.world.entity.Entity entity) {
+		return entity.hasData(DAILIES_DATA.get());
 	}
 
-	@Override
-	public void deserializeNBT(CompoundTag nbt) {
-		instance.orElseThrow(() -> new IllegalArgumentException("LazyOptional must not be empty!")).readNBT(nbt);
+	public static void setDailiesData(net.minecraft.world.entity.Entity entity, DailiesCapabilityImpl data) {
+		entity.setData(DAILIES_DATA.get(), data);
 	}
 }

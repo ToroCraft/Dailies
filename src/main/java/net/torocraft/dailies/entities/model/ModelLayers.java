@@ -6,5 +6,5 @@ import net.torocraft.dailies.DailiesMod;
 
 public class ModelLayers {
     public static final ModelLayerLocation BAILEY = new ModelLayerLocation(
-        new ResourceLocation(DailiesMod.MODID, "bailey"), "main");
+        ResourceLocation.fromNamespaceAndPath(DailiesMod.MODID, "bailey"), "main");
 }

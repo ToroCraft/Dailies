@@ -2,8 +2,7 @@ package net.torocraft.dailies.client;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.world.entity.player.Player;
-import net.torocraft.dailies.capabilities.DailiesCapabilityImpl;
-import net.torocraft.dailies.capabilities.DailiesCapabilityProvider;
+import net.torocraft.dailies.attachments.DailiesAttachmentTypes;
 import net.torocraft.dailies.capabilities.IDailiesCapability;
 import net.torocraft.dailies.network.PacketHandler;
 import net.torocraft.dailies.network.packets.GetQuestsPacket.QuestsFilter;
@@ -45,7 +44,7 @@ public class ClientQuestCache {
         // Always try to get from player capability first for most up-to-date data
         Player player = Minecraft.getInstance().player;
         if (player != null) {
-            IDailiesCapability capability = player.getCapability(DailiesCapabilityProvider.DAILIES_CAPABILITY, null).orElse(new DailiesCapabilityImpl());
+            IDailiesCapability capability = player.getData(DailiesAttachmentTypes.DAILIES_DATA);
             if (capability != null) {
                 Set<DailyQuest> capabilityQuests = capability.getAvailableQuests();
                 if (capabilityQuests != null && !capabilityQuests.isEmpty()) {
@@ -79,7 +78,7 @@ public class ClientQuestCache {
         // Try to get from player capability first
         Player player = Minecraft.getInstance().player;
         if (player != null) {
-            IDailiesCapability capability = player.getCapability(DailiesCapabilityProvider.DAILIES_CAPABILITY, null).orElse(new DailiesCapabilityImpl());
+            IDailiesCapability capability = player.getData(DailiesAttachmentTypes.DAILIES_DATA);
             if (capability != null) {
                 Set<DailyQuest> capabilityQuests = capability.getAcceptedQuests();
                 if (capabilityQuests != null && !capabilityQuests.isEmpty()) {
@@ -113,7 +112,7 @@ public class ClientQuestCache {
             // Also update the player capability if available
             Player player = Minecraft.getInstance().player;
             if (player != null) {
-                IDailiesCapability capability = player.getCapability(DailiesCapabilityProvider.DAILIES_CAPABILITY, null).orElse(new DailiesCapabilityImpl());
+                IDailiesCapability capability = player.getData(DailiesAttachmentTypes.DAILIES_DATA);
                 if (capability != null) {
                     capability.setAcceptedQuests(new HashSet<>(quests));
                 }

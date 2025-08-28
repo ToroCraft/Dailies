@@ -2,10 +2,10 @@ package net.torocraft.dailies.network;
 
 import java.util.Set;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraftforge.network.NetworkRegistry;
-import net.minecraftforge.network.PacketDistributor;
-import net.minecraftforge.network.simple.SimpleChannel;
+import net.minecraft.network.codec.StreamCodec;
+import net.neoforged.neoforge.network.PacketDistributor;
+import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
+import net.neoforged.neoforge.network.registration.PayloadRegistrar;
 import net.torocraft.dailies.DailiesMod;
 import net.torocraft.dailies.network.packets.GetQuestsPacket;
 import net.torocraft.dailies.network.packets.QuestCommandPacket;
@@ -18,49 +18,54 @@ import net.torocraft.dailies.quests.DailyQuest;
 public class PacketHandler {
 
   private static final String PROTOCOL_VERSION = "1";
-  private static int id = 1;
-
-  private static SimpleChannel INSTANCE;
 
   public static void questsUpdate(ServerPlayer player, QuestsFilter filterUsed, Set<DailyQuest> quests) {
-    INSTANCE.send(PacketDistributor.PLAYER.with(() -> player), new QuestsPacket.Message(filterUsed, quests));
+    PacketDistributor.sendToPlayer(player, new QuestsPacket.Message(filterUsed, quests));
   }
 
   public static void getQuests(QuestsFilter filter) {
-    INSTANCE.sendToServer(new GetQuestsPacket.Message(filter));
+    PacketDistributor.sendToServer(new GetQuestsPacket.Message(filter));
   }
 
   public static void questProgressUpdate(ServerPlayer player, DailyQuest quest) {
-    INSTANCE.send(PacketDistributor.PLAYER.with(() -> player), new QuestProgressPacket.Message(quest));
+    PacketDistributor.sendToPlayer(player, new QuestProgressPacket.Message(quest));
   }
 
   public static void questCommand(String questId, QuestCommand command) {
-    INSTANCE.sendToServer(new QuestCommandPacket.Message(questId, command));
+    PacketDistributor.sendToServer(new QuestCommandPacket.Message(questId, command));
   }
 
   public static void init() {
-    // Initialize the network channel first
-    INSTANCE = NetworkRegistry.newSimpleChannel(
-        new ResourceLocation(DailiesMod.MODID, "main"),
-        () -> PROTOCOL_VERSION,
-        PROTOCOL_VERSION::equals,
-        PROTOCOL_VERSION::equals
-    );
-    
-    // Then register all packets
-    register(GetQuestsPacket.class);
-    register(QuestsPacket.class);
-    register(QuestProgressPacket.class);
-    register(QuestCommandPacket.class);
+    // Registration is now handled via RegisterPayloadHandlersEvent in DailiesMod
+    // This method is kept for compatibility but doesn't need to do anything
   }
-
-  @SuppressWarnings("unchecked")
-  private static <P extends IDailiesPacket> void register(Class<P> clazz) {
-    try {
-      P packet = clazz.getDeclaredConstructor().newInstance();
-      INSTANCE.registerMessage(id++, packet.getDataClass(), packet::encode, packet::decode, packet::handle);
-    } catch (Exception e) {
-      throw new RuntimeException("Failed to register packet: " + clazz.getSimpleName(), e);
-    }
+  
+    /**
+   * Register all packet types with NeoForge networking system.
+   * Should be called from RegisterPayloadHandlersEvent
+   */
+  public static void registerPayloads(RegisterPayloadHandlersEvent event) {
+    PayloadRegistrar registrar = event.registrar(DailiesMod.MODID).versioned(PROTOCOL_VERSION);
+    
+    // Register all packet types with their handlers using StreamCodec
+    var getQuestsHandler = new GetQuestsPacket();
+    registrar.playToServer(GetQuestsPacket.Message.TYPE, 
+        StreamCodec.ofMember(getQuestsHandler::encode, getQuestsHandler::decode), 
+        getQuestsHandler::handle);
+    
+    var questsHandler = new QuestsPacket();
+    registrar.playToClient(QuestsPacket.Message.TYPE,
+        StreamCodec.ofMember(questsHandler::encode, questsHandler::decode), 
+        questsHandler::handle);
+        
+    var questProgressHandler = new QuestProgressPacket();
+    registrar.playToClient(QuestProgressPacket.Message.TYPE,
+        StreamCodec.ofMember(questProgressHandler::encode, questProgressHandler::decode), 
+        questProgressHandler::handle);
+        
+    var questCommandHandler = new QuestCommandPacket();
+    registrar.playToServer(QuestCommandPacket.Message.TYPE,
+        StreamCodec.ofMember(questCommandHandler::encode, questCommandHandler::decode), 
+        questCommandHandler::handle);
   }
 }

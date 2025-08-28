@@ -14,8 +14,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.TagParser;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraftforge.common.util.LazyOptional;
-import net.torocraft.dailies.capabilities.DailiesCapabilityProvider;
+import net.torocraft.dailies.attachments.DailiesAttachmentTypes;
 import net.torocraft.dailies.capabilities.IDailiesCapability;
 import net.torocraft.dailies.network.remote.ProgressUpdater;
 import net.torocraft.dailies.quests.DailyQuest;
@@ -35,7 +34,7 @@ public class BaileyInventory implements Container {
 	private int lastModifiedIndex = 0;
 	
 	private Player player = null;
-	private LazyOptional<IDailiesCapability> playerDailiesCapability;
+	private IDailiesCapability playerDailiesCapability;
 	private Set<DailyQuest> acceptedQuests;
 	
 	public BaileyInventory() {
@@ -50,9 +49,8 @@ public class BaileyInventory implements Container {
 			return null;
 		}
 		
-		// Get the capability - use resolve to handle nullable properly
-		LazyOptional<IDailiesCapability> capabilityOptional = player.getCapability(DailiesCapabilityProvider.DAILIES_CAPABILITY, null);
-		return capabilityOptional.resolve().orElse(null);
+		// Get the dailies data using new attachment system
+		return player.getData(DailiesAttachmentTypes.DAILIES_DATA);
 	}
 
 
@@ -130,7 +128,7 @@ public class BaileyInventory implements Container {
 
 	public void startOpen(@Nonnull Player player) {
 		this.player = player;
-		this.playerDailiesCapability = player.getCapability(DailiesCapabilityProvider.DAILIES_CAPABILITY, null);
+		this.playerDailiesCapability = player.getData(DailiesAttachmentTypes.DAILIES_DATA);
 	}
 
 
@@ -185,18 +183,16 @@ public class BaileyInventory implements Container {
 	}
 
 	public void checkForReward() {
-		// Use the enhanced capability setup method for better creative mode compatibility
 		if (player != null) {
 			IDailiesCapability capability = ensureCapabilitySetup(player);
 			if (capability != null) {
-				this.playerDailiesCapability = LazyOptional.of(() -> capability);
+				this.playerDailiesCapability = capability;
 			}
 		}
 		
 		if(playerDailiesCapability == null) {
-			// Try to refresh capabilities in case they weren't loaded properly (common in creative mode)
 			if (player != null) {
-				this.playerDailiesCapability = player.getCapability(DailiesCapabilityProvider.DAILIES_CAPABILITY, null);
+				this.playerDailiesCapability = player.getData(DailiesAttachmentTypes.DAILIES_DATA);
 			}
 			if(playerDailiesCapability == null) {
 				LOGGER.warn("[DEBUG] No capabilities found for player");
@@ -205,10 +201,10 @@ public class BaileyInventory implements Container {
 		}
 		
 		lastModifiedStack = this.itemStacks[lastModifiedIndex];
-		playerDailiesCapability.ifPresent((cap) -> {
-			acceptedQuests = cap.getAcceptedQuests();
+		if (playerDailiesCapability != null) {
+			acceptedQuests = playerDailiesCapability.getAcceptedQuests();
 			LOGGER.info("[DEBUG] Found {} accepted quests", acceptedQuests.size());
-		});
+		}
 
 		if (DailiesMod.devMode) {
 			logItemStack(lastModifiedStack);
@@ -217,7 +213,7 @@ public class BaileyInventory implements Container {
 		LOGGER.info("[DEBUG] Checking item at slot {}: {}", lastModifiedIndex, lastModifiedStack.getItem().toString());
 		
 		if(canSearchForReward()) {
-			ResourceLocation itemId = net.minecraftforge.registries.ForgeRegistries.ITEMS.getKey(lastModifiedStack.getItem());
+			ResourceLocation itemId = net.minecraft.core.registries.BuiltInRegistries.ITEM.getKey(lastModifiedStack.getItem());
 			int subType = lastModifiedStack.getDamageValue();
 			LOGGER.info("[DEBUG] Looking for quest matching item: {} (subType: {})", itemId, subType);
 			DailyQuest quest = checkForMatchingQuest(itemId, subType);
@@ -238,7 +234,7 @@ public class BaileyInventory implements Container {
 			return;
 		}
 		System.out.println("LOGGING ITEM STACK");
-		System.out.println("type:" + net.minecraftforge.registries.ForgeRegistries.ITEMS.getKey(stack.getItem()));
+		System.out.println("type:" + net.minecraft.core.registries.BuiltInRegistries.ITEM.getKey(stack.getItem()));
 		//System.out.println("subType:" + stack.getMetadata());
 		//System.out.println("NBT: " + String.valueOf(stack.getTagCompound()));
 	}
@@ -293,7 +289,9 @@ public class BaileyInventory implements Container {
 		
 		if(quest.isComplete()) {
 			quest.rewardFulfilled = true;
-			playerDailiesCapability.ifPresent((cap) -> cap.completeQuest(player, quest));
+			if (playerDailiesCapability != null) {
+				playerDailiesCapability.completeQuest(player, quest);
+			}
 			buildReward(quest.reward);
 		} else {
 			syncProgress(quest.id, quest.progress);
@@ -315,8 +313,8 @@ public class BaileyInventory implements Container {
 		String rewardIdentifier = reward.getItemIdentifier();
 		Item rewardItem;
 		try {
-			ResourceLocation resourceLocation = new ResourceLocation(rewardIdentifier);
-			rewardItem = net.minecraftforge.registries.ForgeRegistries.ITEMS.getValue(resourceLocation);
+			ResourceLocation resourceLocation = ResourceLocation.parse(rewardIdentifier);
+			rewardItem = net.minecraft.core.registries.BuiltInRegistries.ITEM.getValue(resourceLocation);
 			if (rewardItem == null) {
 				rewardItem = Items.DIRT; // Fallback
 			}
@@ -333,7 +331,7 @@ public class BaileyInventory implements Container {
 		if (reward.nbt != null) {
 			try {
 				CompoundTag tag = TagParser.parseTag(reward.nbt);
-				rewardStack.setTag(tag);
+				rewardStack.applyComponents(net.minecraft.core.component.DataComponentPatch.builder().build());
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
@@ -357,7 +355,9 @@ public class BaileyInventory implements Container {
 	}
 	
 	private void updateClient(final Player player) {
-		playerDailiesCapability.ifPresent((cap) -> cap.sendAcceptedQuestsToClient(player));
+		if (playerDailiesCapability != null) {
+			playerDailiesCapability.sendAcceptedQuestsToClient(player);
+		}
 	}
 	
 	private boolean rewardStackExists() {

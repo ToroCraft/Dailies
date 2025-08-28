@@ -1,14 +1,14 @@
-# This file contains mod metadata for the Bailey's Dailies mod.
+# This is an example mods.toml file. It contains the data relating to the loading mods.
+# There are several mandatory fields (#mandatory), and many more that are optional (#optional).
 # The overall format is standard TOML format, v0.5.0.
-# Find more information on toml format here: https://github.com/toml-lang/toml
-
-# The name of the mod loader type to load - for regular FML @Mod mods it should be javafml
-modLoader="javafml" #mandatory
-
-# A version range to match for said mod loader - for regular FML @Mod it will be the forge version
-loaderVersion="[43,)" #mandatory
-
-# The license of the mod. This is mandatory for mods distributed with Forge 1.19.2+
+# Note that there are a couple of TOML lists in this file.
+# Find more information on toml format here:  https://github.com/toml-lang/toml
+# The name of the mod loader type to load - for regular FML @Mod mods it should be neoforge
+modLoader="neoforge" #mandatory
+# A version range to match for said mod loader - for regular FML @Mod it will be the the NeoForge version
+loaderVersion="[21.4,22)" #mandatory (21.4 or 21.1 or above)
+# The license for you mod. This is mandatory metadata and allows for easier comprehension of your redistributive properties.
+# Review your options at https://choosealicense.com/. All rights reserved is the default copyright stance, and is thus the default here.
 license="GPL-3.0"
 
 # A URL to refer people to when problems occur with this mod
@@ -21,7 +21,7 @@ issueTrackerURL="https://github.com/ToroCraft/Dailies/issues"
 modId="dailies" #mandatory
 
 # The version number of the mod - there's a few well known ${} variables useable here or just hardcode it
-version="${file.jarVersion}" #mandatory
+version="1.21.4-1.0.0" #mandatory
 
 # A display name for the mod
 displayName="Bailey's Dailies" #mandatory
@@ -44,11 +44,11 @@ Bailey the merchant offers daily quests that reward players for exploring, hunti
 # A dependency - use the . to indicate dependency for a specific modid. Dependencies are optional.
 [[dependencies.dailies]] #optional
     # the modid of the dependency
-    modId="forge" #mandatory
+    modId="neoforge" #mandatory
     # Does this dependency have to exist - if not, ordering below must be specified
     mandatory=true #mandatory
     # The version range of the dependency
-    versionRange="[43,)" #mandatory
+    versionRange="[21.4,22)" #mandatory
     # An ordering relationship for the dependency - BEFORE or AFTER required if the relationship is not mandatory
     ordering="NONE"
     # Side this dependency is applied on - BOTH, CLIENT or SERVER
@@ -58,6 +58,6 @@ Bailey the merchant offers daily quests that reward players for exploring, hunti
 [[dependencies.dailies]]
     modId="minecraft"
     mandatory=true
-    versionRange="[1.19.2]"
+    versionRange="[1.21.4,1.22)"
     ordering="NONE"
     side="BOTH"

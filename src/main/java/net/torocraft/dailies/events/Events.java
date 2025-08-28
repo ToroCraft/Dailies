@@ -12,17 +12,16 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.network.chat.Component;
-import net.minecraftforge.event.AttachCapabilitiesEvent;
-import net.minecraftforge.event.RegisterCommandsEvent;
-import net.minecraftforge.event.entity.living.LivingDeathEvent;
-import net.minecraftforge.event.entity.player.PlayerEvent;
-import net.minecraftforge.event.TickEvent;
+import net.neoforged.neoforge.event.tick.ServerTickEvent;
+import net.neoforged.neoforge.event.RegisterCommandsEvent;
+import net.neoforged.neoforge.event.entity.living.LivingDeathEvent;
+import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.EventBusSubscriber;
 import net.torocraft.dailies.capabilities.DailiesCapabilityImpl;
 import net.torocraft.dailies.DailiesException;
-import net.torocraft.dailies.capabilities.DailiesCapabilityProvider;
+import net.torocraft.dailies.attachments.DailiesAttachmentTypes;
 import net.torocraft.dailies.capabilities.IDailiesCapability;
 import net.torocraft.dailies.commands.DailiesCommand;
 import net.torocraft.dailies.network.remote.DailiesNetworkException;
@@ -32,15 +31,16 @@ import net.torocraft.dailies.quests.RandomQuestGenerator;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-@Mod.EventBusSubscriber(bus=Mod.EventBusSubscriber.Bus.FORGE)
+@EventBusSubscriber
 public class Events {
 
 	private static final Logger LOGGER = LogManager.getLogger(MODID + " Events");
 
 	@SubscribeEvent
-	public static void registerCommands(final RegisterCommandsEvent event) {
-		LOGGER.debug("REGISTERING COMMANDS");
+	public static void onRegisterCommands(RegisterCommandsEvent event) {
 		DailiesCommand.register(event.getDispatcher());
+		net.torocraft.dailies.commands.BaileyShopCommand.register(event.getDispatcher());
+		LOGGER.info("Dailies commands registered");
 	}
 
 	@SubscribeEvent
@@ -81,7 +81,7 @@ public class Events {
 		if (dailies == null) {
 			return;
 		}
-		event.getEntity().getPersistentData().put(DailiesCapabilityProvider.NAME, dailies.writeNBT());
+		event.getEntity().getPersistentData().put("dailies_data", dailies.writeNBT());
 	}
 
 	@SubscribeEvent
@@ -92,7 +92,7 @@ public class Events {
 		}
 		
 		// Check if there's saved data and load it
-		CompoundTag savedData = (CompoundTag) event.getEntity().getPersistentData().get(DailiesCapabilityProvider.NAME);
+		CompoundTag savedData = (CompoundTag) event.getEntity().getPersistentData().get("dailies_data");
 		if (savedData != null) {
 			dailies.readNBT(savedData);
 		}
@@ -102,21 +102,12 @@ public class Events {
 		if (isMissingCapability(player)) {
 			return null;
 		}
-		return player.getCapability(DailiesCapabilityProvider.DAILIES_CAPABILITY, null).orElse(new DailiesCapabilityImpl());
+		return player.getData(DailiesAttachmentTypes.DAILIES_DATA);
 	}
 
 	private static boolean isMissingCapability(Player player) {
-		return player == null || !player.getCapability(DailiesCapabilityProvider.DAILIES_CAPABILITY, null).isPresent();
+		return player == null || player.getData(DailiesAttachmentTypes.DAILIES_DATA) == null;
 	}
-
-	@SubscribeEvent
-	public static void onEntityLoad(AttachCapabilitiesEvent<Entity> event) {
-		if (!(event.getObject() instanceof Player)) {
-			return;
-		}
-		event.addCapability(new ResourceLocation(DailiesCapabilityProvider.NAME), new DailiesCapabilityProvider());
-	}
-
 
 	@SubscribeEvent
 	public static void onPlayerLogin(PlayerEvent.PlayerLoggedInEvent event) {
@@ -125,22 +116,22 @@ public class Events {
 	}
 
 	@SubscribeEvent
-	public static void onPlayerTick(TickEvent.PlayerTickEvent event) {
-		// Only check on server side, and only once per second to avoid spam
-		if (event.side.isClient() || event.phase != TickEvent.Phase.END) {
-			return;
-		}
-		
-		Player player = event.player;
-		if (player.tickCount % 20 == 0) { // Check every 20 ticks (1 second)
-			checkPlayerInventoryForQuestProgress(player);
+	public static void onServerTick(ServerTickEvent.Post event) {
+		// Check all players every second (20 ticks)
+		if (event.getServer().getTickCount() % 20 == 0) {
+			for (Player player : event.getServer().getPlayerList().getPlayers()) {
+				checkPlayerInventoryForQuestProgress(player);
+			}
 		}
 	}
 
 	private static void setupDailiesData(Player player) {
-		IDailiesCapability cap = player.getCapability(DailiesCapabilityProvider.DAILIES_CAPABILITY, null).orElse(new DailiesCapabilityImpl());
-		if (cap == null)
-			return;
+		IDailiesCapability cap = player.getData(DailiesAttachmentTypes.DAILIES_DATA);
+		if (cap == null) {
+			// Create new dailies data for the player
+			player.setData(DailiesAttachmentTypes.DAILIES_DATA, new DailiesCapabilityImpl());
+			cap = player.getData(DailiesAttachmentTypes.DAILIES_DATA);
+		}
 			
 		// Preserve existing accepted quests from saved data
 		Set<DailyQuest> existingAcceptedQuests = cap.getAcceptedQuests();
@@ -169,7 +160,7 @@ public class Events {
 		cap.setAcceptedQuests(mergedAcceptedQuests);
 		
 		// Force save the updated data
-		player.getPersistentData().put(DailiesCapabilityProvider.NAME, cap.writeNBT());
+		player.getPersistentData().put("dailies_data", cap.writeNBT());
 		
 		// Send synchronized quest data to client
 		if (player instanceof net.minecraft.server.level.ServerPlayer) {
@@ -188,10 +179,10 @@ public class Events {
 		try {
 			quests = new QuestInventoryFetcher(player).getQuestInventory();
 		} catch (DailiesNetworkException e) {
-			player.sendSystemMessage(Component.literal("Randomly generating quests instead."));
+			player.displayClientMessage(Component.literal("Randomly generating quests instead."), false);
 			quests = new RandomQuestGenerator().generateQuests();
 		} catch (DailiesException e) {
-			player.sendSystemMessage(Component.literal(e.getMessage()));
+			player.displayClientMessage(Component.literal(e.getMessage()), false);
 		}
 		return quests;
 	}
@@ -203,7 +194,7 @@ public class Events {
 	 * Stage 2: Placing items in Bailey's inventory provides rewards
 	 */
 	public static void checkPlayerInventoryForQuestProgress(Player player) {
-		if (player == null || player.level.isClientSide()) {
+		if (player == null || player.level().isClientSide()) {
 			return;
 		}
 		
@@ -232,7 +223,7 @@ public class Events {
 				}
 				
 				// Check if this item matches the quest
-				ResourceLocation itemId = net.minecraftforge.registries.ForgeRegistries.ITEMS.getKey(stack.getItem());
+				ResourceLocation itemId = net.minecraft.core.registries.BuiltInRegistries.ITEM.getKey(stack.getItem());
 				int subType = stack.getDamageValue();
 				
 				if (matchesQuestItem(quest, itemId, subType)) {

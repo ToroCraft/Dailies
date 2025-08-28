@@ -153,7 +153,7 @@ public class DailiesCapabilityImpl implements IDailiesCapability {
 		
 		// Force save the capability data immediately
 		if (player instanceof net.minecraft.server.level.ServerPlayer) {
-			player.getPersistentData().put(DailiesCapabilityProvider.NAME, this.writeNBT());
+			player.getPersistentData().put("dailies_data", this.writeNBT());
 		}
 	}
 
@@ -184,7 +184,7 @@ public class DailiesCapabilityImpl implements IDailiesCapability {
 		
 		// Force save the capability data immediately
 		if (player instanceof net.minecraft.server.level.ServerPlayer) {
-			player.getPersistentData().put(DailiesCapabilityProvider.NAME, this.writeNBT());
+			player.getPersistentData().put("dailies_data", this.writeNBT());
 		}
 	}
 	

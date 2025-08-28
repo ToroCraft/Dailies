@@ -6,7 +6,6 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraftforge.registries.ForgeRegistries;
 
 public class Reward extends TypedInteger {
 
@@ -15,19 +14,16 @@ public class Reward extends TypedInteger {
 		Item rewardItem = getItemFromIdentifier(getItemIdentifier());
 		ItemStack stack = new ItemStack(rewardItem);
 		for (int i = 0; i < quantity; i++) {
-			ItemEntity dropItem = new ItemEntity(player.level, player.getX(), player.getY(), player.getZ(), stack.copy());
+			ItemEntity dropItem = new ItemEntity(player.level(), player.getX(), player.getY(), player.getZ(), stack.copy());
 			dropItem.setNoPickUpDelay();
-			player.level.addFreshEntity(dropItem);
+			player.level().addFreshEntity(dropItem);
 		}
 	}
 
-	/**
-	 * Get Item from string identifier using modern Forge registry system
-	 */
 	private Item getItemFromIdentifier(String identifier) {
 		try {
-			ResourceLocation resourceLocation = new ResourceLocation(identifier);
-			Item item = ForgeRegistries.ITEMS.getValue(resourceLocation);
+			ResourceLocation resourceLocation = ResourceLocation.parse(identifier);
+			Item item = net.minecraft.core.registries.BuiltInRegistries.ITEM.getValue(resourceLocation);
 			if (item != null) {
 				return item;
 			}
@@ -39,10 +35,6 @@ public class Reward extends TypedInteger {
 		return Items.DIRT;
 	}
 
-	/**
-	 * Convert legacy integer item ID to modern Item from registry
-	 * @deprecated Use getItemFromIdentifier(String) instead
-	 */
 	@Deprecated
 	private Item getItemFromType(int itemId) {
 		// Convert to string identifier and use modern system
@@ -50,10 +42,6 @@ public class Reward extends TypedInteger {
 		return getItemFromIdentifier(identifier);
 	}
 	
-	/**
-	 * Convert legacy integer item ID to ResourceLocation string
-	 * @deprecated Legacy support only, use string identifiers directly
-	 */
 	@Deprecated
 	private String convertLegacyIdToString(int itemId) {
 		switch (itemId) {

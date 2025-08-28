@@ -5,7 +5,6 @@ import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
-import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.level.Level;
@@ -14,12 +13,10 @@ import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
-import net.minecraftforge.common.util.LazyOptional;
-import net.minecraftforge.common.util.NonNullConsumer;
-import net.minecraftforge.network.NetworkHooks;
 import net.torocraft.dailies.DailiesContainer;
-import net.torocraft.dailies.capabilities.DailiesCapabilityProvider;
+import net.torocraft.dailies.attachments.DailiesAttachmentTypes;
 import net.torocraft.dailies.capabilities.IDailiesCapability;
+import net.torocraft.dailies.entities.EntityBailey;
 import net.torocraft.dailies.entities.EntityRegistryHandler;
 import net.torocraft.dailies.network.PacketHandler;
 import net.torocraft.dailies.network.packets.GetQuestsPacket.QuestsFilter;
@@ -33,7 +30,7 @@ public class DailiesCommand {
 
     public static class PlayerDailyQuests {
     public ServerPlayer player = null;
-        public LazyOptional<IDailiesCapability> playerDailiesCapability;
+        public IDailiesCapability playerDailiesCapability;
         public List<DailyQuest> openDailyQuests = null;
         public List<DailyQuest> acceptedDailyQuests = null;
     }
@@ -42,15 +39,14 @@ public class DailiesCommand {
     dispatcher.register(Commands.literal("test")
         .then(Commands.literal("one").executes((y) -> test(y.getSource()))));
 
-    dispatcher.register(Commands.literal("spawn")
-        .then(Commands.literal("bailey").executes((c) -> spawnBailey(c.getSource()))));
-
     dispatcher.register(Commands.literal("dailies")
         .then(Commands.literal("list").executes((c) -> listDailyQuests(c.getSource())))
         .then(Commands.literal("accept")
             .then(Commands.argument("Quest Number", IntegerArgumentType.integer(0)).executes((a) -> acceptQuest(a.getSource(), IntegerArgumentType.getInteger(a, "Quest Number")))))
         .then(Commands.literal("abandon")
             .then(Commands.argument("Quest Number", IntegerArgumentType.integer(0)).executes((a) -> abandonQuest(a.getSource(), IntegerArgumentType.getInteger(a, "Quest Number")))))
+        .then(Commands.literal("spawn")
+            .then(Commands.literal("bailey").executes((c) -> spawnBailey(c.getSource()))))
         .then(Commands.literal("gui").executes((c) -> openBaileyGui(c.getSource())))
         .then(Commands.literal("config").executes((c) -> showConfigHelp(c.getSource())))
     );
@@ -63,10 +59,14 @@ public class DailiesCommand {
 
     private static int spawnBailey(CommandSourceStack source) throws CommandSyntaxException {
         ServerPlayer player = source.getPlayerOrException();
-        net.minecraft.server.level.ServerLevel world = (net.minecraft.server.level.ServerLevel) player.level;
+        net.minecraft.server.level.ServerLevel world = player.serverLevel();
         if(!world.isClientSide) {
-            BlockPos pos = new BlockPos(player.getX(), player.getY(), player.getZ());
-            EntityRegistryHandler.BAILEY.get().spawn(world, null, null, pos, MobSpawnType.COMMAND, false, false);
+            BlockPos pos = new BlockPos((int)player.getX(), (int)player.getY(), (int)player.getZ());
+            EntityBailey bailey = new EntityBailey(EntityRegistryHandler.BAILEY.get(), world);
+            if (bailey != null) {
+                bailey.setPos(pos.getX(), pos.getY(), pos.getZ());
+                world.addFreshEntity(bailey);
+            }
         }
         return 0;
     }
@@ -77,15 +77,15 @@ public class DailiesCommand {
         questData.player.sendSystemMessage(Component.literal(dailiesList));
         
         // Force synchronization with client GUI by sending updated quest data
-        questData.playerDailiesCapability.ifPresent(cap -> {
-            cap.sendAcceptedQuestsToClient(questData.player);
+        if (questData.playerDailiesCapability != null) {
+            questData.playerDailiesCapability.sendAcceptedQuestsToClient(questData.player);
             // Also send available quests to client
             net.torocraft.dailies.network.PacketHandler.questsUpdate(
                 questData.player, 
                 net.torocraft.dailies.network.packets.GetQuestsPacket.QuestsFilter.AVAILABLE, 
-                cap.getAvailableQuests()
+                questData.playerDailiesCapability.getAvailableQuests()
             );
-        });
+        }
 
         return 0;
     }
@@ -99,15 +99,12 @@ public class DailiesCommand {
         PlayerDailyQuests d = new PlayerDailyQuests();
 
         d.player = player;
-        d.playerDailiesCapability = d.player.getCapability(DailiesCapabilityProvider.DAILIES_CAPABILITY, null);
+        d.playerDailiesCapability = d.player.getData(DailiesAttachmentTypes.DAILIES_DATA);
 
-        d.playerDailiesCapability.ifPresent(new NonNullConsumer<IDailiesCapability>() {
-            @Override
-            public void accept(IDailiesCapability iDailiesCapability) {
-                d.openDailyQuests = new ArrayList<DailyQuest>(iDailiesCapability.getAvailableQuests());
-                d.acceptedDailyQuests = new ArrayList<DailyQuest>(iDailiesCapability.getAcceptedQuests());
-            }
-        });
+        if (d.playerDailiesCapability != null) {
+            d.openDailyQuests = new ArrayList<DailyQuest>(d.playerDailiesCapability.getAvailableQuests());
+            d.acceptedDailyQuests = new ArrayList<DailyQuest>(d.playerDailiesCapability.getAcceptedQuests());
+        }
 
         return d;
     }
@@ -150,24 +147,22 @@ public class DailiesCommand {
             quest = d.acceptedDailyQuests.get(questId);
         } catch (Exception ex) {}
 
-        if(quest != null) {
-            d.playerDailiesCapability.ifPresent(x -> {
-                try {
-                    DailyQuest q = d.acceptedDailyQuests.get(questId);
-                    x.abandonQuest(player, q);
-                    d.player.sendSystemMessage(Component.literal("Quest " + fromIndex(questId) + " " + q.getDisplayName() + " abandoned"));
-                    
-                    // Force synchronization with client
-                    x.sendAcceptedQuestsToClient(player);
-                    net.torocraft.dailies.network.PacketHandler.questsUpdate(
-                        player, 
-                        net.torocraft.dailies.network.packets.GetQuestsPacket.QuestsFilter.AVAILABLE, 
-                        x.getAvailableQuests()
-                    );
-                } catch (Exception ex) {
-                    d.player.sendSystemMessage(Component.literal("Error occurred when trying to abandon quest"));
-                }
-            });
+        if(quest != null && d.playerDailiesCapability != null) {
+            try {
+                DailyQuest q = d.acceptedDailyQuests.get(questId);
+                d.playerDailiesCapability.abandonQuest(player, q);
+                d.player.sendSystemMessage(Component.literal("Quest " + fromIndex(questId) + " " + q.getDisplayName() + " abandoned"));
+                
+                // Force synchronization with client
+                d.playerDailiesCapability.sendAcceptedQuestsToClient(player);
+                net.torocraft.dailies.network.PacketHandler.questsUpdate(
+                    player, 
+                    net.torocraft.dailies.network.packets.GetQuestsPacket.QuestsFilter.AVAILABLE, 
+                    d.playerDailiesCapability.getAvailableQuests()
+                );
+            } catch (Exception ex) {
+                d.player.sendSystemMessage(Component.literal("Error occurred when trying to abandon quest"));
+            }
         } else {
             d.player.sendSystemMessage(Component.literal("Quest Not Accepted"));
         }
@@ -183,24 +178,22 @@ public class DailiesCommand {
             quest = d.acceptedDailyQuests.get(questId);
         } catch (Exception ex) {}
 
-        if(quest == null) {
-            d.playerDailiesCapability.ifPresent(x -> {
-                try {
-                    DailyQuest q = d.openDailyQuests.get(questId);
-                    x.acceptQuest(player, q);
-                    d.player.sendSystemMessage(Component.literal("Quest " + fromIndex(questId) + " " + q.getDisplayName() + " accepted"));
-                    
-                    // Force synchronization with client
-                    x.sendAcceptedQuestsToClient(player);
-                    net.torocraft.dailies.network.PacketHandler.questsUpdate(
-                        player, 
-                        net.torocraft.dailies.network.packets.GetQuestsPacket.QuestsFilter.AVAILABLE, 
-                        x.getAvailableQuests()
-                    );
-                } catch (Exception ex) {
-                    d.player.sendSystemMessage(Component.literal("Error occurred when trying to accept quest"));
-                }
-            });
+        if(quest == null && d.playerDailiesCapability != null) {
+            try {
+                DailyQuest q = d.openDailyQuests.get(questId);
+                d.playerDailiesCapability.acceptQuest(player, q);
+                d.player.sendSystemMessage(Component.literal("Quest " + fromIndex(questId) + " " + q.getDisplayName() + " accepted"));
+                
+                // Force synchronization with client
+                d.playerDailiesCapability.sendAcceptedQuestsToClient(player);
+                net.torocraft.dailies.network.PacketHandler.questsUpdate(
+                    player, 
+                    net.torocraft.dailies.network.packets.GetQuestsPacket.QuestsFilter.AVAILABLE, 
+                    d.playerDailiesCapability.getAvailableQuests()
+                );
+            } catch (Exception ex) {
+                d.player.sendSystemMessage(Component.literal("Error occurred when trying to accept quest"));
+            }
         } else {
             d.player.sendSystemMessage(Component.literal("Quest Already Accepted"));
         }
@@ -215,7 +208,7 @@ public class DailiesCommand {
         Level world = source.getLevel();
         if(!world.isClientSide()) {
             ServerPlayer player = source.getPlayerOrException();
-            NetworkHooks.openScreen(player, new MenuProvider() {
+            player.openMenu(new MenuProvider() {
                 @Override
                 public Component getDisplayName() { return Component.translatable("Bailey GUI"); }
                 @Override

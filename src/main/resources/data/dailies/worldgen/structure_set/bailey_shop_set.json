@@ -1,0 +1,14 @@
+{
+  "structures": [
+    {
+      "structure": "dailies:bailey_shop",
+      "weight": 5
+    }
+  ],
+  "placement": {
+    "salt": 1646207470,
+    "spacing": 34,
+    "separation": 8,
+    "type": "minecraft:random_spread"
+  }
+}

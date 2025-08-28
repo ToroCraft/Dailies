@@ -1,0 +1,70 @@
+# This is an example neoforge.mods.toml file. It contains the data relating to the loading mods.
+# There are several mandatory fields (#mandatory), and many more that are optional (#optional).
+# The overall format is standard TOML format, v0.5.0.
+# Note that there are a couple of TOML lists in this file.
+# Find more information on toml format here:  https://github.com/toml-lang/toml
+
+# The name of the mod loader type to load - for regular FML @Mod mods it should be javafml
+modLoader="javafml" #mandatory
+# A version range to match for said mod loader - for regular FML @Mod it will be the NeoForge version
+loaderVersion="[6,)" #mandatory
+
+# The license for you mod. This is mandatory metadata and allows for easier comprehension of your redistributive properties.
+# Review your options at https://choosealicense.com/. All rights reserved is the default copyright stance, and is thus the default here.
+license="GPL-3.0"
+
+# A URL to refer people to when problems occur with this mod
+issueTrackerURL="https://github.com/ToroCraft/Dailies/issues"
+
+# A list of mods - how many allowed here is determined by the individual mod loader
+[[mods]] #mandatory
+
+# The modid of the mod
+modId="dailies" #mandatory
+
+# The version number of the mod
+version="1.21.4-1.0.0" #mandatory
+
+# A display name for the mod
+displayName="Bailey's Dailies" #mandatory
+
+# A URL for the "homepage" for this mod, displayed in the mod UI
+displayURL="https://www.curseforge.com/minecraft/mc-mods/baileys-dailies" #optional
+
+# A text field displayed in the mod UI
+authors="ToroCraft" #optional
+
+# A text field displayed in the mod UI
+credits="Minecraft modding community for tools and resources" #optional
+
+# The description text for the mod (multi line!) (#mandatory)
+description='''
+Daily quests for hunting, gathering, and exploring the wonderful world of Minecraft.
+Bailey the merchant offers daily quests that reward players for exploring, hunting monsters, and gathering resources.
+'''
+
+# A dependency - use the . to indicate dependency for a specific modid. Dependencies are optional.
+[[dependencies.dailies]] #optional
+    # the modid of the dependency
+    modId="neoforge" #mandatory
+    # The type of the dependency. Can be one of "required", "optional", "incompatible" or "discouraged" (case insensitive).
+    # 'required' requires the mod to exist, 'optional' does not
+    # 'incompatible' will prevent the game from loading when the mod exists, and 'discouraged' will show a warning
+    type="required" #mandatory
+    # The version range of the dependency
+    versionRange="[21.4.152,)" #mandatory
+    # An ordering relationship for the dependency.
+    # BEFORE - This mod is loaded BEFORE the dependency
+    # AFTER - This mod is loaded AFTER the dependency
+    ordering="NONE"
+    # Side this dependency is applied on - BOTH, CLIENT, or SERVER
+    side="BOTH"
+
+# Here's another dependency
+[[dependencies.dailies]]
+    modId="minecraft"
+    type="required"
+    # This version range declares a minimum of the current minecraft version up to but not including the next major version
+    versionRange="[1.21.4]"
+    ordering="NONE"
+    side="BOTH"

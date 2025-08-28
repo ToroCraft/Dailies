@@ -1,12 +1,12 @@
 package net.torocraft.dailies.network;
 
-import java.util.function.Supplier;
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraftforge.network.NetworkEvent;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.neoforged.neoforge.network.handling.IPayloadContext;
 
-public interface IDailiesPacket<M> {
+public interface IDailiesPacket<M extends CustomPacketPayload> {
   M decode(FriendlyByteBuf buf);
   void encode(M message, FriendlyByteBuf buf);
-  void handle(M message, Supplier<NetworkEvent.Context> ctx);
+  void handle(M message, IPayloadContext ctx);
   Class<M> getDataClass();
 }

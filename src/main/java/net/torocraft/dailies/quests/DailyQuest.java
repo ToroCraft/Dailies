@@ -75,10 +75,10 @@ public class DailyQuest {
 	private String decodeItem(String itemIdentifier) {
 		// Get Item from string identifier using modern Forge registry system
 		try {
-			net.minecraft.resources.ResourceLocation resourceLocation = new net.minecraft.resources.ResourceLocation(itemIdentifier);
-			net.minecraft.world.item.Item item = net.minecraftforge.registries.ForgeRegistries.ITEMS.getValue(resourceLocation);
+			net.minecraft.resources.ResourceLocation resourceLocation = net.minecraft.resources.ResourceLocation.parse(itemIdentifier);
+			net.minecraft.world.item.Item item = net.minecraft.core.registries.BuiltInRegistries.ITEM.getValue(resourceLocation);
 			if (item != null) {
-				return item.getDescription().getString();
+				return item.getName().getString();
 			}
 		} catch (Exception e) {
 			// Log error and fall back to identifier
@@ -91,8 +91,8 @@ public class DailyQuest {
 	private String decodeMob(String entityIdentifier) {
 		// Get EntityType from string identifier using modern Forge registry system
 		try {
-			net.minecraft.resources.ResourceLocation resourceLocation = new net.minecraft.resources.ResourceLocation(entityIdentifier);
-			net.minecraft.world.entity.EntityType<?> entityType = net.minecraftforge.registries.ForgeRegistries.ENTITY_TYPES.getValue(resourceLocation);
+			net.minecraft.resources.ResourceLocation resourceLocation = net.minecraft.resources.ResourceLocation.parse(entityIdentifier);
+			net.minecraft.world.entity.EntityType<?> entityType = net.minecraft.core.registries.BuiltInRegistries.ENTITY_TYPE.getValue(resourceLocation);
 			if (entityType != null) {
 				return entityType.getDescription().getString();
 			}
@@ -188,10 +188,10 @@ public class DailyQuest {
 	public void dropNewStack(Player player, ItemEntity item, int amount) {
 		ItemStack stack = item.getItem().copy();
 		stack.setCount(amount);
-		// 1.18.2+: use player.level, getX/Y/Z, and addFreshEntity
-		ItemEntity dropItem = new ItemEntity(player.level, player.getX(), player.getY(), player.getZ(), stack);
+		// 1.21.4+: use player.level(), getX/Y/Z, and addFreshEntity
+		ItemEntity dropItem = new ItemEntity(player.level(), player.getX(), player.getY(), player.getZ(), stack);
 		dropItem.setNoPickUpDelay(); // 1.18.2+ method
-		player.level.addFreshEntity(dropItem);
+		player.level().addFreshEntity(dropItem);
 	}
 
 	public boolean hunt(Player player, LivingEntity mob) {
@@ -216,7 +216,7 @@ public class DailyQuest {
 	private boolean isTargetMob(LivingEntity mob) {
 		try {
 			// Get the entity's ResourceLocation identifier
-			net.minecraft.resources.ResourceLocation mobId = net.minecraftforge.registries.ForgeRegistries.ENTITY_TYPES.getKey(mob.getType());
+			net.minecraft.resources.ResourceLocation mobId = net.minecraft.core.registries.BuiltInRegistries.ENTITY_TYPE.getKey(mob.getType());
 			String mobIdentifier = mobId != null ? mobId.toString() : "";
 			
 			// Compare with target identifier

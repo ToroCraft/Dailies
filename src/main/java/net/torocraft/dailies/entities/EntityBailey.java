@@ -20,10 +20,8 @@ import net.minecraft.world.level.biome.Biome;
 import net.minecraft.core.Holder;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.level.biome.Biomes;
-import net.minecraftforge.network.NetworkHooks;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 
 import static net.minecraft.stats.Stats.TALKED_TO_VILLAGER;
 
@@ -49,7 +47,7 @@ public class EntityBailey extends Villager {
 
 	public static void init(int entityId) {
 		//EntitySpawnPlacementRegistry.register(EntityBailey.class, EntitySpawnPlacementRegistry.PlacementType.ON_GROUND, Heightmap.Type.WORLD_SURFACE, );
-		//EntityRegistry.registerModEntity(new ResourceLocation(DailiesMod.MODID, NAME), EntityBailey.class, NAME, entityId, DailiesMod.instance, 60, 2, true, 0xeca58c, 0xba12c8);
+		//EntityRegistry.registerModEntity(ResourceLocation.parse(DailiesMod.MODID, NAME), EntityBailey.class, NAME, entityId, DailiesMod.instance, 60, 2, true, 0xeca58c, 0xba12c8);
 	}
 
 	@Override
@@ -61,8 +59,8 @@ public class EntityBailey extends Villager {
 	@Override
 	public InteractionResult mobInteract(@Nonnull Player player, @Nonnull InteractionHand hand) {
 		if (this.isAlive() && !this.isBaby()) {
-			if (!this.level.isClientSide) {
-				   NetworkHooks.openScreen((ServerPlayer)player, new net.minecraft.world.MenuProvider() {
+			if (!this.level().isClientSide) {
+				   ((ServerPlayer)player).openMenu(new net.minecraft.world.MenuProvider() {
 					   @Override
 					   public Component getDisplayName() {
 						   return Component.literal("Bailey's Dailies");
@@ -84,23 +82,14 @@ public class EntityBailey extends Villager {
 
 	@Override
 	   public Component getDisplayName() {
-		   return Component.literal("bailey");
+		   return Component.literal("Bailey");
 	   }
 
-	@Override
-	public SpawnGroupData finalizeSpawn(
-			@Nonnull ServerLevelAccessor worldIn,
-			@Nonnull DifficultyInstance difficultyIn,
-			@Nonnull MobSpawnType reason,
-			@Nullable SpawnGroupData spawnDataIn,
-			@Nullable CompoundTag dataTag) {
-		SpawnGroupData data = super.finalizeSpawn(worldIn, difficultyIn, reason, spawnDataIn, dataTag);
-		setVariantByCurrentBiome();
-		return data;
-	}
-
-	   private void setVariantByCurrentBiome() {
-		   Holder<Biome> biomeHolder = this.level.getBiome(this.blockPosition());
+    public SpawnGroupData finalizeSpawn(ServerLevelAccessor world, DifficultyInstance difficulty, EntitySpawnReason reason, SpawnGroupData data) {
+        this.setCustomName(Component.literal("Bailey"));
+        return super.finalizeSpawn(world, difficulty, reason, data);
+    }	   private void setVariantByCurrentBiome() {
+		   Holder<Biome> biomeHolder = this.level().getBiome(this.blockPosition());
 		   ResourceKey<Biome> biomeKey = biomeHolder.unwrap().left().orElse(null);
 		   if (biomeKey == Biomes.TAIGA) {
 			   variant = BaileyVariant.TAIGA;

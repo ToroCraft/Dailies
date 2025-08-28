@@ -1,13 +1,12 @@
 
 package net.torocraft.dailies.entities.render;
 
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.client.event.EntityRenderersEvent;
-import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
-import net.minecraft.client.gui.screens.MenuScreens;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.api.distmarker.OnlyIn;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.client.event.EntityRenderersEvent;
+import net.neoforged.neoforge.client.event.RegisterMenuScreensEvent;
 import net.torocraft.dailies.gui.BaileyInventoryGui;
 import net.torocraft.dailies.gui.MenuRegistryHandler;
 import net.torocraft.dailies.entities.EntityRegistryHandler;
@@ -15,13 +14,11 @@ import net.torocraft.dailies.entities.model.ModelBailey;
 import net.torocraft.dailies.entities.model.ModelLayers;
 
 @OnlyIn(Dist.CLIENT)
-@Mod.EventBusSubscriber(modid = "dailies", bus = Mod.EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
+@EventBusSubscriber(modid = "dailies", value = Dist.CLIENT)
 public class RenderRegistryHandler {
 	@SubscribeEvent
-	public static void onClientSetup(FMLClientSetupEvent event) {
-		event.enqueueWork(() -> {
-			MenuScreens.register(MenuRegistryHandler.DAILIES_CONTAINER.get(), BaileyInventoryGui::new);
-		});
+	public static void onRegisterMenuScreens(RegisterMenuScreensEvent event) {
+		event.register(MenuRegistryHandler.DAILIES_CONTAINER.get(), BaileyInventoryGui::new);
 	}
 
 	@SubscribeEvent

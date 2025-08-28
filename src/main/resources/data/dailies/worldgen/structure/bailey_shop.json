@@ -1,0 +1,7 @@
+{
+  "type": "dailies:bailey_shop",
+  "spawn_overrides": {},
+  "terrain_adaptation": "beard_thin",
+  "biomes": "#minecraft:is_overworld",
+  "step": "surface_structures"
+}

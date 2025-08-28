@@ -1,24 +1,28 @@
 package net.torocraft.dailies;
 
 import net.minecraft.world.entity.npc.Villager;
-import net.minecraftforge.event.entity.EntityAttributeCreationEvent;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.eventbus.api.EventPriority;
-import net.minecraftforge.eventbus.api.IEventBus;
-import net.minecraftforge.fml.DistExecutor;
-import net.minecraftforge.fml.ModLoadingContext;
-import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
-import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
+import net.neoforged.neoforge.event.entity.EntityAttributeCreationEvent;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.bus.api.EventPriority;
+import net.neoforged.bus.api.IEventBus;
+import net.neoforged.fml.loading.FMLEnvironment;
+import net.neoforged.fml.common.Mod;
+import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
+import net.neoforged.fml.ModContainer;
+import net.neoforged.fml.config.ModConfig;
+import net.neoforged.fml.event.config.ModConfigEvent;
+import net.torocraft.dailies.attachments.DailiesAttachmentTypes;
 import net.torocraft.dailies.config.Config;
-import net.torocraft.dailies.config.ConfigScreen;
+import net.torocraft.dailies.config.ConfigScreenHandler;
 import net.torocraft.dailies.entities.EntityRegistryHandler;
 import net.torocraft.dailies.events.Events;
 import net.torocraft.dailies.gui.MenuRegistryHandler;
 import net.torocraft.dailies.items.ItemRegistryHandler;
 import net.torocraft.dailies.network.PacketHandler;
 import net.torocraft.dailies.quests.DailyQuest;
+import net.torocraft.dailies.worldgen.ModStructures;
+import net.torocraft.dailies.worldgen.village.BaileyShopStructurePieceType;
 
 @Mod(DailiesMod.MODID)
 public class DailiesMod {
@@ -26,47 +30,56 @@ public class DailiesMod {
 	public static final boolean devMode = false;
 	public static final String MODID = "dailies";
 	public static final Integer MAX_QUESTS_ACCEPTABLE = 10;
+	
 
-	// Note: Static quest fields removed in favor of ClientQuestCache for better client-server sync
-	
-	//public static GuiDailyProgressIndicators dailyGui = new GuiDailyProgressIndicators();
-
-	public DailiesMod() {
-	ModLoadingContext.get().registerConfig(net.minecraftforge.fml.config.ModConfig.Type.CLIENT, Config.CLIENT_CONFIG_SPEC);
-	
-	// Register config screen for Mods menu (Forge 1.19.2-43.2.21)
-	ModLoadingContext.get().registerExtensionPoint(
-		net.minecraftforge.client.ConfigScreenHandler.ConfigScreenFactory.class,
-		() -> new net.minecraftforge.client.ConfigScreenHandler.ConfigScreenFactory(
-			(client, parentScreen) -> new ConfigScreen(parentScreen)
-		)
-	);
-	
-	IEventBus modEventBus = FMLJavaModLoadingContext.get().getModEventBus();
-	EntityRegistryHandler.init();
-	MenuRegistryHandler.init(modEventBus);
-	ItemRegistryHandler.init(modEventBus);
-	PacketHandler.init(); // Initialize network packets during mod loading
-	MinecraftForge.EVENT_BUS.register(Events.class);
-	modEventBus.addListener(this::onEntityAttributeCreation);
-	DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> clientStart(modEventBus));
+	public DailiesMod(IEventBus modEventBus, ModContainer modContainer) {
+		// Register configurations using ModContainer (NeoForge 1.21.4 approach)
+		modContainer.registerConfig(ModConfig.Type.CLIENT, Config.CLIENT_CONFIG_SPEC);
+		modContainer.registerConfig(ModConfig.Type.COMMON, Config.COMMON_CONFIG_SPEC);
+		modContainer.registerConfig(ModConfig.Type.SERVER, Config.SERVER_CONFIG_SPEC);
+		
+		// Register config event listeners with proper event types
+		modEventBus.addListener(this::onConfigLoad);
+		modEventBus.addListener(this::onConfigReload);
+		
+		EntityRegistryHandler.init(modEventBus);
+		MenuRegistryHandler.init(modEventBus);
+		ItemRegistryHandler.init(modEventBus);
+		DailiesAttachmentTypes.ATTACHMENT_TYPES.register(modEventBus); // Register attachment types
+		ModStructures.register(modEventBus); // Register structure types
+		BaileyShopStructurePieceType.STRUCTURE_PIECE_TYPES.register(modEventBus); // Register structure piece types
+		PacketHandler.init(); // Initialize network packets during mod loading
+		NeoForge.EVENT_BUS.register(Events.class);
+		modEventBus.addListener(this::onEntityAttributeCreation);
+		modEventBus.addListener(PacketHandler::registerPayloads); // Register packet payloads
+		
+		// Client-only setup
+		if (FMLEnvironment.dist == Dist.CLIENT) {
+			clientStart(modEventBus);
+		}
 	}
 
 	private static void clientStart(IEventBus modEventBus) {
 		modEventBus.addListener(EventPriority.NORMAL, false, FMLClientSetupEvent.class, event -> {
-			// Config screen registration is working via ConfigScreenHandler.ConfigScreenFactory
+			// Register the config screen factory for NeoForge mod menu integration
+			ConfigScreenHandler.registerConfigScreen();
 			// RenderRegistryHandler uses @SubscribeEvent annotations - no need to call init()
-			//MinecraftForge.EVENT_BUS.register(dailyGui);
+			//NeoForge.EVENT_BUS.register(dailyGui);
 		});
 	}
 
+	private void onEntityAttributeCreation(EntityAttributeCreationEvent event) {
+		// Register attributes for custom entities
+		event.put(EntityRegistryHandler.BAILEY.get(), Villager.createAttributes().build());
+	}
 
-	   private void onEntityAttributeCreation(EntityAttributeCreationEvent event) {
-		   // Register attributes for custom entities
-		   event.put(EntityRegistryHandler.BAILEY.get(), Villager.createAttributes().build());
-	   }
+	private void onConfigLoad(ModConfigEvent.Loading event) {
+		Config.onLoad(event.getConfig());
+	}
 
-
+	private void onConfigReload(ModConfigEvent.Reloading event) {
+		Config.onFileChange(event.getConfig());
+	}
 
 	public static void displayQuestProgress(DailyQuest quest) {
 		//dailyGui.setQuest(quest);

@@ -1,9 +1,10 @@
 package net.torocraft.dailies.gui;
 
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.PoseStack;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Inventory;
@@ -14,14 +15,13 @@ import net.torocraft.dailies.network.PacketHandler;
 import net.torocraft.dailies.network.packets.GetQuestsPacket.QuestsFilter;
 import net.torocraft.dailies.quests.DailyQuest;
 
-import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
 public class BaileyInventoryGui extends AbstractContainerScreen<DailiesContainer> {
 
-    private static final ResourceLocation TEXTURE = new ResourceLocation(DailiesMod.MODID, "textures/gui/bailey_gui.png");
+    private static final ResourceLocation TEXTURE = ResourceLocation.fromNamespaceAndPath(DailiesMod.MODID, "textures/gui/bailey_gui.png");
 
     private boolean showingQuests = false;
     
@@ -32,9 +32,6 @@ public class BaileyInventoryGui extends AbstractContainerScreen<DailiesContainer
     private static final int QUEST_ENTRY_HEIGHT = 30; // Reduced from 35 to 30 for more compact layout
     private static final int ACCEPTED_QUEST_ENTRY_HEIGHT = 35; // Reduced from 40 to 35 for more compact layout
 
-    /**
-     * Create a consistently ordered list from a quest set to ensure stable scrolling and button interactions
-     */
     private List<DailyQuest> createOrderedQuestList(Set<DailyQuest> questSet) {
         if (questSet == null || questSet.isEmpty()) {
             return new ArrayList<>();
@@ -61,9 +58,7 @@ public class BaileyInventoryGui extends AbstractContainerScreen<DailiesContainer
         super.init();
         
         // Add a button to toggle quest view
-        this.addRenderableWidget(new Button(
-            this.leftPos + this.imageWidth + 5, this.topPos + 10, 80, 20,
-            Component.literal("View Quests"), 
+        this.addRenderableWidget(Button.builder(Component.literal("View Quests"), 
             (button) -> {
                 this.showingQuests = !this.showingQuests;
                 button.setMessage(Component.literal(this.showingQuests ? "Hide Quests" : "View Quests"));
@@ -72,37 +67,37 @@ public class BaileyInventoryGui extends AbstractContainerScreen<DailiesContainer
                     PacketHandler.getQuests(QuestsFilter.AVAILABLE);
                     PacketHandler.getQuests(QuestsFilter.ACCEPTED);
                 }
-            }));
+            }).bounds(this.leftPos + this.imageWidth + 5, this.topPos + 10, 80, 20).build());
     }
 
     @Override
-    protected void renderBg(@Nonnull PoseStack poseStack, float partialTicks, int mouseX, int mouseY) {
+    protected void renderBg(GuiGraphics guiGraphics, float partialTicks, int mouseX, int mouseY) {
         RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
         if (this.minecraft != null) {
             RenderSystem.setShaderTexture(0, TEXTURE);
         }
         int i = (this.width - this.imageWidth) / 2;
         int j = (this.height - this.imageHeight) / 2;
-        this.blit(poseStack, i, j, 0, 0, this.imageWidth, this.imageHeight);
+        guiGraphics.blit(RenderType::guiTextured, TEXTURE, i, j, 0.0F, 0.0F, this.imageWidth, this.imageHeight, 256, 256);
     }
 
     @Override
-    protected void renderLabels(@Nonnull PoseStack poseStack, int mouseX, int mouseY) {
-        this.font.draw(poseStack, Component.literal("Bailey's Shop"), 8, 6, 4210752);
-        this.font.draw(poseStack, this.playerInventoryTitle, 8, 38, 4210752);
+    protected void renderLabels(GuiGraphics guiGraphics, int mouseX, int mouseY) {
+        guiGraphics.drawString(this.font, Component.literal("Bailey's Shop"), 8, 6, 4210752, false);
+        guiGraphics.drawString(this.font, this.playerInventoryTitle, 8, 38, 4210752, false);
     }
 
-    @Override
+        @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
-        if (button == 0 && this.showingQuests) { // Left click
-            // Check quest panel clicks
-            return handleQuestPanelClick(mouseX, mouseY) || super.mouseClicked(mouseX, mouseY, button);
+        if (button == 0 && this.showingQuests) {
+            boolean handled = handleQuestPanelClick(mouseX, mouseY);
+            return handled || super.mouseClicked(mouseX, mouseY, button);
         }
         return super.mouseClicked(mouseX, mouseY, button);
     }
     
     @Override
-    public boolean mouseScrolled(double mouseX, double mouseY, double delta) {
+    public boolean mouseScrolled(double mouseX, double mouseY, double scrollX, double scrollY) {
         if (this.showingQuests) {
             // Check if mouse is over quest panel - use same logic as renderQuestPanel
             int panelWidth = 220;
@@ -139,7 +134,7 @@ public class BaileyInventoryGui extends AbstractContainerScreen<DailiesContainer
                         int visibleQuests = Math.min(QUESTS_PER_PAGE, (availableSectionHeight - 20) / QUEST_ENTRY_HEIGHT);
                         int maxScroll = Math.max(0, quests.size() - visibleQuests);
                         availableQuestScroll = Math.max(0, Math.min(maxScroll, 
-                            availableQuestScroll - (int)(delta * 2)));
+                            availableQuestScroll - (int)(scrollY * 2)));
                     }
                 } else {
                     // Accepted quests section
@@ -151,19 +146,23 @@ public class BaileyInventoryGui extends AbstractContainerScreen<DailiesContainer
                         int visibleQuests = Math.min(QUESTS_PER_PAGE, availableHeightForAccepted / ACCEPTED_QUEST_ENTRY_HEIGHT);
                         int maxScroll = Math.max(0, quests.size() - visibleQuests);
                         acceptedQuestScroll = Math.max(0, Math.min(maxScroll, 
-                            acceptedQuestScroll - (int)(delta * 2)));
+                            acceptedQuestScroll - (int)(scrollY * 2)));
                     }
                 }
                 return true;
             }
         }
-        return super.mouseScrolled(mouseX, mouseY, delta);
+        return super.mouseScrolled(mouseX, mouseY, scrollX, scrollY);
     }
 
     private boolean handleQuestPanelClick(double mouseX, double mouseY) {
         // Calculate panel position (same logic as renderQuestPanel)
         int panelWidth = 220;
-        int panelHeight = 300; // Updated to match render method (increased from 240)
+        int maxPanelHeight = 300; // Increased from 240 to 300 for more quest space
+        
+        // Calculate available vertical space and adjust panel height if needed
+        int availableHeight = this.height - 20; // Leave 10px margin on top and bottom
+        int panelHeight = Math.min(maxPanelHeight, availableHeight);
         
         // Use same positioning strategy as render method
         int panelX, panelY;
@@ -182,12 +181,12 @@ public class BaileyInventoryGui extends AbstractContainerScreen<DailiesContainer
             panelX = this.leftPos + this.imageWidth - panelWidth;
         }
         
-        // Center vertically relative to the GUI
+        // Position vertically - try to center but ensure it fits on screen
         panelY = this.topPos + (this.imageHeight - panelHeight) / 2;
         
-        // Ensure panel doesn't go off screen vertically
-        panelY = Math.max(5, Math.min(panelY, this.height - panelHeight - 5));
-        
+        // Ensure panel doesn't go off screen vertically with stricter bounds
+        panelY = Math.max(10, Math.min(panelY, this.height - panelHeight - 10));
+
         // Check available quests accept buttons
         ClientQuestCache cache = ClientQuestCache.getInstance();
         Set<DailyQuest> available = cache.getAvailableQuests();
@@ -232,16 +231,19 @@ public class BaileyInventoryGui extends AbstractContainerScreen<DailiesContainer
             for (int i = startIndex; i < endIndex; i++) {
                 DailyQuest quest = quests.get(i);
                 
-                // Cancel button bounds (match renderAcceptedQuestEntry)
-                int buttonX = panelX + 5 + (panelWidth - 10) - 55;
-                int buttonY = panelY + yOffset + 5;
-                int buttonWidth = 50;
-                int buttonHeight = 18;
-                
-                if (mouseX >= buttonX && mouseX <= buttonX + buttonWidth && 
-                    mouseY >= buttonY && mouseY <= buttonY + buttonHeight) {
-                    cancelQuest(quest);
-                    return true;
+                // Only process click if the quest would be rendered (match rendering bounds check)
+                if (panelY + yOffset + ACCEPTED_QUEST_ENTRY_HEIGHT <= panelY + panelHeight - 5) {
+                    // Cancel button bounds (match renderAcceptedQuestEntry)
+                    int buttonX = panelX + 5 + (panelWidth - 10) - 55;
+                    int buttonY = panelY + yOffset + 5;
+                    int buttonWidth = 50;
+                    int buttonHeight = 18;
+                    
+                    if (mouseX >= buttonX && mouseX <= buttonX + buttonWidth && 
+                        mouseY >= buttonY && mouseY <= buttonY + buttonHeight) {
+                        cancelQuest(quest);
+                        return true;
+                    }
                 }
                 yOffset += ACCEPTED_QUEST_ENTRY_HEIGHT; // Use consistent spacing
             }
@@ -251,26 +253,26 @@ public class BaileyInventoryGui extends AbstractContainerScreen<DailiesContainer
     }
 
     @Override
-    public void render(@Nonnull PoseStack poseStack, int mouseX, int mouseY, float partialTicks) {
-        this.renderBackground(poseStack);
-        super.render(poseStack, mouseX, mouseY, partialTicks);
+    public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTicks) {
+        this.renderBackground(guiGraphics, mouseX, mouseY, partialTicks);
+        super.render(guiGraphics, mouseX, mouseY, partialTicks);
         
         // Only render tooltips if quest panel is not showing to prevent interference
         if (!this.showingQuests) {
-            this.renderTooltip(poseStack, mouseX, mouseY);
+            this.renderTooltip(guiGraphics, mouseX, mouseY);
         }
         
         // Render quest panel AFTER everything else to ensure it appears on top
         if (this.showingQuests) {
             // Push matrix with very high z-index to ensure it renders above everything
-            poseStack.pushPose();
-            poseStack.translate(0, 0, 1000); // Very high z-index to be above tooltips and item counts
-            renderQuestPanel(poseStack, mouseX, mouseY);
-            poseStack.popPose();
+            guiGraphics.pose().pushPose();
+            guiGraphics.pose().translate(0, 0, 1000); // Very high z-index to be above tooltips and item counts
+            renderQuestPanel(guiGraphics, mouseX, mouseY);
+            guiGraphics.pose().popPose();
         }
     }
 
-    private void renderQuestPanel(PoseStack poseStack, int mouseX, int mouseY) {
+    private void renderQuestPanel(GuiGraphics guiGraphics, int mouseX, int mouseY) {
         // Calculate panel dimensions - make it more adaptive to screen size
         int panelWidth = 220;
         int maxPanelHeight = 300; // Increased from 240 to 300 for more quest space
@@ -303,13 +305,13 @@ public class BaileyInventoryGui extends AbstractContainerScreen<DailiesContainer
         panelY = Math.max(10, Math.min(panelY, this.height - panelHeight - 10));
         
         // Draw panel background with border - make it completely opaque to block all content behind
-        fill(poseStack, panelX - 3, panelY - 3, panelX + panelWidth + 3, panelY + panelHeight + 3, 0xFF000000); // Thicker black border
-        fill(poseStack, panelX - 2, panelY - 2, panelX + panelWidth + 2, panelY + panelHeight + 2, 0xFF404040); // Gray border
-        fill(poseStack, panelX - 1, panelY - 1, panelX + panelWidth + 1, panelY + panelHeight + 1, 0xFF2A2A2A); // Dark border
-        fill(poseStack, panelX, panelY, panelX + panelWidth, panelY + panelHeight, 0xFF1E1E1E); // Fully opaque dark background
+        guiGraphics.fill(panelX - 3, panelY - 3, panelX + panelWidth + 3, panelY + panelHeight + 3, 0xFF000000); // Thicker black border
+        guiGraphics.fill(panelX - 2, panelY - 2, panelX + panelWidth + 2, panelY + panelHeight + 2, 0xFF404040); // Gray border
+        guiGraphics.fill(panelX - 1, panelY - 1, panelX + panelWidth + 1, panelY + panelHeight + 1, 0xFF2A2A2A); // Dark border
+        guiGraphics.fill(panelX, panelY, panelX + panelWidth, panelY + panelHeight, 0xFF1E1E1E); // Fully opaque dark background
         
         // Quest panel title
-        this.font.draw(poseStack, Component.literal("Available Quests"), panelX + 5, panelY + 5, 0xFFFFFF);
+        guiGraphics.drawString(this.font, Component.literal("Available Quests"), panelX + 5, panelY + 5, 0xFFFFFF, false);
         
         // Render available quests with scrolling
         ClientQuestCache cache = ClientQuestCache.getInstance();
@@ -327,22 +329,22 @@ public class BaileyInventoryGui extends AbstractContainerScreen<DailiesContainer
             for (int i = startIndex; i < endIndex; i++) {
                 DailyQuest quest = quests.get(i);
                 if (panelY + yOffset + QUEST_ENTRY_HEIGHT <= panelY + acceptedSectionStart - 5) {
-                    renderQuestEntry(poseStack, quest, panelX + 5, panelY + yOffset, panelWidth - 10, mouseX, mouseY);
+                    renderQuestEntry(guiGraphics, quest, panelX + 5, panelY + yOffset, panelWidth - 10, mouseX, mouseY);
                     yOffset += QUEST_ENTRY_HEIGHT;
                 }
             }
             
             // Draw scroll indicators if needed
             if (quests.size() > visibleQuests) {
-                renderScrollIndicator(poseStack, panelX + panelWidth - 10, panelY + 20, availableSectionHeight - 20, 
+                renderScrollIndicator(guiGraphics, panelX + panelWidth - 10, panelY + 20, availableSectionHeight - 20, 
                     availableQuestScroll, quests.size(), visibleQuests);
             }
         } else {
-            this.font.draw(poseStack, Component.literal("No quests available"), panelX + 5, panelY + 25, 0x888888);
+            guiGraphics.drawString(this.font, Component.literal("No quests available"), panelX + 5, panelY + 25, 0x888888, false);
         }
         
         // Render accepted quests section
-        this.font.draw(poseStack, Component.literal("Your Quests"), panelX + 5, panelY + acceptedSectionStart, 0xFFFFFF);
+        guiGraphics.drawString(this.font, Component.literal("Your Quests"), panelX + 5, panelY + acceptedSectionStart, 0xFFFFFF, false);
         
         Set<DailyQuest> accepted = cache.getAcceptedQuests();
         if (accepted != null && !accepted.isEmpty()) {
@@ -356,34 +358,34 @@ public class BaileyInventoryGui extends AbstractContainerScreen<DailiesContainer
             for (int i = startIndex; i < endIndex; i++) {
                 DailyQuest quest = quests.get(i);
                 if (panelY + yOffset + ACCEPTED_QUEST_ENTRY_HEIGHT <= panelY + panelHeight - 5) {
-                    renderAcceptedQuestEntry(poseStack, quest, panelX + 5, panelY + yOffset, panelWidth - 10, mouseX, mouseY);
+                    renderAcceptedQuestEntry(guiGraphics, quest, panelX + 5, panelY + yOffset, panelWidth - 10, mouseX, mouseY);
                     yOffset += ACCEPTED_QUEST_ENTRY_HEIGHT;
                 }
             }
             
             // Draw scroll indicators if needed
             if (quests.size() > visibleQuests) {
-                renderScrollIndicator(poseStack, panelX + panelWidth - 10, panelY + acceptedSectionStart + 15, 
+                renderScrollIndicator(guiGraphics, panelX + panelWidth - 10, panelY + acceptedSectionStart + 15, 
                     availableHeightForAccepted, acceptedQuestScroll, quests.size(), visibleQuests);
             }
         } else {
             int noQuestsY = Math.min(panelY + acceptedSectionStart + 15, panelY + panelHeight - 20);
-            this.font.draw(poseStack, Component.literal("No active quests"), panelX + 5, noQuestsY, 0x888888);
+            guiGraphics.drawString(this.font, Component.literal("No active quests"), panelX + 5, noQuestsY, 0x888888, false);
         }
     }
 
-    private void renderQuestEntry(PoseStack poseStack, DailyQuest quest, int x, int y, int width, int mouseX, int mouseY) {
+    private void renderQuestEntry(GuiGraphics guiGraphics, DailyQuest quest, int x, int y, int width, int mouseX, int mouseY) {
         // Quest background (taller for better readability)
         boolean hovered = mouseX >= x && mouseX <= x + width && mouseY >= y && mouseY <= y + 30;
-        fill(poseStack, x, y, x + width, y + 30, hovered ? 0xFF4A4A4A : 0xFF3A3A3A);
+        guiGraphics.fill(x, y, x + width, y + 30, hovered ? 0xFF4A4A4A : 0xFF3A3A3A);
         
         // Quest name
         String questName = this.font.plainSubstrByWidth(quest.name, width - 65);
-        this.font.draw(poseStack, Component.literal(questName), x + 2, y + 3, 0xFFFFFF);
+        guiGraphics.drawString(this.font, Component.literal(questName), x + 2, y + 3, 0xFFFFFF, false);
         
         // Quest description
         String questDesc = this.font.plainSubstrByWidth(quest.description, width - 65);
-        this.font.draw(poseStack, Component.literal(questDesc), x + 2, y + 14, 0xCCCCCC);
+        guiGraphics.drawString(this.font, Component.literal(questDesc), x + 2, y + 14, 0xCCCCCC, false);
         
         // Accept button
         int buttonX = x + width - 55;
@@ -394,34 +396,34 @@ public class BaileyInventoryGui extends AbstractContainerScreen<DailiesContainer
         boolean acceptHovered = mouseX >= buttonX && mouseX <= buttonX + buttonWidth && 
                                mouseY >= buttonY && mouseY <= buttonY + buttonHeight;
         
-        fill(poseStack, buttonX, buttonY, buttonX + buttonWidth, buttonY + buttonHeight, 
+        guiGraphics.fill(buttonX, buttonY, buttonX + buttonWidth, buttonY + buttonHeight, 
              acceptHovered ? 0xFF4A8F4A : 0xFF2A6F2A);
-        fill(poseStack, buttonX + 1, buttonY + 1, buttonX + buttonWidth - 1, buttonY + buttonHeight - 1,
+        guiGraphics.fill(buttonX + 1, buttonY + 1, buttonX + buttonWidth - 1, buttonY + buttonHeight - 1,
              acceptHovered ? 0xFF5AA05A : 0xFF3A7F3A);
         
-        this.font.draw(poseStack, Component.literal("Accept"), buttonX + 7, buttonY + 6, 0xFFFFFF);
+        guiGraphics.drawString(this.font, Component.literal("Accept"), buttonX + 7, buttonY + 6, 0xFFFFFF, false);
     }
 
-    private void renderAcceptedQuestEntry(PoseStack poseStack, DailyQuest quest, int x, int y, int width, int mouseX, int mouseY) {
+    private void renderAcceptedQuestEntry(GuiGraphics guiGraphics, DailyQuest quest, int x, int y, int width, int mouseX, int mouseY) {
         // Quest background (taller for better readability)
-        fill(poseStack, x, y, x + width, y + 35, 0xFF1E3A1E);
+        guiGraphics.fill(x, y, x + width, y + 35, 0xFF1E3A1E);
         
         // Quest name with progress
         String questText = quest.name + " (" + quest.progress + "/" + quest.target.quantity + ")";
         String displayText = this.font.plainSubstrByWidth(questText, width - 65);
-        this.font.draw(poseStack, Component.literal(displayText), x + 2, y + 3, 0x88FF88);
+        guiGraphics.drawString(this.font, Component.literal(displayText), x + 2, y + 3, 0x88FF88, false);
         
         // Quest description (added)
         if (quest.description != null && !quest.description.isEmpty()) {
             String questDesc = this.font.plainSubstrByWidth(quest.description, width - 65);
-            this.font.draw(poseStack, Component.literal(questDesc), x + 2, y + 14, 0xCCCCCC);
+            guiGraphics.drawString(this.font, Component.literal(questDesc), x + 2, y + 14, 0xCCCCCC, false);
         }
         
         // Progress bar (moved down)
         int progressBarWidth = width - 75;
         int progressWidth = (int) (progressBarWidth * ((double) quest.progress / quest.target.quantity));
-        fill(poseStack, x + 2, y + 25, x + 2 + progressBarWidth, y + 28, 0xFF444444);
-        fill(poseStack, x + 2, y + 25, x + 2 + progressWidth, y + 28, 0xFF88FF88);
+        guiGraphics.fill(x + 2, y + 25, x + 2 + progressBarWidth, y + 28, 0xFF444444);
+        guiGraphics.fill(x + 2, y + 25, x + 2 + progressWidth, y + 28, 0xFF88FF88);
         
         // Cancel button
         int buttonX = x + width - 55;
@@ -432,20 +434,20 @@ public class BaileyInventoryGui extends AbstractContainerScreen<DailiesContainer
         boolean cancelHovered = mouseX >= buttonX && mouseX <= buttonX + buttonWidth && 
                                mouseY >= buttonY && mouseY <= buttonY + buttonHeight;
         
-        fill(poseStack, buttonX, buttonY, buttonX + buttonWidth, buttonY + buttonHeight, 
+        guiGraphics.fill(buttonX, buttonY, buttonX + buttonWidth, buttonY + buttonHeight, 
              cancelHovered ? 0xFF8F4A4A : 0xFF6F2A2A);
-        fill(poseStack, buttonX + 1, buttonY + 1, buttonX + buttonWidth - 1, buttonY + buttonHeight - 1,
+        guiGraphics.fill(buttonX + 1, buttonY + 1, buttonX + buttonWidth - 1, buttonY + buttonHeight - 1,
              cancelHovered ? 0xFFA05A5A : 0xFF7F3A3A);
         
-        this.font.draw(poseStack, Component.literal("Cancel"), buttonX + 7, buttonY + 6, 0xFFFFFF);
+        guiGraphics.drawString(this.font, Component.literal("Cancel"), buttonX + 7, buttonY + 6, 0xFFFFFF, false);
     }
     
-    private void renderScrollIndicator(PoseStack poseStack, int x, int y, int height, 
+    private void renderScrollIndicator(GuiGraphics guiGraphics, int x, int y, int height, 
                                      int scrollPos, int totalItems, int visibleItems) {
         if (totalItems <= visibleItems) return;
         
         // Background track
-        fill(poseStack, x, y, x + 6, y + height, 0xFF666666);
+        guiGraphics.fill(x, y, x + 6, y + height, 0xFF666666);
         
         // Calculate scrollbar thumb size and position
         float thumbRatio = (float) visibleItems / totalItems;
@@ -455,12 +457,9 @@ public class BaileyInventoryGui extends AbstractContainerScreen<DailiesContainer
         int thumbY = y + (int)((height - thumbHeight) * scrollRatio);
         
         // Scrollbar thumb
-        fill(poseStack, x + 1, thumbY, x + 5, thumbY + thumbHeight, 0xFFAAAAAA);
+        guiGraphics.fill(x + 1, thumbY, x + 5, thumbY + thumbHeight, 0xFFAAAAAA);
     }
 
-    /**
-     * Send quest acceptance request to server through packet system
-     */
     private void acceptQuest(DailyQuest quest) {
         if (quest != null && quest.id != null) {
             // Use the PacketHandler to send quest command to server
@@ -471,9 +470,8 @@ public class BaileyInventoryGui extends AbstractContainerScreen<DailiesContainer
             PacketHandler.getQuests(QuestsFilter.AVAILABLE);
             PacketHandler.getQuests(QuestsFilter.ACCEPTED);
             
-            // Also schedule a delayed refresh to catch any server processing delays
             if (this.minecraft != null) {
-                this.minecraft.tell(() -> {
+                this.minecraft.execute(() -> {
                     try {
                         Thread.sleep(200); // Wait for server processing
                         PacketHandler.getQuests(QuestsFilter.AVAILABLE);
@@ -486,34 +484,16 @@ public class BaileyInventoryGui extends AbstractContainerScreen<DailiesContainer
         }
     }
 
-    /**
-     * Send quest cancellation request to server through packet system
-     */
     private void cancelQuest(DailyQuest quest) {
-        if (quest != null && quest.id != null) {
-            System.out.println("GUI: Canceling quest: " + quest.id + " - " + quest.name);
-            
-            // Use the PacketHandler to send quest command to server
-            net.torocraft.dailies.network.PacketHandler.questCommand(quest.id, 
-                net.torocraft.dailies.network.packets.QuestCommandPacket.QuestCommand.ABANDON);
-            
-            // Request fresh quest data immediately after sending command
-            PacketHandler.getQuests(QuestsFilter.AVAILABLE);
-            PacketHandler.getQuests(QuestsFilter.ACCEPTED);
-            
-            // Also schedule a delayed refresh to catch any server processing delays
-            if (this.minecraft != null) {
-                this.minecraft.tell(() -> {
-                    try {
-                        Thread.sleep(200); // Wait for server processing
-                        System.out.println("GUI: Requesting quest refresh after cancel");
-                        PacketHandler.getQuests(QuestsFilter.AVAILABLE);
-                        PacketHandler.getQuests(QuestsFilter.ACCEPTED);
-                    } catch (InterruptedException e) {
-                        Thread.currentThread().interrupt();
-                    }
-                });
-            }
+        if (quest == null) {
+            return;
         }
+        
+        if (quest.id == null) {
+            return;
+        }
+        
+        net.torocraft.dailies.network.PacketHandler.questCommand(quest.id, 
+            net.torocraft.dailies.network.packets.QuestCommandPacket.QuestCommand.ABANDON);
     }
 }
