@@ -27,7 +27,10 @@ import net.torocraft.dailies.entities.EntityRegistryHandler;
 public class BaileyShopWorldGen {
     
     private static final int SHOP_GENERATION_CHANCE = 2000; // 1 in 2000 chunks for non-village generation
-    private static final int VILLAGE_SHOP_CHANCE = 1; // Guaranteed Bailey shop in every village chunk
+    private static final int VILLAGE_SHOP_CHANCE = 4; // 1 in 4 chance for Bailey shop in village chunks (25%)
+    
+    // Track where we've placed Bailey shops to prevent multiple per village
+    private static final java.util.Set<net.minecraft.world.level.ChunkPos> placedShops = new java.util.HashSet<>();
     
     // Track initial world setup to handle spawn village case
     private static boolean hasCheckedSpawnArea = false;
@@ -102,10 +105,16 @@ public class BaileyShopWorldGen {
             System.out.println("[DAILIES] Chunk " + chunkPos + " nearby Bailey shop check: " + hasNearbyShop);
             
             if (!hasNearbyShop) {
-                // Guaranteed generation in villages (with spacing)
+                // 1 in 4 chance for generation in villages (with spacing)
                 if (random.nextInt(VILLAGE_SHOP_CHANCE) == 0) {
                     System.out.println("[DAILIES] Generating Bailey shop in village at chunk " + chunkPos);
                     generateBaileyShopInChunk(level, chunkPos, random);
+                    placedShops.add(chunkPos);
+                    for (int dx = -1; dx <= 1; dx++) {
+                        for (int dz = -1; dz <= 1; dz++) {
+                            placedShops.add(new net.minecraft.world.level.ChunkPos(chunkPos.x + dx, chunkPos.z + dz));
+                        }
+                    }
                 } else {
                     System.out.println("[DAILIES] Random check failed for village chunk " + chunkPos + " (chance was " + VILLAGE_SHOP_CHANCE + ")");
                 }
@@ -117,6 +126,7 @@ public class BaileyShopWorldGen {
             if (random.nextInt(SHOP_GENERATION_CHANCE) == 0) {
                 System.out.println("[DAILIES] Generating Bailey shop in non-village area at chunk " + chunkPos);
                 generateBaileyShopInChunk(level, chunkPos, random);
+                placedShops.add(chunkPos);
             }
         }
     }
@@ -150,13 +160,6 @@ public class BaileyShopWorldGen {
                 return true;
             }
             
-            // Additional fallback: coordinate-based clustering heuristic
-            boolean likelyVillage = isLikelyVillageChunk(chunkPos);
-            System.out.println("[DAILIES] Coordinate heuristic for chunk " + chunkPos + ": " + likelyVillage);
-            
-            if (likelyVillage) {
-                return true;
-            }
             
             return false;
         } catch (Exception e) {
@@ -169,9 +172,11 @@ public class BaileyShopWorldGen {
     
     /**
      * Check for village-indicating blocks in a small area
+     * Excludes blocks that might be from other Bailey shops
      */
     private static boolean hasVillageBlocks(ServerLevel level, BlockPos centerPos) {
         int villageBlockCount = 0;
+        int baileyShopBlockCount = 0;
         
         // Check a 5x5 area around the center position
         for (int x = -2; x <= 2; x++) {
@@ -180,41 +185,51 @@ public class BaileyShopWorldGen {
                     BlockPos checkPos = centerPos.offset(x, y, z);
                     Block block = level.getBlockState(checkPos).getBlock();
                     
-                    // Count village-indicating blocks
-                    if (block == Blocks.COBBLESTONE || 
-                        block == Blocks.OAK_PLANKS || 
-                        block == Blocks.SPRUCE_PLANKS ||
-                        block == Blocks.COBBLESTONE_STAIRS ||
-                        block == Blocks.OAK_STAIRS ||
-                        block == Blocks.BELL ||
+                    // Count village-indicating blocks (but be more selective)
+                    if (block == Blocks.BELL ||
                         block == Blocks.COMPOSTER ||
                         block == Blocks.BARREL ||
                         block == Blocks.LECTERN ||
                         block == Blocks.CAULDRON ||
-                        block == Blocks.ANVIL) {
+                        block == Blocks.ANVIL ||
+                        block == Blocks.LOOM ||
+                        block == Blocks.CARTOGRAPHY_TABLE ||
+                        block == Blocks.FLETCHING_TABLE ||
+                        block == Blocks.SMITHING_TABLE) {
                         villageBlockCount++;
+                    }
+                    
+                    // Count blocks that are common in Bailey shops (to detect if we're near one)
+                    if (block == Blocks.RED_CARPET ||
+                        block == Blocks.GLOWSTONE ||
+                        block == Blocks.OAK_FENCE) {
+                        baileyShopBlockCount++;
                     }
                 }
             }
         }
         
-        // If we find at least 3 village blocks, consider it a village area
-        return villageBlockCount >= 3;
+        // If we detect Bailey shop blocks, this is probably near an existing Bailey shop, not a village
+        if (baileyShopBlockCount >= 2) {
+            return false;
+        }
+        
+        // If we find at least 2 village-specific blocks (reduced from 3), consider it a village area
+        return villageBlockCount >= 2;
     }
     
     /**
-     * Fallback coordinate-based village detection
+     * Very conservative fallback coordinate-based village detection
      */
     private static boolean isLikelyVillageChunk(net.minecraft.world.level.ChunkPos chunkPos) {
         int chunkX = chunkPos.x;
         int chunkZ = chunkPos.z;
         
-        // Create deterministic "village zones" based on chunk coordinates
+        // Create deterministic but very sparse "village zones" based on chunk coordinates
         long seed = (long) chunkX * 341873128712L + (long) chunkZ * 132897987541L;
         RandomSource coordinateRandom = RandomSource.create(seed);
         
-        // About 5% of chunks are considered "village-likely" zones (reduced from 10%)
-        return coordinateRandom.nextInt(20) == 0;
+        return coordinateRandom.nextInt(200) == 0;
     }
     
     private static void generateBaileyShopInChunk(ServerLevel level, net.minecraft.world.level.ChunkPos chunkPos, RandomSource random) {
@@ -320,25 +335,19 @@ public class BaileyShopWorldGen {
         fillWithBlocks(world, pos, 6, 1, 1, 6, 1, 4, Blocks.OAK_PLANKS);
         fillWithBlocks(world, pos, 6, 3, 1, 6, 3, 4, Blocks.OAK_FENCE);
         
-        // Build roof with stairs
+        // Build roof with oak planks (temporarily replacing stairs)
         for (int i = -1; i <= 2; i++) {
             for (int j = 0; j <= 8; j++) {
-                // North-facing stairs
-                BlockState stairsNorth = Blocks.OAK_STAIRS.defaultBlockState()
-                    .setValue(StairBlock.FACING, Direction.NORTH);
-                world.setBlock(pos.offset(j, 4 + i, i), stairsNorth, 3);
-                
-                // South-facing stairs  
-                BlockState stairsSouth = Blocks.OAK_STAIRS.defaultBlockState()
-                    .setValue(StairBlock.FACING, Direction.SOUTH);
-                world.setBlock(pos.offset(j, 4 + i, 5 - i), stairsSouth, 3);
+                // Use oak planks for roof instead of stairs for now
+                world.setBlock(pos.offset(j, 4 + i, i), Blocks.OAK_PLANKS.defaultBlockState(), 3);
+                world.setBlock(pos.offset(j, 4 + i, 5 - i), Blocks.OAK_PLANKS.defaultBlockState(), 3);
             }
         }
         
-        // Foundation support
-        BlockState stairsNorth = Blocks.OAK_STAIRS.defaultBlockState()
-            .setValue(StairBlock.FACING, Direction.NORTH);
-        world.setBlock(pos.offset(1, 0, -1), stairsNorth, 3);
+        // Entrance stairs facing south (correct direction for walking up into building)
+        BlockState entranceStairs = Blocks.OAK_STAIRS.defaultBlockState()
+            .setValue(StairBlock.FACING, Direction.SOUTH);
+        world.setBlock(pos.offset(1, 0, -1), entranceStairs, 3);
         
         // Clear above and add foundation below
         for (int l = 0; l < 6; l++) {
@@ -413,13 +422,17 @@ public class BaileyShopWorldGen {
      * to prevent overcrowding villages with multiple Bailey shops
      */
     private static boolean hasBaileyShopNearby(ServerLevel level, net.minecraft.world.level.ChunkPos chunkPos) {
-        // Check in a 3x3 chunk area around the current chunk
+        // Check a 3x3 area (balanced performance vs coverage)
         for (int dx = -1; dx <= 1; dx++) {
             for (int dz = -1; dz <= 1; dz++) {
                 if (dx == 0 && dz == 0) continue; // Skip the current chunk
                 
                 net.minecraft.world.level.ChunkPos nearbyChunk = new net.minecraft.world.level.ChunkPos(
                     chunkPos.x + dx, chunkPos.z + dz);
+                
+                if (placedShops.contains(nearbyChunk)) {
+                    return true;
+                }
                 
                 if (hasBaileyInChunk(level, nearbyChunk)) {
                     return true;

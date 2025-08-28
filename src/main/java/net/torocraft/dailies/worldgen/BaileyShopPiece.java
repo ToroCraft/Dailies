@@ -1,6 +1,7 @@
 package net.torocraft.dailies.worldgen;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.EntitySpawnReason;
@@ -9,7 +10,11 @@ import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.StructureManager;
 import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.SlabBlock;
+import net.minecraft.world.level.block.StairBlock;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.properties.SlabType;
+import net.minecraft.world.level.block.state.properties.Half;
 import net.minecraft.world.level.chunk.ChunkGenerator;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
 import net.minecraft.world.level.levelgen.structure.StructurePiece;
@@ -81,7 +86,20 @@ public class BaileyShopPiece extends StructurePiece {
         BlockState cobblestone = Blocks.COBBLESTONE.defaultBlockState();
         BlockState planks = Blocks.OAK_PLANKS.defaultBlockState();
         BlockState glass = Blocks.GLASS.defaultBlockState();
-        BlockState slab = Blocks.OAK_SLAB.defaultBlockState();
+        //BlockState slab = Blocks.OAK_SLAB.defaultBlockState().setValue(SlabBlock.TYPE, SlabType.BOTTOM);
+        
+        // BlockState stairsNorth = Blocks.OAK_STAIRS.defaultBlockState()
+        //     .setValue(StairBlock.FACING, Direction.NORTH)
+        //     .setValue(StairBlock.HALF, Half.BOTTOM);
+        // BlockState stairsSouth = Blocks.OAK_STAIRS.defaultBlockState()
+        //     .setValue(StairBlock.FACING, Direction.SOUTH)
+        //     .setValue(StairBlock.HALF, Half.BOTTOM);
+        // BlockState stairsEast = Blocks.OAK_STAIRS.defaultBlockState()
+        //     .setValue(StairBlock.FACING, Direction.EAST)
+        //     .setValue(StairBlock.HALF, Half.BOTTOM);
+        // BlockState stairsWest = Blocks.OAK_STAIRS.defaultBlockState()
+        //     .setValue(StairBlock.FACING, Direction.WEST)
+        //     .setValue(StairBlock.HALF, Half.BOTTOM);
         
         // Build floor (7x7)
         for (int x = -3; x <= 3; x++) {
@@ -137,14 +155,25 @@ public class BaileyShopPiece extends StructurePiece {
             }
         }
         
-        // Build roof
         for (int x = -3; x <= 3; x++) {
             for (int z = -3; z <= 3; z++) {
                 BlockPos roofPos = this.shopPosition.offset(x, 4, z);
                 if (boundingBox.isInside(roofPos)) {
-                    this.placeBlock(level, slab, roofPos.getX(), roofPos.getY(), roofPos.getZ(), boundingBox);
+                    BlockState roofBlock;
+                    
+                    roofBlock = planks;
+                    
+                    this.placeBlock(level, roofBlock, roofPos.getX(), roofPos.getY(), roofPos.getZ(), boundingBox);
                 }
             }
+        }
+        
+        // Add entrance stairs (assuming entrance is on the south side)
+        BlockPos entranceStairPos = this.shopPosition.offset(0, 0, 4); // One block south of building
+        if (boundingBox.isInside(entranceStairPos)) {
+            // Stairs facing south (you walk from south toward building, stepping up as you go)
+            BlockState entranceStairs = Blocks.OAK_STAIRS.defaultBlockState().setValue(StairBlock.FACING, Direction.SOUTH);
+            this.placeBlock(level, entranceStairs, entranceStairPos.getX(), entranceStairPos.getY(), entranceStairPos.getZ(), boundingBox);
         }
         
         // Add some interior details
