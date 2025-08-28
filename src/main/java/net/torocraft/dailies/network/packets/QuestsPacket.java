@@ -2,8 +2,6 @@ package net.torocraft.dailies.network.packets;
 
 import java.util.Collections;
 import java.util.Set;
-import net.minecraft.client.Minecraft;
-import net.minecraft.world.entity.player.Player;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
@@ -59,12 +57,17 @@ public class QuestsPacket implements IDailiesPacket<QuestsPacket.Message> {
       if (!ctx.flow().isClientbound()) {
         return;
       }
-      Minecraft client = Minecraft.getInstance();
-      Player player = client.player;
-      if (player == null) {
-        return;
-      }
       
+      // Only run on client side - avoid direct client imports to prevent server issues
+      if (ctx.flow().isClientbound()) {
+        handleClientSide(message);
+      }
+    });
+  }
+  
+  // Separate method for client-side handling to avoid loading client classes on server
+  private void handleClientSide(Message message) {
+    try {
       // Use ClientQuestCache instead of static fields
       ClientQuestCache cache = ClientQuestCache.getInstance();
       if (QuestsFilter.ACCEPTED.equals(message.filter)) {
@@ -72,7 +75,9 @@ public class QuestsPacket implements IDailiesPacket<QuestsPacket.Message> {
       } else {
         cache.updateAvailableQuests(message.quests);
       }
-    });
+    } catch (Exception e) {
+      // Ignore errors on server side
+    }
   }
 
   @Override
