@@ -1,10 +1,10 @@
 package net.torocraft.dailies.gui;
 
-import com.mojang.blaze3d.systems.RenderSystem;
+
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.gui.components.Button;
-import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Inventory;
@@ -72,19 +72,20 @@ public class BaileyInventoryGui extends AbstractContainerScreen<DailiesContainer
 
     @Override
     protected void renderBg(GuiGraphics guiGraphics, float partialTicks, int mouseX, int mouseY) {
-        RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
-        if (this.minecraft != null) {
-            RenderSystem.setShaderTexture(0, TEXTURE);
-        }
-        int i = (this.width - this.imageWidth) / 2;
-        int j = (this.height - this.imageHeight) / 2;
-        guiGraphics.blit(RenderType::guiTextured, TEXTURE, i, j, 0.0F, 0.0F, this.imageWidth, this.imageHeight, 256, 256);
+        guiGraphics.blit(
+            RenderPipelines.GUI_TEXTURED,
+            TEXTURE,
+            this.leftPos, this.topPos,
+            0, 0,
+            this.imageWidth, this.imageHeight,
+            256, 256
+        );
     }
 
     @Override
     protected void renderLabels(GuiGraphics guiGraphics, int mouseX, int mouseY) {
-        guiGraphics.drawString(this.font, Component.literal("Bailey's Shop"), 8, 6, 4210752, false);
-        guiGraphics.drawString(this.font, this.playerInventoryTitle, 8, 38, 4210752, false);
+        guiGraphics.drawString(this.font, Component.literal("Bailey's Shop"), 8, 6, 0xFF404040, false);
+        guiGraphics.drawString(this.font, this.playerInventoryTitle, 8, 38, 0xFF404040, false);
     }
 
         @Override
@@ -264,11 +265,10 @@ public class BaileyInventoryGui extends AbstractContainerScreen<DailiesContainer
         
         // Render quest panel AFTER everything else to ensure it appears on top
         if (this.showingQuests) {
-            // Push matrix with very high z-index to ensure it renders above everything
-            guiGraphics.pose().pushPose();
-            guiGraphics.pose().translate(0, 0, 1000); // Very high z-index to be above tooltips and item counts
+            guiGraphics.pose().pushMatrix();
+            guiGraphics.pose().translate(0.0f, 0.0f);
             renderQuestPanel(guiGraphics, mouseX, mouseY);
-            guiGraphics.pose().popPose();
+            guiGraphics.pose().popMatrix();
         }
     }
 
@@ -310,8 +310,10 @@ public class BaileyInventoryGui extends AbstractContainerScreen<DailiesContainer
         guiGraphics.fill(panelX - 1, panelY - 1, panelX + panelWidth + 1, panelY + panelHeight + 1, 0xFF2A2A2A); // Dark border
         guiGraphics.fill(panelX, panelY, panelX + panelWidth, panelY + panelHeight, 0xFF1E1E1E); // Fully opaque dark background
         
+        guiGraphics.nextStratum();
+        
         // Quest panel title
-        guiGraphics.drawString(this.font, Component.literal("Available Quests"), panelX + 5, panelY + 5, 0xFFFFFF, false);
+        guiGraphics.drawString(this.font, Component.literal("Available Quests"), panelX + 5, panelY + 5, 0xFFFFFFFF, false);
         
         // Render available quests with scrolling
         ClientQuestCache cache = ClientQuestCache.getInstance();
@@ -340,11 +342,11 @@ public class BaileyInventoryGui extends AbstractContainerScreen<DailiesContainer
                     availableQuestScroll, quests.size(), visibleQuests);
             }
         } else {
-            guiGraphics.drawString(this.font, Component.literal("No quests available"), panelX + 5, panelY + 25, 0x888888, false);
+            guiGraphics.drawString(this.font, Component.literal("No quests available"), panelX + 5, panelY + 25, 0xFF888888, false);
         }
         
         // Render accepted quests section
-        guiGraphics.drawString(this.font, Component.literal("Your Quests"), panelX + 5, panelY + acceptedSectionStart, 0xFFFFFF, false);
+        guiGraphics.drawString(this.font, Component.literal("Your Quests"), panelX + 5, panelY + acceptedSectionStart, 0xFFFFFFFF, false);
         
         Set<DailyQuest> accepted = cache.getAcceptedQuests();
         if (accepted != null && !accepted.isEmpty()) {
@@ -370,20 +372,13 @@ public class BaileyInventoryGui extends AbstractContainerScreen<DailiesContainer
             }
         } else {
             int noQuestsY = Math.min(panelY + acceptedSectionStart + 15, panelY + panelHeight - 20);
-            guiGraphics.drawString(this.font, Component.literal("No active quests"), panelX + 5, noQuestsY, 0x888888, false);
+            guiGraphics.drawString(this.font, Component.literal("No active quests"), panelX + 5, noQuestsY, 0xFF888888, false);
         }
     }
 
     private void renderQuestEntry(GuiGraphics guiGraphics, DailyQuest quest, int x, int y, int width, int mouseX, int mouseY) {
         boolean hovered = mouseX >= x && mouseX <= x + width && mouseY >= y && mouseY <= y + 25;
         guiGraphics.fill(x, y, x + width, y + 25, hovered ? 0xFF4A4A4A : 0xFF3A3A3A);
-        
-        // Quest name
-        String questName = this.font.plainSubstrByWidth(quest.name, width - 75);
-        guiGraphics.drawString(this.font, Component.literal(questName), x + 2, y + 2, 0xFFFFFF, false);
-        
-        String questDesc = this.font.plainSubstrByWidth(quest.description, width - 75);
-        guiGraphics.drawString(this.font, Component.literal(questDesc), x + 2, y + 12, 0xCCCCCC, false);
         
         int buttonX = x + width - 65;
         int buttonY = y + 3;
@@ -398,21 +393,21 @@ public class BaileyInventoryGui extends AbstractContainerScreen<DailiesContainer
         guiGraphics.fill(buttonX + 1, buttonY + 1, buttonX + buttonWidth - 1, buttonY + buttonHeight - 1,
              acceptHovered ? 0xFF5AA05A : 0xFF3A7F3A);
         
-        guiGraphics.drawString(this.font, Component.literal("Accept"), buttonX + 12, buttonY + 6, 0xFFFFFF, false);
+        guiGraphics.nextStratum();
+        
+        String questName = this.font.plainSubstrByWidth(quest.name, width - 75);
+        guiGraphics.drawCenteredString(this.font, questName, x + (width - 75) / 2, y + 2, 0xFFFFFFFF);
+        
+        String questDesc = this.font.plainSubstrByWidth(quest.description, width - 75);
+        guiGraphics.drawCenteredString(this.font, questDesc, x + (width - 75) / 2, y + 12, 0xFFCCCCCC);
+        
+        guiGraphics.drawCenteredString(this.font, "Accept", buttonX + buttonWidth / 2, buttonY + 6, 0xFFFFFFFF);
+        
+        guiGraphics.fill(x, y + 24, x + width, y + 25, 0xFF555555);
     }
 
     private void renderAcceptedQuestEntry(GuiGraphics guiGraphics, DailyQuest quest, int x, int y, int width, int mouseX, int mouseY) {
         guiGraphics.fill(x, y, x + width, y + 30, 0xFF1E3A1E);
-        
-        // Quest name with progress
-        String questText = quest.name + " (" + quest.progress + "/" + quest.target.quantity + ")";
-        String displayText = this.font.plainSubstrByWidth(questText, width - 75);
-        guiGraphics.drawString(this.font, Component.literal(displayText), x + 2, y + 2, 0x88FF88, false);
-        
-        if (quest.description != null && !quest.description.isEmpty()) {
-            String questDesc = this.font.plainSubstrByWidth(quest.description, width - 75);
-            guiGraphics.drawString(this.font, Component.literal(questDesc), x + 2, y + 11, 0xCCCCCC, false);
-        }
         
         // Progress bar (adjusted for new height)
         int progressBarWidth = width - 85;
@@ -433,7 +428,20 @@ public class BaileyInventoryGui extends AbstractContainerScreen<DailiesContainer
         guiGraphics.fill(buttonX + 1, buttonY + 1, buttonX + buttonWidth - 1, buttonY + buttonHeight - 1,
              cancelHovered ? 0xFFA05A5A : 0xFF7F3A3A);
         
-        guiGraphics.drawString(this.font, Component.literal("Cancel"), buttonX + 12, buttonY + 6, 0xFFFFFF, false);
+        guiGraphics.nextStratum();
+        
+        String questText = quest.name + " (" + quest.progress + "/" + quest.target.quantity + ")";
+        String displayText = this.font.plainSubstrByWidth(questText, width - 75);
+        guiGraphics.drawCenteredString(this.font, displayText, x + (width - 75) / 2, y + 2, 0xFF88FF88);
+        
+        if (quest.description != null && !quest.description.isEmpty()) {
+            String questDesc = this.font.plainSubstrByWidth(quest.description, width - 75);
+            guiGraphics.drawCenteredString(this.font, questDesc, x + (width - 75) / 2, y + 11, 0xFFCCCCCC);
+        }
+        
+        guiGraphics.drawCenteredString(this.font, "Cancel", buttonX + buttonWidth / 2, buttonY + 6, 0xFFFFFFFF);
+        
+        guiGraphics.fill(x, y + 29, x + width, y + 30, 0xFF555555);
     }
     
     private void renderScrollIndicator(GuiGraphics guiGraphics, int x, int y, int height, 

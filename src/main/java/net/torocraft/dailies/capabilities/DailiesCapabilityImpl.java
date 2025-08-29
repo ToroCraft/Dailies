@@ -2,6 +2,7 @@ package net.torocraft.dailies.capabilities;
 
 import java.util.Calendar;
 import java.util.HashSet;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.Callable;
 import net.minecraft.world.entity.LivingEntity;
@@ -121,8 +122,11 @@ public class DailiesCapabilityImpl implements IDailiesCapability {
 		}
 		for (int i = 0; i < list.size(); i++) {
 			DailyQuest quest = new DailyQuest();
-			quest.readNBT(list.getCompound(i));
-			quests.add(quest);
+			Optional<CompoundTag> questTag = list.getCompound(i);
+			if (questTag.isPresent()) {
+				quest.readNBT(questTag.get());
+				quests.add(quest);
+			}
 		}
 		return quests;
 	}

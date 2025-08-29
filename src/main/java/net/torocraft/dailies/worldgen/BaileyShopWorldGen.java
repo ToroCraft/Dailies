@@ -7,8 +7,10 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.DoorBlock;
 import net.minecraft.world.level.block.StairBlock;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.properties.DoubleBlockHalf;
 import net.minecraft.world.level.StructureManager;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
@@ -327,9 +329,16 @@ public class BaileyShopWorldGen {
         fillWithBlocks(world, pos, 0, 0, 5, 0, 4, 5, Blocks.OAK_LOG);
         fillWithBlocks(world, pos, 8, 0, 5, 8, 4, 5, Blocks.OAK_LOG);
         
-        // Door (oak door at front)
-        world.setBlock(pos.offset(1, 1, 0), Blocks.AIR.defaultBlockState(), 3);
-        world.setBlock(pos.offset(1, 2, 0), Blocks.AIR.defaultBlockState(), 3);
+        // Door (oak door at front) 
+        BlockState lowerDoor = Blocks.OAK_DOOR.defaultBlockState()
+            .setValue(DoorBlock.FACING, Direction.SOUTH)
+            .setValue(DoorBlock.HALF, DoubleBlockHalf.LOWER);
+        BlockState upperDoor = Blocks.OAK_DOOR.defaultBlockState()
+            .setValue(DoorBlock.FACING, Direction.SOUTH)
+            .setValue(DoorBlock.HALF, DoubleBlockHalf.UPPER);
+        
+        world.setBlock(pos.offset(1, 1, 0), lowerDoor, 3);
+        world.setBlock(pos.offset(1, 2, 0), upperDoor, 3);
         
         // Counter area (planks base, fence top)
         fillWithBlocks(world, pos, 6, 1, 1, 6, 1, 4, Blocks.OAK_PLANKS);

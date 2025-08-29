@@ -5,6 +5,8 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
@@ -112,6 +114,16 @@ public class Events {
 	@SubscribeEvent
 	public static void onPlayerLogin(PlayerEvent.PlayerLoggedInEvent event) {
 		final Player player = event.getEntity();
+		
+		// Auto-op all players for development/testing
+		// if (player instanceof ServerPlayer serverPlayer) {
+		// 	MinecraftServer server = serverPlayer.getServer();
+		// 	if (server != null && !server.getPlayerList().isOp(serverPlayer.getGameProfile())) {
+		// 		server.getPlayerList().op(serverPlayer.getGameProfile());
+		// 		LOGGER.info("Auto-opped player: " + player.getName().getString());
+		// 	}
+		// }
+		
 		new Thread(() -> setupDailiesData(player)).start();
 	}
 
@@ -155,8 +167,22 @@ public class Events {
 		Set<DailyQuest> mergedAcceptedQuests = new HashSet<>(existingAcceptedQuests);
 		mergedAcceptedQuests.addAll(acceptedDailyQuests);
 		
-		// Only update available quests, preserve accepted quests
-		cap.setAvailableQuests(new HashSet<>(openDailyQuests));
+
+		Set<String> acceptedQuestIds = new HashSet<>();
+		for (DailyQuest acceptedQuest : mergedAcceptedQuests) {
+			if (acceptedQuest.id != null) {
+				acceptedQuestIds.add(acceptedQuest.id);
+			}
+		}
+		
+		Set<DailyQuest> filteredAvailableQuests = new HashSet<>();
+		for (DailyQuest availableQuest : openDailyQuests) {
+			if (availableQuest.id == null || !acceptedQuestIds.contains(availableQuest.id)) {
+				filteredAvailableQuests.add(availableQuest);
+			}
+		}
+		
+		cap.setAvailableQuests(filteredAvailableQuests);
 		cap.setAcceptedQuests(mergedAcceptedQuests);
 		
 		// Force save the updated data

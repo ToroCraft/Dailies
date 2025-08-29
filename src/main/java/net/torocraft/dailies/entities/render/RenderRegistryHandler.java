@@ -2,7 +2,6 @@
 package net.torocraft.dailies.entities.render;
 
 import net.neoforged.api.distmarker.Dist;
-import net.neoforged.api.distmarker.OnlyIn;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.event.EntityRenderersEvent;
@@ -13,7 +12,6 @@ import net.torocraft.dailies.entities.EntityRegistryHandler;
 import net.torocraft.dailies.entities.model.ModelBailey;
 import net.torocraft.dailies.entities.model.ModelLayers;
 
-@OnlyIn(Dist.CLIENT)
 @EventBusSubscriber(modid = "dailies", value = Dist.CLIENT)
 public class RenderRegistryHandler {
 	@SubscribeEvent

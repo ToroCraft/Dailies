@@ -3,13 +3,13 @@ package net.torocraft.dailies.entities;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.Random;
 
 import net.minecraft.world.entity.*;
 import net.minecraft.world.entity.npc.Villager;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.InteractionResult;
@@ -20,6 +20,8 @@ import net.minecraft.world.level.biome.Biome;
 import net.minecraft.core.Holder;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.level.biome.Biomes;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 
 import javax.annotation.Nonnull;
 
@@ -85,7 +87,7 @@ public class EntityBailey extends Villager {
 		   return Component.literal("Bailey");
 	   }
 
-    public SpawnGroupData finalizeSpawn(ServerLevelAccessor world, DifficultyInstance difficulty, EntitySpawnReason reason, SpawnGroupData data) {
+    public SpawnGroupData finalizeSpawn(@Nonnull ServerLevelAccessor world, @Nonnull DifficultyInstance difficulty, @Nonnull EntitySpawnReason reason, @javax.annotation.Nullable SpawnGroupData data) {
         this.setCustomName(Component.literal("Bailey"));
         return super.finalizeSpawn(world, difficulty, reason, data);
     }	   private void setVariantByCurrentBiome() {
@@ -102,21 +104,26 @@ public class EntityBailey extends Villager {
 		   }
 	   }
 	
-	// NBT read/write methods should be implemented using addAdditionalSaveData and readAdditionalSaveData in 1.18.2+
 	@Override
-	public void addAdditionalSaveData(@Nonnull CompoundTag compound) {
-		super.addAdditionalSaveData(compound);
+	public void addAdditionalSaveData(@Nonnull ValueOutput output) {
+		super.addAdditionalSaveData(output);
 		if (variant != null) {
-			compound.putString("BaileyVariant", variant.toString());
+			output.putString("BaileyVariant", variant.toString());
 		}
 	}
 
 	@Override
-	public void readAdditionalSaveData(@Nonnull CompoundTag compound) {
-		super.readAdditionalSaveData(compound);
+	public void readAdditionalSaveData(@Nonnull ValueInput input) {
+		super.readAdditionalSaveData(input);
 		try {
-			variant = BaileyVariant.valueOf(compound.getString("BaileyVariant"));
+			Optional<String> variantName = input.getString("BaileyVariant");
+			if (variantName.isPresent()) {
+				variant = BaileyVariant.valueOf(variantName.get());
+			} else {
+				setVariantByCurrentBiome();
+			}
 		} catch (Exception e) {
+			// If variant name is invalid or any other error, fall back to biome-based variant
 			setVariantByCurrentBiome();
 		}
 	}

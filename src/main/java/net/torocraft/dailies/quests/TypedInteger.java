@@ -33,19 +33,19 @@ public class TypedInteger {
 		}
 		// Read string identifier first, fall back to integer for backward compatibility
 		if (c.contains("itemId")) {
-			itemId = c.getString("itemId");
+			itemId = c.getString("itemId").orElse("");
 			// Convert legacy integer to string if needed for migration
 			if (c.contains("type") && (itemId == null || itemId.isEmpty())) {
-				type = c.getInt("type");
+				type = c.getInt("type").orElse(0);
 				itemId = convertLegacyIdToString(type);
 			}
 		} else {
-			type = c.getInt("type");
+			type = c.getInt("type").orElse(0);
 			itemId = convertLegacyIdToString(type);
 		}
-		subType = c.getInt("subType");
-		quantity = c.getInt("quantity");
-		nbt = c.getString("nbt");
+		subType = c.getInt("subType").orElse(0);
+		quantity = c.getInt("quantity").orElse(0);
+		nbt = c.getString("nbt").orElse("");
 	}
 	
 	/**

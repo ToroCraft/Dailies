@@ -3,7 +3,6 @@ package net.torocraft.dailies;
 import net.minecraft.world.entity.npc.Villager;
 import net.neoforged.neoforge.event.entity.EntityAttributeCreationEvent;
 import net.neoforged.api.distmarker.Dist;
-import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.bus.api.EventPriority;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.loading.FMLEnvironment;
@@ -16,7 +15,6 @@ import net.torocraft.dailies.attachments.DailiesAttachmentTypes;
 import net.torocraft.dailies.config.Config;
 import net.torocraft.dailies.config.ConfigScreenHandler;
 import net.torocraft.dailies.entities.EntityRegistryHandler;
-import net.torocraft.dailies.events.Events;
 import net.torocraft.dailies.gui.MenuRegistryHandler;
 import net.torocraft.dailies.items.ItemRegistryHandler;
 import net.torocraft.dailies.network.PacketHandler;
@@ -49,7 +47,7 @@ public class DailiesMod {
 		ModStructures.register(modEventBus); // Register structure types
 		BaileyShopStructurePieceType.STRUCTURE_PIECE_TYPES.register(modEventBus); // Register structure piece types
 		PacketHandler.init(); // Initialize network packets during mod loading
-		NeoForge.EVENT_BUS.register(Events.class);
+		// Events class is automatically registered via @EventBusSubscriber annotation
 		modEventBus.addListener(this::onEntityAttributeCreation);
 		modEventBus.addListener(PacketHandler::registerPayloads); // Register packet payloads
 		

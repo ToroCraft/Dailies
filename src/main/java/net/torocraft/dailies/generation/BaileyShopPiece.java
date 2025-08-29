@@ -44,11 +44,11 @@ public class BaileyShopPiece extends StructurePiece {
     
     public BaileyShopPiece(@Nonnull CompoundTag tag) {
         super(TYPE, tag);
-        this.rotation = Rotation.valueOf(tag.getString("Rotation"));
+        this.rotation = Rotation.valueOf(tag.getString("Rotation").orElse("NONE"));
         this.templatePosition = new BlockPos(
-            tag.getInt("TPX"), 
-            tag.getInt("TPY"), 
-            tag.getInt("TPZ")
+            tag.getInt("TPX").orElse(0), 
+            tag.getInt("TPY").orElse(0), 
+            tag.getInt("TPZ").orElse(0)
         );
     }
     

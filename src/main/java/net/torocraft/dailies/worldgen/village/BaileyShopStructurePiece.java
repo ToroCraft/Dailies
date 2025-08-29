@@ -30,7 +30,11 @@ public class BaileyShopStructurePiece extends StructurePiece {
     
     public BaileyShopStructurePiece(StructurePieceSerializationContext context, CompoundTag tag) {
         super(BaileyShopStructurePieceType.BAILEY_SHOP_PIECE.get(), tag);
-        this.structurePos = new BlockPos(tag.getInt("structureX"), tag.getInt("structureY"), tag.getInt("structureZ"));
+        this.structurePos = new BlockPos(
+            tag.getInt("structureX").orElse(0), 
+            tag.getInt("structureY").orElse(0), 
+            tag.getInt("structureZ").orElse(0)
+        );
     }
 
     @Override
@@ -139,7 +143,9 @@ public class BaileyShopStructurePiece extends StructurePiece {
         // Spawn Bailey inside the shop
         BlockPos spawnPos = this.structurePos.offset(7, 1, 2);
         EntityBailey bailey = new EntityBailey(EntityRegistryHandler.BAILEY.get(), level.getLevel());
-        bailey.moveTo(spawnPos.getX() + 0.5, spawnPos.getY(), spawnPos.getZ() + 0.5, 180.0F, 0.0F);
+        bailey.setPos(spawnPos.getX() + 0.5, spawnPos.getY(), spawnPos.getZ() + 0.5);
+        bailey.setYRot(180.0F);
+        bailey.setXRot(0.0F);
         bailey.finalizeSpawn(level, level.getCurrentDifficultyAt(spawnPos), EntitySpawnReason.STRUCTURE, null);
         level.addFreshEntity(bailey);
     }

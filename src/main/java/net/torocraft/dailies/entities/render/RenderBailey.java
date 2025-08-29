@@ -8,8 +8,6 @@ import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.client.renderer.entity.MobRenderer;
 import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
 import net.minecraft.resources.ResourceLocation;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.api.distmarker.OnlyIn;
 import net.torocraft.dailies.DailiesMod;
 import net.torocraft.dailies.entities.EntityBailey;
 import net.torocraft.dailies.entities.EntityBailey.BaileyVariant;
@@ -18,7 +16,6 @@ import net.torocraft.dailies.entities.model.ModelLayers;
 
 import javax.annotation.Nonnull;
 
-@OnlyIn(Dist.CLIENT)  
 public class RenderBailey extends MobRenderer<EntityBailey, LivingEntityRenderState, ModelBailey> {
     private static final ResourceLocation baileyTextureSavanna = ResourceLocation.fromNamespaceAndPath(DailiesMod.MODID, "textures/entity/baileysavanna.png");
     private static final ResourceLocation baileyTextureTaiga = ResourceLocation.fromNamespaceAndPath(DailiesMod.MODID, "textures/entity/baileytaiga.png");

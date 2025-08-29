@@ -10,8 +10,7 @@ import net.minecraft.world.Container;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.TagParser;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.torocraft.dailies.attachments.DailiesAttachmentTypes;
@@ -315,8 +314,8 @@ public class BaileyInventory implements Container {
 		try {
 			ResourceLocation resourceLocation = ResourceLocation.parse(rewardIdentifier);
 			rewardItem = net.minecraft.core.registries.BuiltInRegistries.ITEM.getValue(resourceLocation);
-			if (rewardItem == null) {
-				rewardItem = Items.DIRT; // Fallback
+			if (rewardItem == null || rewardItem == Items.AIR) {
+				rewardItem = Items.DIRT; // Fallback for invalid items
 			}
 		} catch (Exception e) {
 			System.err.println("Failed to resolve reward identifier: " + rewardIdentifier);
@@ -328,11 +327,11 @@ public class BaileyInventory implements Container {
 			rewardStack.setDamageValue(reward.subType);
 		}
 		
-		if (reward.nbt != null) {
+		if (reward.nbt != null && !reward.nbt.isEmpty()) {
 			try {
-				CompoundTag tag = TagParser.parseTag(reward.nbt);
-				rewardStack.applyComponents(net.minecraft.core.component.DataComponentPatch.builder().build());
+				convertNbtStringToDataComponents(rewardStack, reward.nbt);
 			} catch (Exception e) {
+				System.err.println("Failed to parse reward NBT: " + reward.nbt);
 				e.printStackTrace();
 			}
 		}
@@ -378,5 +377,30 @@ public class BaileyInventory implements Container {
         }
 
         return true;
+	}
+	
+	//TODO: Double check this.
+	private void convertNbtStringToDataComponents(ItemStack stack, String nbtString) {
+		
+		if (nbtString.contains("display") && nbtString.contains("Name")) {
+			try {
+				int nameStart = nbtString.indexOf("Name:\"") + 6;
+				int nameEnd = nbtString.indexOf("\"", nameStart);
+				if (nameStart > 5 && nameEnd > nameStart) {
+					String nameJson = nbtString.substring(nameStart, nameEnd);
+					Component name = Component.literal(nameJson);
+					stack.set(DataComponents.CUSTOM_NAME, name);
+				}
+			} catch (Exception e) {
+				System.err.println("Failed to parse display name from NBT: " + nbtString);
+			}
+		}
+		
+		if (nbtString.contains("Lore")) {
+			System.out.println("Lore found in NBT - conversion not yet implemented");
+		}
+		if (nbtString.contains("Enchantments")) {
+			System.out.println("Enchantments found in NBT - conversion not yet implemented");
+		}
 	}
 }

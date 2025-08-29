@@ -23,7 +23,7 @@ issueTrackerURL="https://github.com/ToroCraft/Dailies/issues"
 modId="dailies" #mandatory
 
 # The version number of the mod
-version="1.21.4-1.0.0" #mandatory
+version="1.21.8-1.0.0" #mandatory
 
 # A display name for the mod
 displayName="Bailey's Dailies" #mandatory
@@ -52,7 +52,7 @@ Bailey the merchant offers daily quests that reward players for exploring, hunti
     # 'incompatible' will prevent the game from loading when the mod exists, and 'discouraged' will show a warning
     type="required" #mandatory
     # The version range of the dependency
-    versionRange="[21.4.152,)" #mandatory
+    versionRange="[21.8.39,)" #mandatory
     # An ordering relationship for the dependency.
     # BEFORE - This mod is loaded BEFORE the dependency
     # AFTER - This mod is loaded AFTER the dependency
@@ -65,6 +65,6 @@ Bailey the merchant offers daily quests that reward players for exploring, hunti
     modId="minecraft"
     type="required"
     # This version range declares a minimum of the current minecraft version up to but not including the next major version
-    versionRange="[1.21.4]"
+    versionRange="[1.21.8]"
     ordering="NONE"
     side="BOTH"

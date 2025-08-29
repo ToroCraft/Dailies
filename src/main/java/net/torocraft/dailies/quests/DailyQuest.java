@@ -253,14 +253,14 @@ public class DailyQuest {
 		if (c == null) {
 			return;
 		}
-		type = c.getString("type");
-		progress = c.getInt("progress");
-		date = c.getLong("date");
-		id = c.getString("id");
-		name = c.getString("name");
-		description = c.getString("description");
-		status = c.getString("status");
-		rewardFulfilled = c.getBoolean("rewardFulfilled");
+		type = c.getString("type").orElse("");
+		progress = c.getInt("progress").orElse(0);
+		date = c.getLong("date").orElse(0L);
+		id = c.getString("id").orElse("");
+		name = c.getString("name").orElse("");
+		description = c.getString("description").orElse("");
+		status = c.getString("status").orElse("");
+		rewardFulfilled = c.getBoolean("rewardFulfilled").orElse(false);
 
 		target = new TypedInteger();
 		reward = new Reward();

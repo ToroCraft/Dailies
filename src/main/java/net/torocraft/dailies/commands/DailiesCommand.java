@@ -59,7 +59,7 @@ public class DailiesCommand {
 
     private static int spawnBailey(CommandSourceStack source) throws CommandSyntaxException {
         ServerPlayer player = source.getPlayerOrException();
-        net.minecraft.server.level.ServerLevel world = player.serverLevel();
+        net.minecraft.server.level.ServerLevel world = (net.minecraft.server.level.ServerLevel) player.level();
         if(!world.isClientSide) {
             BlockPos pos = new BlockPos((int)player.getX(), (int)player.getY(), (int)player.getZ());
             EntityBailey bailey = new EntityBailey(EntityRegistryHandler.BAILEY.get(), world);

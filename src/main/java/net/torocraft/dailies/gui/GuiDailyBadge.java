@@ -1,11 +1,9 @@
 package net.torocraft.dailies.gui;
 
-import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.resources.ResourceLocation;
 import net.torocraft.dailies.quests.DailyQuest;
 import java.util.List;
@@ -24,27 +22,31 @@ public class GuiDailyBadge {
 	}
 
 	public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, int screenWidth, int screenHeight) {
-		RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
-		guiGraphics.blit(RenderType::guiTextured, BADGE_TEXTURE, x, y, 0.0F, 0.0F, width, height, 256, 256);
-		guiGraphics.blit(RenderType::guiTextured, BADGE_TEXTURE, x + 6, y + 14, 0.0F, 76.0F, 108, 10, 256, 256);
+		guiGraphics.blit(RenderPipelines.GUI_TEXTURED, BADGE_TEXTURE, x, y, 0.0F, 0.0F, width, height, 256, 256);
+		guiGraphics.blit(RenderPipelines.GUI_TEXTURED, BADGE_TEXTURE, x + 6, y + 14, 0.0F, 76.0F, 108, 10, 256, 256);
 		int progress = (int) Math.ceil(108 * ((double) quest.progress / (double) quest.target.quantity));
-		guiGraphics.blit(RenderType::guiTextured, BADGE_TEXTURE, x + 6, y + 14, 0.0F, 86.0F, progress, 10, 256, 256);
+		guiGraphics.blit(RenderPipelines.GUI_TEXTURED, BADGE_TEXTURE, x + 6, y + 14, 0.0F, 86.0F, progress, 10, 256, 256);
 
+		guiGraphics.nextStratum();
+		
 		Font font = mc.font;
 		String formattedQuestName = font.plainSubstrByWidth(quest.name, 110);
-		guiGraphics.drawCenteredString(font, formattedQuestName, x + 60, y + 5, 0xffffff);
+		int textX = x + 60 - font.width(formattedQuestName) / 2; // Manual centering
+		guiGraphics.drawString(font, formattedQuestName, textX, y + 5, 0xFFFFFFFF, false);
+		
 		String barText = buildQuestProgressRatioString();
-		if (mc.level.getGameTime() % 120 < 60) {
+		if (mc.level != null && mc.level.getGameTime() % 120 < 60) {
 			barText = font.plainSubstrByWidth(quest.description, 110);
 		}
-		guiGraphics.drawCenteredString(font, barText, x + 60, y + 15, 0xffffff);
+		int textX2 = x + 60 - font.width(barText) / 2; // Manual centering
+		guiGraphics.drawString(font, barText, textX2, y + 15, 0xFFFFFFFF, false);
 
 		if (mouseX >= x && mouseX <= x + width && mouseY >= y && mouseY <= y + height) {
 			List<net.minecraft.network.chat.Component> tooltipComponents = Arrays.asList(
 				net.minecraft.network.chat.Component.literal(quest.name),
 				net.minecraft.network.chat.Component.literal(quest.description)
 			);
-			guiGraphics.renderComponentTooltip(font, tooltipComponents, mouseX, mouseY);
+			guiGraphics.setTooltipForNextFrame(font, tooltipComponents, java.util.Optional.empty(), mouseX, mouseY);
 		}
 	}
 
@@ -53,13 +55,19 @@ public class GuiDailyBadge {
 	}
 
 	public void renderAccept(GuiGraphics guiGraphics) {
-		guiGraphics.blit(RenderType::guiTextured, BADGE_TEXTURE, x, y, 0.0F, 0.0F, width, height, 256, 256);
-		guiGraphics.blit(RenderType::guiTextured, BADGE_TEXTURE, x + 6, y + 14, 0.0F, 76.0F, 108, 10, 256, 256);
+		guiGraphics.blit(RenderPipelines.GUI_TEXTURED, BADGE_TEXTURE, x, y, 0.0F, 0.0F, width, height, 256, 256);
+		guiGraphics.blit(RenderPipelines.GUI_TEXTURED, BADGE_TEXTURE, x + 6, y + 14, 0.0F, 76.0F, 108, 10, 256, 256);
+		
+		guiGraphics.nextStratum();
+		
 		Font font = mc.font;
 		String formattedQuestName = font.plainSubstrByWidth(quest.name, 110);
 		String questDescription = font.plainSubstrByWidth(quest.description, 110);
-		guiGraphics.drawCenteredString(font, formattedQuestName, x + 60, y + 5, 0xffffff);
-		guiGraphics.drawCenteredString(font, questDescription, x + 60, y + 15, 0xffffff);
+		
+		int textX1 = x + 60 - font.width(formattedQuestName) / 2; // Manual centering
+		int textX2 = x + 60 - font.width(questDescription) / 2; // Manual centering
+		guiGraphics.drawString(font, formattedQuestName, textX1, y + 5, 0xFFFFFFFF, false);
+		guiGraphics.drawString(font, questDescription, textX2, y + 15, 0xFFFFFFFF, false);
 	}
 
 	private void renderTooltip(GuiGraphics guiGraphics, List<String> lines, int mouseX, int mouseY, Font font) {
@@ -67,6 +75,6 @@ public class GuiDailyBadge {
 		List<net.minecraft.network.chat.Component> components = lines.stream()
 			.map(net.minecraft.network.chat.Component::literal)
 			.collect(java.util.stream.Collectors.toList());
-		guiGraphics.renderComponentTooltip(font, components, mouseX, mouseY);
+		guiGraphics.setTooltipForNextFrame(font, components, java.util.Optional.empty(), mouseX, mouseY);
 	}
 }

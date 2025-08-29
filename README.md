@@ -8,8 +8,8 @@ Bailey's Dailies transforms Minecraft villages by adding Bailey NPCs who offer d
 
 ## Technical Requirements
 
-- **Minecraft**: 1.21.4
-- **Mod Loader**: NeoForge 21.4.152+
+- **Minecraft**: 1.21.8
+- **Mod Loader**: NeoForge 21.8.39+
 - **Java**: 21+
 
 ## Online & Offline Modes
@@ -28,7 +28,7 @@ Bailey's Dailies transforms Minecraft villages by adding Bailey NPCs who offer d
 
 ## Installation
 
-1. Install NeoForge 21.4.152+ for Minecraft 1.21.4
+1. Install NeoForge 21.8.39+ for Minecraft 1.21.8
 2. Download the latest release from [Releases](../../releases)
 3. Place the `.jar` file in your `mods` folder
 4. Launch Minecraft

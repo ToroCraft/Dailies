@@ -48,9 +48,9 @@ public class BaileyShopPiece extends StructurePiece {
     public BaileyShopPiece(@Nonnull CompoundTag tag) {
         super(TYPE, tag);
         this.shopPosition = new BlockPos(
-            tag.getInt("ShopX"), 
-            tag.getInt("ShopY"), 
-            tag.getInt("ShopZ")
+            tag.getInt("ShopX").orElse(0), 
+            tag.getInt("ShopY").orElse(0), 
+            tag.getInt("ShopZ").orElse(0)
         );
     }
     

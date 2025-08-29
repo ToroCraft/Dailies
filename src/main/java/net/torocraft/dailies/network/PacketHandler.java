@@ -24,7 +24,10 @@ public class PacketHandler {
   }
 
   public static void getQuests(QuestsFilter filter) {
-    PacketDistributor.sendToServer(new GetQuestsPacket.Message(filter));
+    var minecraft = net.minecraft.client.Minecraft.getInstance();
+    if (minecraft.getConnection() != null) {
+      minecraft.getConnection().send(new GetQuestsPacket.Message(filter));
+    }
   }
 
   public static void questProgressUpdate(ServerPlayer player, DailyQuest quest) {
@@ -32,7 +35,10 @@ public class PacketHandler {
   }
 
   public static void questCommand(String questId, QuestCommand command) {
-    PacketDistributor.sendToServer(new QuestCommandPacket.Message(questId, command));
+    var minecraft = net.minecraft.client.Minecraft.getInstance();
+    if (minecraft.getConnection() != null) {
+      minecraft.getConnection().send(new QuestCommandPacket.Message(questId, command));
+    }
   }
 
   public static void init() {

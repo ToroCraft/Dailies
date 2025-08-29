@@ -1,9 +1,8 @@
 package net.torocraft.dailies.gui;
 
-import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
-import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Inventory;
@@ -21,8 +20,14 @@ public class DailiesGuiContainer extends AbstractContainerScreen<DailiesContaine
 
 	@Override
 	protected void renderBg(GuiGraphics guiGraphics, float partialTicks, int mouseX, int mouseY) {
-		RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
-		guiGraphics.blit(RenderType::guiTextured, TEXTURE, leftPos, topPos, 0.0F, 0.0F, this.imageWidth, this.imageHeight, 256, 256);
+		guiGraphics.blit(
+			RenderPipelines.GUI_TEXTURED,
+			TEXTURE,
+			leftPos, topPos,
+			0, 0,
+			this.imageWidth, this.imageHeight,
+			256, 256
+		);
 	}
 
 	@Override
