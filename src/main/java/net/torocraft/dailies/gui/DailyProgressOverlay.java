@@ -6,6 +6,7 @@ import net.minecraft.client.gui.screens.ChatScreen;
 import net.minecraft.client.gui.screens.PauseScreen;
 import net.minecraft.client.gui.screens.inventory.InventoryScreen;
 import net.minecraft.client.gui.screens.inventory.CreativeModeInventoryScreen;
+import net.minecraft.client.gui.screens.inventory.CraftingScreen;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.network.chat.Component;
 import net.neoforged.api.distmarker.Dist;
@@ -46,11 +47,12 @@ public class DailyProgressOverlay {
 
     @SubscribeEvent
     public static void onScreenInit(ScreenEvent.Init.Post event) {
-        if (event.getScreen() instanceof InventoryScreen || event.getScreen() instanceof CreativeModeInventoryScreen) {
+        if (((event.getScreen() instanceof InventoryScreen && !(event.getScreen() instanceof CraftingScreen)) 
+            || event.getScreen() instanceof CreativeModeInventoryScreen)) {
             int buttonX = 10; 
             int buttonY = 10;
             
-            questToggleButton = Button.builder(Component.literal("View Quests"), 
+            questToggleButton = Button.builder(Component.literal(showQuestsInInventory ? "Hide Quests" : "View Quests"), 
                 (button) -> {
                     showQuestsInInventory = !showQuestsInInventory;
                     button.setMessage(Component.literal(showQuestsInInventory ? "Hide Quests" : "View Quests"));
@@ -67,8 +69,8 @@ public class DailyProgressOverlay {
 
     @SubscribeEvent
     public static void onScreenRender(ScreenEvent.Render.Post event) {
-        // Handle inventory screen quest overlay rendering
-        if ((event.getScreen() instanceof InventoryScreen || event.getScreen() instanceof CreativeModeInventoryScreen) 
+        if (((event.getScreen() instanceof InventoryScreen && !(event.getScreen() instanceof CraftingScreen)) 
+            || event.getScreen() instanceof CreativeModeInventoryScreen) 
             && showQuestsInInventory) {
             
             event.getGuiGraphics().pose().pushMatrix();
@@ -82,43 +84,9 @@ public class DailyProgressOverlay {
 
     @SubscribeEvent
     public static void onScreenMouseClick(ScreenEvent.MouseButtonPressed.Pre event) {
-        if ((event.getScreen() instanceof InventoryScreen || event.getScreen() instanceof CreativeModeInventoryScreen) 
-            && showQuestsInInventory && event.getButton() == 0) { // Left mouse button
-            
-            double mouseX = event.getMouseX();
-            double mouseY = event.getMouseY();
-            
-            // Check accepted quest paging buttons
-            if (acceptedPrevEnabled && isInButton(mouseX, mouseY, acceptedPrevX, acceptedPrevY)) {
-                offsetAccepted = Math.max(0, offsetAccepted - QUESTS_PER_PAGE);
-                event.setCanceled(true);
-                return;
-            }
-            if (acceptedNextEnabled && isInButton(mouseX, mouseY, acceptedNextX, acceptedNextY)) {
-                ClientQuestCache cache = ClientQuestCache.getInstance();
-                Set<DailyQuest> accepted = cache.getAcceptedQuests();
-                if (accepted != null) {
-                    offsetAccepted = Math.min(accepted.size() - QUESTS_PER_PAGE, offsetAccepted + QUESTS_PER_PAGE);
-                }
-                event.setCanceled(true);
-                return;
-            }
-            
-            // Check available quest paging buttons
-            if (availablePrevEnabled && isInButton(mouseX, mouseY, availablePrevX, availablePrevY)) {
-                offsetAvailable = Math.max(0, offsetAvailable - QUESTS_PER_PAGE);
-                event.setCanceled(true);
-                return;
-            }
-            if (availableNextEnabled && isInButton(mouseX, mouseY, availableNextX, availableNextY)) {
-                ClientQuestCache cache = ClientQuestCache.getInstance();
-                Set<DailyQuest> available = cache.getAvailableQuests();
-                if (available != null) {
-                    offsetAvailable = Math.min(available.size() - QUESTS_PER_PAGE, offsetAvailable + QUESTS_PER_PAGE);
-                }
-                event.setCanceled(true);
-                return;
-            }
+        if (((event.getScreen() instanceof InventoryScreen && !(event.getScreen() instanceof CraftingScreen)) 
+            || event.getScreen() instanceof CreativeModeInventoryScreen) 
+            && showQuestsInInventory && event.getButton() == 0) {
         }
     }
     
@@ -139,9 +107,10 @@ public class DailyProgressOverlay {
             return;
         }
         
-        // Don't show overlay on specific screens
+        // Don't show overlay on specific screens including crafting tables
         if (mc.screen instanceof ChatScreen ||
             mc.screen instanceof PauseScreen ||
+            mc.screen instanceof CraftingScreen ||
             mc.screen instanceof BaileyInventoryGui ||
             mc.screen instanceof DailiesGuiContainer ||
             mc.screen instanceof net.torocraft.dailies.config.ConfigScreen) {
